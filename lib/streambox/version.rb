@@ -1,0 +1,3 @@
+module Streambox
+  VERSION = "0.0.1"
+end
