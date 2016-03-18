@@ -2,6 +2,16 @@
 
 TODO: Write a gem description
 
+## Dependencies
+
+* dmidecode - retrieve serial numbers of sdcard/board
+* darkice - encode and stream icecast
+
+
+```
+apt-get -y install dmidecode darkice ruby
+```
+
 ## Installation
 
 Add this line to your application's Gemfile:

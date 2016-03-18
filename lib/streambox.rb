@@ -1,5 +1,3 @@
-require "streambox/version"
+$:.unshift(File.dirname(__FILE__))
 
-module Streambox
-  # Your code goes here...
-end
+require "streambox/daemon"
