@@ -60,7 +60,7 @@ module Streambox
 
     def register
       logger.info "Registering..."
-      response = faraday.post(@config.endpoint, payload: JSON.unparse(register_payload))
+      response = faraday.post(@config.endpoint, payload: JSON.unparse(payload))
       apply_config(JSON.parse(response.body))
       logger.info "Registration complete."
     end
