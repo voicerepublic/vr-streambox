@@ -1,11 +1,11 @@
 require 'logger'
 require 'json'
+require 'ostruct'
 
 require 'faraday'
 require 'eventmachine'
-require 'ostruct'
 require 'faye'
-require 'faye-authentication'
+require 'faye/authentication'
 
 require "streambox/version"
 
@@ -16,17 +16,32 @@ module Streambox
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
 
-    def new
+    def initialize
       Thread.abort_on_exception = true
       @config = OpenStruct.new endpoint: ENDPOINT
+      p @config
     end
 
+    # TODO fallback to generated uuid
     def serial
-      File.read('/proc/cpuinfo').match(/Serial\s*:\s*([^\s]+)\n/)[1]
+      md = File.read('/proc/cpuinfo').match(/Serial\s*:\s*(.*)/)
+      md.nil? ? serial_fallback : md[1]
+    end
+
+    def serial_fallback
+      [%x[ whoami ].chomp, %x[ hostname ].chomp] * '@'
+    end
+
+    def subtype
+      if File.exist?('/home/pi/subtype')
+        File.read('/home/pi/subtype')
+      else
+        'dev'
+      end
     end
 
     def payload
-      { serial: serial, type: 'box', subtype: File.read('/home/pi/subtype') }
+      { serial: serial, type: 'box', subtype: subtype }
     end
 
     def apply_config(data)
@@ -52,7 +67,6 @@ module Streambox
     end
 
     def run
-      logger.info "Registering..."
       knock
       register
 
@@ -124,7 +138,7 @@ module Streambox
     end
 
     def faraday
-      @faraday ||= Faraday.new(url: REGISTER_ENDPOINT) do |f|
+      @faraday ||= Faraday.new(url: ENDPOINT) do |f|
         f.request :url_encoded
         f.adapter Faraday.default_adapter
       end

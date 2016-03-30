@@ -1,4 +1,10 @@
 #!/bin/sh
+#
+# This file's responsibility is to setup the required environment for
+# running the ruby application, i.e. installing dependencies.
+#
+# This script will be executed once on each box if it changes. But be
+# aware that boxes might skip versions of this file.
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 

@@ -1,4 +1,17 @@
 #!/bin/sh
+#
+#---------------------------------------------------------------#
+#  ____ ___ ____  __        ___    ____  _   _ ___ _   _  ____  #
+# | __ )_ _/ ___| \ \      / / \  |  _ \| \ | |_ _| \ | |/ ___| #
+# |  _ \| | |  _   \ \ /\ / / _ \ | |_) |  \| || ||  \| | |  _  #
+# | |_) | | |_| |   \ V  V / ___ \|  _ <| |\  || || |\  | |_| | #
+# |____/___\____|    \_/\_/_/   \_\_| \_\_| \_|___|_| \_|\____| #
+#                                                               #
+#---------------------------------------------------------------#
+#
+# This file facilitates the auto update of the VR Streambox.  If you
+# break it, all boxes will stop updating.  This would be both:
+# IRREVERSIBLE and VERY BAD.  So don't break it. It's that simple!
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
