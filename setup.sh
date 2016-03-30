@@ -2,7 +2,7 @@
 
 sudp apt-get update
 
-sudo apt-get -y install darkice dmidecode launchtool ruby
+sudo apt-get -y install darkice dmidecode launchtool ruby git
 
 sudo gem install bundler
 

@@ -4,9 +4,11 @@ The VR Audio Proxy in a box.
 
 ## Dependencies
 
-All instructions based on `raspbian jessie - minimal`.
+All instructions are based on `raspbian jessie - minimal`.
 
 ## Installation
+
+Ssh into the pi.
 
 ```
 git clone git@gitlab.com:voicerepublic/streambox.git
@@ -15,6 +17,27 @@ cd streambox
 
 ```
 
-### Inittab config
+### systemd config
 
-Add `launcher.sh` to `/etc/inittab`.
+Still on the pi.
+
+```
+sudo -i
+mkdir -p /etc/systemd/system/default.target.wants
+ln -s /home/pi/streambox/streambox.service /etc/systemd/system/default.target.wants
+
+```
+
+Reboot.
+
+### Create a deployment key
+
+Sdcard mounted on another device.
+
+
+```
+mkdir /media/859cf567-e7d3-4fa7-82b8-cb835cd272c6/home/pi/.ssh
+ssh-keygen -t rsa -C boxed key -f /media/859cf567-e7d3-4fa7-82b8-cb835cd272c6/home/pi/.ssh/id_rsa
+```
+
+Add the public key to this repo on GitLab.
