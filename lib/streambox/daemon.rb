@@ -17,6 +17,8 @@ module Streambox
     #ENDPOINT = 'https://voicerepublic.com/api/devices'
     ENDPOINT = 'http://192.168.178.21:3000/api/devices'
 
+    attr_accessor :client
+
     def initialize
       Thread.abort_on_exception = true
       @config = OpenStruct.new endpoint: ENDPOINT
@@ -75,7 +77,7 @@ module Streambox
 
       logger.info "Entering event machine loop..."
       EM.run {
-        client = Faye::Client.new(@config.faye_url)
+        self.client = Faye::Client.new(@config.faye_url)
         ext = Faye::Authentication::ClientExtension.new(@config.faye_secret)
         client.add_extension(ext)
 
