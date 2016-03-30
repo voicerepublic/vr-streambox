@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
-require 'daemons'
+#require 'daemons'
 require File.expand_path(File.join(%w(.. .. lib streambox)), __FILE__)
 
-base = File.expand_path(Filejoin(%w(.. ..)), __FILE__)
-piddir = File.join(base, 'tmp', 'pids')
-Daemons.run_proc(File.basename(__FILE__), dir: piddir) do
+#base = File.expand_path(Filejoin(%w(.. ..)), __FILE__)
+#piddir = File.join(base, 'tmp', 'pids')
+#Daemons.run_proc(File.basename(__FILE__), dir: piddir) do
   Streambox::Daemon.new.run
-end
+#end
