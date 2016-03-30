@@ -1,15 +1,14 @@
 #!/bin/sh
 
-set -x
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
-echo "Installing dependencies..."
-sudo apt-get update
-sudo apt-get -y install git ruby ruby-dev darkice
-sudo gem install bundler --no-ri --no-rdoc
 
-echo "Running bundler (installing more dependencies)..."
-(cd $DIR && bundle install)
+diff $DIR/setup.sh $DIR/setup.sh.old
+if [ $? -ne 0 ]; then
+  $DIR/setup.sh
+  cp $DIR/setup.sh $DIR/setup.sh.old
+fi
+
 
 echo "Starting..."
 (cd $DIR && ./bin/streambox)

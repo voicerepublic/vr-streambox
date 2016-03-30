@@ -11,7 +11,7 @@ do
     cp $DIR/id_rsa* /root/.ssh
 
     echo "Updating..."
-    git pull origin master
+    (cd $DIR && git pull origin master)
 
 
     (cd $DIR && ./start.sh)

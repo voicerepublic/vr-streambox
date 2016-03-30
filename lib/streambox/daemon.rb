@@ -26,7 +26,7 @@ module Streambox
     end
 
     def payload
-      { serial: serial }
+      { serial: serial, type: 'box', subtype: File.read('/home/pi/subtype') }
     end
 
     def apply_config(data)

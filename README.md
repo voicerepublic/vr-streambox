@@ -65,3 +65,14 @@ TODO
 ### Update (if auto update is broken)
 
     (cd streambox && git pull) && sudo reboot
+
+### Type & Subtype
+
+The type of the box is allways 'box'.
+
+The subtype is stored in `/home/pi/subtype`.
+
+If you make a change to the box setup, which is not covered by the git
+repo, please update the subtype file.
+
+    echo -n "v0.1 prototype" > /home/pi/subtype
