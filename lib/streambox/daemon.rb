@@ -83,7 +83,7 @@ module Streambox
 
         # reporter
         Thread.new do
-          sleep @config.report_pause
+          sleep @config.report_interval
           payload = report
           logger.debug "Reporting: #{payload}"
           publish event: 'report', report: payload
