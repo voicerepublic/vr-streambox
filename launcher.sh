@@ -1,15 +1,25 @@
 #!/bin/sh
 
 set -x
-
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Initial launch..."
 
 while :
 do
-  $DIR/update_and_start.sh
-	sleep 5
-done
+    echo "Updating..."
+    git pull origin master
 
-# /usr/bin/launchtool -t streambox -u root -g root -Lnvc $DIR/update_and_start.sh
+    echo "Setting up..."
+    sudp apt-get update
+    sudo apt-get -y install darkice dmidecode ruby git
+    sudo gem install bundler
+    (cd $DIR && bundle install)
+    # TODO copy id_rsa to ~/.ssh
+
+    echo "Starting..."
+    (cd $DIR && ./bin/streambox)
+
+    echo "Exited. Restarting in 5."
+	  sleep 5
+done
