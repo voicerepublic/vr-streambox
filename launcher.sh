@@ -1,6 +1,5 @@
 #!/bin/sh
 
-set -x
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Initial launch..."

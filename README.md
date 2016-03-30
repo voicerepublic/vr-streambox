@@ -41,3 +41,23 @@ ssh-keygen -t rsa -C boxed key -f /media/859cf567-e7d3-4fa7-82b8-cb835cd272c6/ho
 ```
 
 Add the public key to this repo on GitLab.
+
+### prefill known hosts
+
+As root on pi
+
+    ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+
+### adjust boot params
+
+To
+
+    /boot/cmdline.txt
+
+add
+
+    quiet consoleblank=0
+
+### expand file system
+
+TODO
