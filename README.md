@@ -61,3 +61,7 @@ add
 ### expand file system
 
 TODO
+
+### Update (if auto update is broken)
+
+    (cd streambox && git pull) && sudo reboot
