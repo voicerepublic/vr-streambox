@@ -2,8 +2,8 @@
 
 set -x
 
-pwd
+DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Initial launch..."
 
-launchtool -t streambox -u root -g root -Lnvc ./update_and_start.sh
+/usr/bin/launchtool -t streambox -u root -g root -Lnvc $DIR/update_and_start.sh
