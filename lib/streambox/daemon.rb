@@ -20,7 +20,6 @@ module Streambox
     def initialize
       Thread.abort_on_exception = true
       @config = OpenStruct.new endpoint: ENDPOINT
-      p @config
     end
 
     # TODO fallback to generated uuid
@@ -42,7 +41,7 @@ module Streambox
     end
 
     def payload
-      { identifier: serial, type: 'box', subtype: subtype }
+      { identifier: serial, type: 'Streambox', subtype: subtype }
     end
 
     def apply_config(data)
@@ -60,7 +59,7 @@ module Streambox
 
     def register
       logger.info "Registering..."
-      response = faraday.post(@config.endpoint, payload)
+      response = faraday.post(@config.endpoint, device: payload)
       apply_config(JSON.parse(response.body))
       logger.info "Registration complete."
     end
