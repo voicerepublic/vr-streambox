@@ -15,7 +15,7 @@ module Streambox
   class Daemon
 
     #ENDPOINT = 'https://voicerepublic.com/api/devices'
-    ENDPOINT = 'http://192.168.178.21/api/devices'
+    ENDPOINT = 'http://192.168.178.21:3000/api/devices'
 
     def initialize
       Thread.abort_on_exception = true
