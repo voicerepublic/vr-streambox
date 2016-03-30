@@ -8,7 +8,7 @@ git pull origin master
 
 echo "Setting up..."
 sudo apt-get update
-sudo apt-get -y install darkice dmidecode ruby git
+sudo apt-get -y install git ruby ruby-dev darkice
 sudo gem install bundler --no-ri --no-rdoc
 echo "Running bundler..."
 (cd $DIR && bundle install)
