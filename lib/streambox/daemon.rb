@@ -14,7 +14,8 @@ module Streambox
 
   class Daemon
 
-    ENDPOINT = 'https://voicerepublic.com/api/devices'
+    #ENDPOINT = 'https://voicerepublic.com/api/devices'
+    ENDPOINT = 'http://192.168.178.21/api/devices'
 
     def initialize
       Thread.abort_on_exception = true
@@ -41,16 +42,19 @@ module Streambox
     end
 
     def payload
-      { serial: serial, type: 'box', subtype: subtype }
+      { identifier: serial, type: 'box', subtype: subtype }
     end
 
     def apply_config(data)
-      data.each { |key, value| @config.send("#{key}=", value) }
+      data.each do |key, value|
+        puts "#{key}=#{value}"
+        @config.send("#{key}=", value)
+      end
     end
 
     def knock
       logger.info "Knocking..."
-      response = faraday.get(@config.endpoint, payload: JSON.unparse(payload))
+      response = faraday.get(@config.endpoint + '/' + serial)
       apply_config(JSON.parse(response.body))
     end
 

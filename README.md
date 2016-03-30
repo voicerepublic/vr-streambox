@@ -76,3 +76,7 @@ If you make a change to the box setup, which is not covered by the git
 repo, please update the subtype file.
 
     echo -n "v0.1 prototype" > /home/pi/subtype
+
+## TODO
+
+* for production boxes make commands in scripts silent
