@@ -99,7 +99,7 @@ module Streambox
         ext = Faye::Authentication::ClientExtension.new(@config.faye_secret)
         client.add_extension(ext)
 
-        logger.debug "Subscribing #{channel}..."
+        logger.debug "Subscribing to channel '#{channel}'..."
         client.subscribe(channel) { |message| process(message) }
 
       }
@@ -141,7 +141,7 @@ module Streambox
     end
 
     def publish(msg={})
-      client.publish('/proxies', msg.merge(identifier: @reporter.serial))
+      client.publish('/devices', msg.merge(identifier: @reporter.serial))
     end
 
     def logger
