@@ -68,9 +68,25 @@ module Streambox
       logger.info "Registration complete."
     end
 
-    def report
-      # TODO improve, add temperature
+    def memory
+      _, total, used, free, _ = %x[ free | grep Mem ].split(/\s+/)
+      { total: total, used: used, free: free }
+    end
+
+    def temperature
+      %x[ vcgencmd measure_temp ].match(/=(.+)'/)[1]
+    end
+
+    def uptime
       %x[ uptime ].chomp.strip
+    end
+
+    def report
+      [ uptime, temperature, memory.inspect, usb ] * ', '
+    end
+
+    def usb
+      %x[ lsusb | grep Audio ].chomp
     end
 
     def start_heartbeat
@@ -79,11 +95,9 @@ module Streambox
         loop do
           sleep @config.heartbeat_interval
           if client.nil?
-            logger.debug "Skip report. Client not ready."
+            logger.debug "Skip heartbeat. Client not ready."
           else
-            payload = report
-            logger.debug "Report: #{payload}"
-            publish event: 'report', report: payload
+            publish event: 'heartbeat'
           end
         end
       end
@@ -159,7 +173,7 @@ module Streambox
       "/device/#{serial}"
     end
 
-    def publish(msg)
+    def publish(msg={})
       client.publish('/proxies', msg.merge(identifier: serial))
     end
 

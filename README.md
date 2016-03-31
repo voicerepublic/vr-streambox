@@ -80,3 +80,6 @@ repo, please update the subtype file.
 ## TODO
 
 * for production boxes make commands in scripts silent
+* use `raspi-config` to expand file system
+* set timezone according to organization/venue (raspi-config can also do it)
+* https://www.raspberrypi.org/forums/viewtopic.php?t=4977&f=5

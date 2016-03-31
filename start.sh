@@ -4,6 +4,8 @@
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
+echo "Syncing clock..."
+sudo ntpd -q -g
 
 # check if setup changed
 diff $DIR/setup.sh $DIR/setup.sh.old
