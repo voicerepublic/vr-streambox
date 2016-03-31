@@ -35,6 +35,7 @@ module Streambox
     end
 
     def temperature
+      return 0 if subtype == 'dev'
       %x[ vcgencmd measure_temp ].match(/=(.+)'/)[1].to_f
     end
 
@@ -44,6 +45,7 @@ module Streambox
     end
 
     def usb_devices
+      return [] if subtype == 'dev'
       current = %x[ lsusb ].split("\n").sort
       current - known_usb_devices
     end
