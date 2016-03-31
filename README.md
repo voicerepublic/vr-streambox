@@ -58,13 +58,15 @@ add
 
     quiet consoleblank=0
 
-### expand file system
+### Helpful commands
 
-TODO
-
-### Update (if auto update is broken)
+Update (if auto update is broken)
 
     (cd streambox && git pull) && sudo reboot
+
+Kill running ruby
+
+    sudo killall ruby
 
 ### Type & Subtype
 

@@ -8,6 +8,7 @@ require 'faye'
 require 'faye/authentication'
 
 require "streambox/version"
+require "streambox/reporter"
 
 # TODO introduce a proper state machine
 module Streambox
@@ -23,28 +24,15 @@ module Streambox
     def initialize
       Thread.abort_on_exception = true
       @config = OpenStruct.new endpoint: ENDPOINT, loglevel: Logger::INFO
-    end
-
-    # TODO fallback to generated uuid
-    def serial
-      md = File.read('/proc/cpuinfo').match(/Serial\s*:\s*(.*)/)
-      md.nil? ? serial_fallback : md[1]
-    end
-
-    def serial_fallback
-      [%x[ whoami ].chomp, %x[ hostname ].chomp] * '@'
-    end
-
-    def subtype
-      if File.exist?('/home/pi/subtype')
-        File.read('/home/pi/subtype')
-      else
-        'dev'
-      end
+      @reporter = Reporter.new
     end
 
     def payload
-      { identifier: serial, type: 'Streambox', subtype: subtype }
+      {
+        identifier: @reporter.serial,
+        type: 'Streambox',
+        subtype: @reporter.subtype
+      }
     end
 
     def apply_config(data)
@@ -57,7 +45,7 @@ module Streambox
 
     def knock
       logger.info "Knocking..."
-      response = faraday.get(@config.endpoint + '/' + serial)
+      response = faraday.get(@config.endpoint + '/' + @reporter.serial)
       apply_config(JSON.parse(response.body))
     end
 
@@ -66,27 +54,6 @@ module Streambox
       response = faraday.post(@config.endpoint, device: payload)
       apply_config(JSON.parse(response.body))
       logger.info "Registration complete."
-    end
-
-    def memory
-      _, total, used, free, _ = %x[ free | grep Mem ].split(/\s+/)
-      { total: total, used: used, free: free }
-    end
-
-    def temperature
-      %x[ vcgencmd measure_temp ].match(/=(.+)'/)[1]
-    end
-
-    def uptime
-      %x[ uptime ].chomp.strip
-    end
-
-    def report
-      [ uptime, temperature, memory.inspect, usb ] * ', '
-    end
-
-    def usb
-      %x[ lsusb | grep Audio ].chomp
     end
 
     def start_heartbeat
@@ -111,8 +78,8 @@ module Streambox
           if client.nil?
             logger.debug "Skip report. Client not ready."
           else
-            payload = report
-            logger.debug "Report: #{payload}"
+            payload = @reporter.report
+            logger.debug "Report: #{payload.inspect}"
             publish event: 'report', report: payload
           end
         end
@@ -170,11 +137,11 @@ module Streambox
     end
 
     def channel
-      "/device/#{serial}"
+      "/device/#{@reporter.serial}"
     end
 
     def publish(msg={})
-      client.publish('/proxies', msg.merge(identifier: serial))
+      client.publish('/proxies', msg.merge(identifier: @reporter.serial))
     end
 
     def logger
