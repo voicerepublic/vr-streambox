@@ -2,53 +2,60 @@
 
 The VR Audio Proxy in a box.
 
+
 ## Dependencies
 
-All instructions are based on `raspbian jessie - minimal`.
+All instructions are based on `raspbian jessie lite`.
 
-## Installation
+* Download zip from https://www.raspberrypi.org/downloads/raspbian/
+* unzip
+* dd resulting img to sdcard
 
-Ssh into the pi.
+E.g.
+
+    dd bs=4M if=2016-03-18-raspbian-jessie.img of=/dev/mmcblk0
+
+This will take a while. (It takes almost 5 minutes on my machine.) You
+can use `time` to find out how long exactly. Or append `&& aplay
+<some-wav>` to get an alert when done.
+
+
+## Intial Setup on a clean raspbian image
+
+Find the PI in you local network. Connect a display the pi will print
+it's ip address during boot. Otherwise `nmap` or `nc` are helpfull to
+poke around.
+
+Ssh into the pi with forward agent `-A`.
+
+Username `pi`, password `raspberry`.
+
+
+### Step 1: Become root
+
+    sudo -i
+
+
+### Step 2: Main Setup
 
 ```
-git clone git@gitlab.com:voicerepublic/streambox.git
-cd streambox
-./setup.sh
+apt-get update
+apt-get -y install git
+( cd /home/pi &&
+  git clone git@gitlab.com:voicerepublic/streambox.git )
 
-```
-
-### systemd config
-
-Still on the pi.
-
-```
-sudo -i
 mkdir -p /etc/systemd/system/default.target.wants
-ln -s /home/pi/streambox/streambox.service /etc/systemd/system/default.target.wants
+ln -s /home/pi/streambox/streambox.service \
+      /etc/systemd/system/default.target.wants
+mv /etc/systemd/system/getty.target.wants/getty@tty1.service \
+   /etc/systemd/system/getty.target.wants/getty@tty2.service
 
+mkdir -p /root/.ssh
+ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 ```
 
-Reboot.
 
-### Create a deployment key
-
-Sdcard mounted on another device.
-
-
-```
-mkdir /media/859cf567-e7d3-4fa7-82b8-cb835cd272c6/home/pi/.ssh
-ssh-keygen -t rsa -C boxed key -f /media/859cf567-e7d3-4fa7-82b8-cb835cd272c6/home/pi/.ssh/id_rsa
-```
-
-Add the public key to this repo on GitLab.
-
-### prefill known hosts
-
-As root on pi
-
-    ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
-
-### adjust boot params
+### Step 3: Adjust boot params
 
 To
 
@@ -58,17 +65,39 @@ add
 
     quiet consoleblank=0
 
-### Helpful commands
 
-Update (if auto update is broken)
+### Step 4: Type & Subtype
 
-    (cd streambox && git pull) && sudo reboot
+The type of the box is allways 'Streambox'.
 
-Kill running ruby
+The subtype is stored in `/home/pi/subtype`.
 
-    sudo killall ruby
+If you make a change to the box setup, which is not covered by the git
+repo, please update the subtype file.
 
-Send command to box from rails console
+    echo -n "v0.3prototype" > /home/pi/subtype
+
+
+### Step 5: raspi-config
+
+* use `sudo raspi-config` to
+  * expand file system
+  * change the user password to `aeg9ethoh0thioji`
+  * set timezone to berlin (for now)
+
+
+### Step 6: Reboot
+
+If the previous step didn't cause a reboot, reboot!
+
+    reboot
+
+
+## Helpful commands
+
+### Remote control
+
+Send commands to box from rails console, e.g.
 
     device = '/device/000000008ff66473'
     Faye.publish_to device, event: 'eval', eval: '21*2'
@@ -78,20 +107,42 @@ Send command to box from rails console
     Faye.publish_to device, event: 'start_stream', icecast: {...}
     Faye.publish_to device, event: 'stop_stream'
 
-### Type & Subtype
 
-The type of the box is allways 'box'.
+### Force Restart (kill running ruby processes)
 
-The subtype is stored in `/home/pi/subtype`.
+    sudo killall ruby
 
-If you make a change to the box setup, which is not covered by the git
-repo, please update the subtype file.
 
-    echo -n "v0.1 prototype" > /home/pi/subtype
+### Force Update (if auto update is broken)
+
+    (cd streambox && git pull) && sudo reboot
+
+
+## Duplication
+
+### Create an image
+
+    dd bs=4M if=/dev/mmcblk0 of=streambox_v0-3prototype.img
+
+
+### Write that image to a new card
+
+    dd bs=4M of=/dev/mmcblk0 if=streambox_v0-3prototype.img
+
+
+## Once and only once, I had to do this...
+
+Create a deploy key
+
+    ssh-keygen -t rsa -C boxed key
+
+Add the public key to this repo on GitLab.
+
+Check both keys (public and private) into this repo.
+
 
 ## TODO
 
 * for production boxes make commands in scripts silent
-* use `raspi-config` to expand file system
-* set timezone according to organization/venue (raspi-config can also do it)
-* https://www.raspberrypi.org/forums/viewtopic.php?t=4977&f=5
+* set the timezone of organization/venue
+  * https://www.raspberrypi.org/forums/viewtopic.php?t=4977&f=5

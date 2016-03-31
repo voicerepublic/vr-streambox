@@ -8,7 +8,7 @@ echo "Syncing clock..."
 sudo ntpd -q -g
 
 # check if setup changed
-diff $DIR/setup.sh $DIR/setup.sh.old
+diff -N $DIR/setup.sh $DIR/setup.sh.old
 if [ $? -ne 0 ]; then
   echo "Setting up..."
   $DIR/setup.sh
