@@ -89,6 +89,7 @@ module Streambox
     def run
       knock
       register
+      start_heartbeat
       start_reporting
 
       logger.info "Entering event machine loop..."
@@ -110,13 +111,13 @@ module Streambox
       case message['event']
       # { event: 'start_streaming',
       #   icecast: { ... } }
-      when 'start_streaming'
+      when 'start_stream'
         icecast = OpenStruct.new(message['icecast'])
         logger.info "Streaming with #{icecast.inspect}"
         @streamer = Streamer.new(icecast)
         @streamer.start_streaming!
       # { event: 'stop_streaming' }
-      when 'stop_streaming'
+      when 'stop_stream'
         logger.info "Stopped streaming."
         @streamer.stop_streaming!
       # { event: 'eval', eval: '41+1' }
@@ -130,6 +131,9 @@ module Streambox
       when 'shutdown'
         logger.info "Initiating shutdown..."
         %x[ sudo shutdown -h now ]
+      when 'reboot'
+        logger.info "Rebooting..."
+        %x[ sudo reboot ]
       else
         logger.warn "Unknown event: #{message.inspect}"
         publish event: 'unknown-event', message: message

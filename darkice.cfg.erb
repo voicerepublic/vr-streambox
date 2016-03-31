@@ -1,0 +1,23 @@
+# save as `darkice.cfg` and run with
+#
+#   sudo darkice -c darkice.cfg
+#
+[general]
+duration = 0
+bufferSecs = 1
+
+[input]
+device = default
+sampleRate = 44100
+bitsPerSample = 16
+channel = 1
+jackClientName = DarkIce-VR
+
+[icecast2-0]
+format = vorbis
+bitrateMode = vbr
+quality = 1
+server = <%= public_ip_address %>
+port = <%= port %>
+password = <%= source_password %>
+mountPoint = <%= mount_point %>

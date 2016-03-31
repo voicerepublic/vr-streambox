@@ -68,6 +68,16 @@ Kill running ruby
 
     sudo killall ruby
 
+Send command to box from rails console
+
+    device = '/device/000000008ff66473'
+    Faye.publish_to device, event: 'eval', eval: '21*2'
+    Faye.publish_to device, event: 'exit'
+    Faye.publish_to device, event: 'reboot'
+    Faye.publish_to device, event: 'shutdown'
+    Faye.publish_to device, event: 'start_stream', icecast: {...}
+    Faye.publish_to device, event: 'stop_stream'
+
 ### Type & Subtype
 
 The type of the box is allways 'box'.
