@@ -1,4 +1,5 @@
 require 'erb'
+require 'ostruct'
 
 module Streambox
   class Streamer < Struct.new(:config)
@@ -11,13 +12,20 @@ module Streambox
     end
 
     def stop_streaming!
-      @thread.stop
+      @thread.exit
     end
 
     private
 
     def write_config!
-      ERB.new(config_template).result(config.binding)
+      File.open(config_path, 'w') { |f| f.write(render_config) }
+    end
+
+    def render_config
+      # https://www.youtube.com/watch?v=MzlK0OGpIRs
+      namespace = OpenStruct.new(config)
+      bindink = namespace.instance_eval { binding }
+      ERB.new(config_template).result(bindink)
     end
 
     def config_template
@@ -26,7 +34,11 @@ module Streambox
 
     def stream_cmd
       # uses sudo to make use of posix realtime scheduling
-      'sudo darkice -c darkice.cfg'
+      "sudo darkice -c #{config_path}"
+    end
+
+    def config_path
+      'darkice.cfg'
     end
 
   end

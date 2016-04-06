@@ -144,10 +144,9 @@ module Streambox
 
     # { event: 'start_streaming', icecast: { ... } }
     def handle_start_stream(message={})
-      icecast = OpenStruct.new(message['icecast'])
-      @streamer = Streamer.new(icecast)
+      @streamer = Streamer.new(message['icecast'])
       @streamer.start_streaming!
-      logger.info "Streaming with #{icecast.inspect}"
+      logger.info "Streaming with #{message.inspect}"
     end
 
     # { event: 'stop_streaming' }
