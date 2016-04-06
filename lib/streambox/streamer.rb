@@ -6,13 +6,12 @@ module Streambox
 
     def start_streaming!
       write_config!
-      @thread = Thread.new do
-        system stream_cmd
-      end
+      @pid = Process.spawn(stream_cmd)
     end
 
     def stop_streaming!
-      @thread.exit
+      Process.kill 'EXIT', @pid
+      Process.wait
     end
 
     private
