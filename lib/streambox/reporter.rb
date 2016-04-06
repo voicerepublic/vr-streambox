@@ -55,7 +55,7 @@ module Streambox
     end
 
     def lsusb_path
-      @lsusb_path ||= File.expand_path(File.join(%w(.. .. .. lsusb.txt)), __FILE__)
+      @lsusb_path ||= File.expand_path(File.join(%w(.. .. .. lsusb), subtype), __FILE__)
     end
 
   end
