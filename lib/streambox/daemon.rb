@@ -9,6 +9,7 @@ require 'faye/authentication'
 
 require "streambox/version"
 require "streambox/reporter"
+require "streambox/streamer"
 
 # TODO introduce a proper state machine
 module Streambox
@@ -69,7 +70,7 @@ module Streambox
     def register
       logger.info "Registering..."
       response = faraday.post(@config.endpoint, device: payload)
-      if response.status == 409
+      if response.status != 200
         logger.warn "Registration failed, server reported conflict. Exiting..."
         exit
       end

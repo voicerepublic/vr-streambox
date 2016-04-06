@@ -6,7 +6,7 @@ module Streambox
     def start_streaming!
       write_config!
       @thread = Thread.new do
-        system cmd
+        system stream_cmd
       end
     end
 
@@ -24,7 +24,7 @@ module Streambox
       File.read(File.expand_path(File.join(%w(.. .. darkice.cfg.erb)), __FILE__))
     end
 
-    def cmd
+    def stream_cmd
       # uses sudo to make use of posix realtime scheduling
       'sudo darkice -c darkice.cfg'
     end
