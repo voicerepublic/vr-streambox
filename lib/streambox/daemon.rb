@@ -69,6 +69,10 @@ module Streambox
     def register
       logger.info "Registering..."
       response = faraday.post(@config.endpoint, device: payload)
+      if response.status == 409
+        logger.warn "Registration failed, server reported conflict. Exiting..."
+        exit
+      end
       apply_config(JSON.parse(response.body))
       logger.info "Registration complete."
     end
