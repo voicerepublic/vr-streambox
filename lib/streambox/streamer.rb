@@ -10,7 +10,7 @@ module Streambox
     end
 
     def stop_streaming!
-      Process.kill 'EXIT', @pid
+      Process.kill 'HUP', @pid
       Process.wait
     end
 
