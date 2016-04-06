@@ -17,7 +17,7 @@ module Streambox
     private
 
     def write_config!
-      ERB.new(config_template).results(config.binding)
+      ERB.new(config_template).result(config.binding)
     end
 
     def config_template
