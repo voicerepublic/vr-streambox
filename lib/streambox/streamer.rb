@@ -21,7 +21,7 @@ module Streambox
     end
 
     def config_template
-      File.read(File.expand_path(File.join(%w(.. .. darkice.cfg.erb)), __FILE__))
+      File.read(File.expand_path(File.join(%w(.. .. .. darkice.cfg.erb)), __FILE__))
     end
 
     def stream_cmd
