@@ -15,6 +15,16 @@ module Streambox
 
   class Daemon
 
+    CLAIMS = [
+      'A stream you stream alone is only a stream. A stream you stream together is reality. - John Lennon',
+      "I stream. Sometimes I think that's the only right thing to do. - Haruki Murakami",
+      'I stream my painting and I paint my stream. - Vincent van Gogh',
+      "We are the music makers, and we are the streamers of streams. - Arthur O'Shaughnessy",
+      'The future belongs to those who believe in the beauty of their streams. - Eleanor Roosevelt',
+      'Hope is a waking stream. - Aristotle',
+      'All that we see or seem is but a stream within a stream. - Edgar Allen Poe'
+    ]
+
     #ENDPOINT = 'https://voicerepublic.com/api/devices'
     ENDPOINT = 'http://192.168.178.21:3000/api/devices'
     #ENDPOINT = 'http://192.168.0.19:3000/api/devices'
@@ -25,11 +35,16 @@ module Streambox
       Thread.abort_on_exception = true
       @config = OpenStruct.new endpoint: ENDPOINT, loglevel: Logger::INFO
       @reporter = Reporter.new
+      banner
+    end
+
+    def identifier
+      @reporter.serial
     end
 
     def payload
       {
-        identifier: @reporter.serial,
+        identifier: identifier,
         type: 'Streambox',
         subtype: @reporter.subtype
       }
@@ -41,11 +56,13 @@ module Streambox
         @config.send("#{key}=", value)
       end
       logger.level = @config.loglevel
+      # TODO set system timezone and update clock
     end
 
     def knock
       logger.info "Knocking..."
-      response = faraday.get(@config.endpoint + '/' + @reporter.serial)
+      url = @config.endpoint + '/' + identifier
+      response = faraday.get(url)
       apply_config(JSON.parse(response.body))
     end
 
@@ -62,9 +79,12 @@ module Streambox
         loop do
           sleep @config.heartbeat_interval
           if client.nil?
-            logger.debug "Skip heartbeat. Client not ready."
+            logger.warn "Skip heartbeat. Client not ready."
           else
-            publish event: 'heartbeat'
+            client.publish '/heartbeat', {
+                             identifier: identifier,
+                             interval: @config.heartbeat_interval
+                           }
           end
         end
       end
@@ -76,11 +96,13 @@ module Streambox
         loop do
           sleep @config.report_interval
           if client.nil?
-            logger.debug "Skip report. Client not ready."
+            logger.warn "Skip report. Client not ready."
           else
-            payload = @reporter.report
-            logger.debug "Report: #{payload.inspect}"
-            publish event: 'report', report: payload
+            client.publish '/report', {
+                             identifier: identifier,
+                             interval: @config.report_interval,
+                             report: @reporter.report
+                           }
           end
         end
       end
@@ -101,51 +123,87 @@ module Streambox
         client.add_extension(ext)
 
         logger.debug "Subscribing to channel '#{channel}'..."
-        client.subscribe(channel) { |message| process(message) }
+        client.subscribe(channel) { |message| dispatch(message) }
 
+        publish event: 'print', print: 'Device ready.'
       }
       logger.warn "Exiting."
     end
 
-    def process(message)
-      case message['event']
-      # { event: 'start_streaming',
-      #   icecast: { ... } }
-      when 'start_stream'
-        icecast = OpenStruct.new(message['icecast'])
-        logger.info "Streaming with #{icecast.inspect}"
-        @streamer = Streamer.new(icecast)
-        @streamer.start_streaming!
-      # { event: 'stop_streaming' }
-      when 'stop_stream'
-        logger.info "Stopped streaming."
-        @streamer.stop_streaming!
-      # { event: 'eval', eval: '41+1' }
-      when 'eval'
-        code = message['eval']
-        logger.debug "Eval: #{code}"
-        publish event: 'print', print: eval(code)
-      when 'exit'
-        logger.info "Exiting..."
-        exit
-      when 'shutdown'
-        logger.info "Initiating shutdown..."
-        %x[ sudo shutdown -h now ]
-      when 'reboot'
-        logger.info "Rebooting..."
-        %x[ sudo reboot ]
-      else
-        logger.warn "Unknown event: #{message.inspect}"
-        publish event: 'unknown-event', message: message
-      end
+    # TODO maybe rewrite handle_ methods to not use arguments
+    def dispatch(message={})
+      method = "handle_#{message['event']}"
+      return send(method, message) if respond_to?(method)
+      publish event: 'error', error: "Unknown message: #{message.inspect}"
+    end
+
+    # { event: 'start_streaming', icecast: { ... } }
+    def handle_start_stream(message={})
+      icecast = OpenStruct.new(message['icecast'])
+      @streamer = Streamer.new(icecast)
+      @streamer.start_streaming!
+      logger.info "Streaming with #{icecast.inspect}"
+    end
+
+    # { event: 'stop_streaming' }
+    def handle_stop_stream(message={})
+      @streamer.stop_streaming!
+      logger.info "Stopped streaming."
+    end
+
+    # { event: 'eval', eval: '41+1' }
+    def handle_eval(message={})
+      code = message['eval']
+      logger.debug "Eval: #{code}"
+      output = eval(code)
+    rescue => e
+      output = 'Error: ' + e.message
+    ensure
+      publish event: 'print', print: output.inspect
+    end
+
+    # TODO exit, shutdown, and reboot should stop streaming first
+    def handle_exit(message={})
+      logger.info "Exiting..."
+      exit
+    end
+
+    def handle_shutdown(message={})
+      logger.info "Shutting down..."
+      %x[ sudo shutdown -h now ]
+    end
+
+    def handle_reboot(message={})
+      logger.info "Rebooting..."
+      %x[ sudo reboot ]
+    end
+
+    def handle_print(message={})
+      logger.debug "Print: #{message['print']}"
+    end
+
+    def handle_heartbeat(message={})
+      # ignore
+    end
+
+    def handle_report(message={})
+      logger.debug "Report: #{message.inspect}"
+    end
+
+    def handle_error(message={})
+      logger.warn message.error
+    end
+
+    def handle_handshake(message={})
+      publish event: 'print', print: 'Connection established.'
     end
 
     def channel
-      "/device/#{@reporter.serial}"
+      "/device/#{identifier}"
     end
 
     def publish(msg={})
-      client.publish('/devices', msg.merge(identifier: @reporter.serial))
+      client.publish(channel, msg)
     end
 
     def logger
@@ -162,6 +220,14 @@ module Streambox
         f.request :url_encoded
         f.adapter Faraday.default_adapter
       end
+    end
+
+    def banner
+      system('figlet -t "%s"' % claim)
+    end
+
+    def claim
+      CLAIMS[rand(CLAIMS.size)]
     end
 
   end
