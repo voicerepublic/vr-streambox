@@ -24,6 +24,16 @@ do
     cp $DIR/id_rsa* /root/.ssh
     chmod 600 /root/.ssh/id_rsa*
 
+
+    echo "Checking network connectiviy..."
+    ping -c 1 voicerepublic.com
+    while  [ $? -ne 0 ]
+    do
+        sleep 2
+        ping -c 1 voicerepublic.com
+    done
+
+
     echo "Updating..."
     (cd $DIR && git pull origin master)
 

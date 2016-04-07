@@ -4,15 +4,6 @@
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# maybe move into launcher
-echo "Waiting for network connectiviy..."
-ping -c 1 voicerepublic.com
-while  [ $? -ne 0 ]
-do
-    sleep 2
-    ping -c 1 voicerepublic.com
-done
-
 
 echo "Syncing clock..."
 sudo ntpd -q -g
