@@ -145,13 +145,13 @@ module Streambox
     # { event: 'start_streaming', icecast: { ... } }
     def handle_start_stream(message={})
       @streamer = Streamer.new(message['icecast'])
-      @streamer.start_streaming!
+      @streamer.start!
       logger.info "Streaming with #{message.inspect}"
     end
 
     # { event: 'stop_streaming' }
     def handle_stop_stream(message={})
-      @streamer.stop_streaming!
+      @streamer.stop!
       logger.info "Stopped streaming."
     end
 

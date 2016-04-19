@@ -1,18 +1,22 @@
 require 'erb'
 require 'ostruct'
 
-# TODO could use `pgrep darkice` to get pid of running process
 module Streambox
   class Streamer < Struct.new(:config)
 
-    def start_streaming!
+    def start!
       write_config!
       @pid = Process.spawn(stream_cmd)
     end
 
-    def stop_streaming!
+    def stop!
       Process.kill 'HUP', @pid
       Process.wait
+    end
+
+    def restart!
+      stop!
+      start!
     end
 
     private
