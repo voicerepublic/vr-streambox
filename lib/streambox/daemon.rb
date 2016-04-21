@@ -26,9 +26,7 @@ module Streambox
       'All that we see or seem is but a stream within a stream. - Edgar Allen Poe'
     ]
 
-    #ENDPOINT = 'https://voicerepublic.com/api/devices'
-    ENDPOINT = 'http://192.168.178.21:3000/api/devices'
-    #ENDPOINT = 'http://192.168.0.19:3000/api/devices'
+    ENDPOINT = 'https://voicerepublic.com/api/devices'
 
     attr_accessor :client
 
