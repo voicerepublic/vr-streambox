@@ -1,6 +1,7 @@
 require 'logger'
 require 'json'
 require 'ostruct'
+require 'uri'
 
 require 'faraday'
 require 'eventmachine'
@@ -69,6 +70,8 @@ module Streambox
 
     def register
       logger.info "Registering..."
+      uri = URI.parse(@config.endpoint)
+      faraday.basic_auth(uri.user, uri.password)
       response = faraday.post(@config.endpoint, device: payload)
       if response.status != 200
         logger.warn "Registration failed.\n" + response.body
