@@ -46,7 +46,7 @@ module Streambox
 
     def usb_devices
       return [] if subtype == 'dev'
-      current = %x[ lsusb ].split("\n").sort
+      current = %x[ lsusb ].split("\n").map { |e| e.strip }.sort
       current - known_usb_devices
     end
 
