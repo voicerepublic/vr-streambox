@@ -10,7 +10,7 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Installing dependencies..."
 sudo apt-get update
-sudo apt-get -y install ruby ruby-dev darkice figlet
+sudo apt-get -y install ruby ruby-dev darkice figlet libssl-dev
 sudo gem install bundler --force --no-ri --no-rdoc
 
 echo "Running bundler (installing more dependencies)..."
