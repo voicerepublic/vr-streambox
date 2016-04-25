@@ -61,6 +61,7 @@ module Streambox
     def knock
       logger.info "Knocking..."
       url = @config.endpoint + '/' + identifier
+      logger.debug url
       response = faraday.get(url)
       apply_config(JSON.parse(response.body))
     end
@@ -69,7 +70,9 @@ module Streambox
       logger.info "Registering..."
       response = faraday.post(@config.endpoint, device: payload)
       if response.status != 200
-        logger.warn "Registration failed, server reported conflict. Exiting..."
+        logger.warn "Registration failed."
+        logger.warn response.body
+        logger.warn "Exiting..."
         exit
       end
       apply_config(JSON.parse(response.body))
