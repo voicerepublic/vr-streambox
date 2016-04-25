@@ -13,5 +13,7 @@ sudo apt-get update
 sudo apt-get -y install ruby ruby-dev darkice figlet libssl-dev
 sudo gem install bundler --force --no-ri --no-rdoc
 
+sudo gem uninstall -I eventmachine
+
 echo "Running bundler (installing more dependencies)..."
 (cd $DIR && bundle install)
