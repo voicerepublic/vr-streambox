@@ -61,6 +61,7 @@ module Streambox
     def knock
       logger.info "Knocking..."
       url = @config.endpoint + '/' + identifier
+      p url
       logger.debug url
       response = faraday.get(url)
       apply_config(JSON.parse(response.body))
