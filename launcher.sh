@@ -28,7 +28,7 @@ do
     chmod 600 /root/.ssh/id_rsa*
 
 
-    message 'Checking network connectiviy...'
+    message 'Checking network connectivity...'
     ping -c 1 voicerepublic.com
     while  [ $? -ne 0 ]
     do
