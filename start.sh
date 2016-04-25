@@ -4,19 +4,21 @@
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
+. ./util.sh
 
-echo "Syncing clock..."
+
+message 'Syncing clock...'
 sudo ntpd -q -g
 
 
-echo "Checking setup..."
+message 'Checking setup...'
 diff -N $DIR/setup.sh $DIR/setup.sh.old
 if [ $? -ne 0 ]; then
-  echo "Setting up..."
+  message 'Setting up...'
   $DIR/setup.sh
   cp $DIR/setup.sh $DIR/setup.sh.old
 fi
 
 
-echo "Starting..."
+message 'Starting...'
 (cd $DIR && ./bin/streambox)

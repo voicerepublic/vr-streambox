@@ -15,21 +15,20 @@
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
+. ./util.sh
 
-COLOR='\033[0;34m'
-NC='\033[0m' # No Color
+message "Initial launch..."
 
-echo "${COLOR}Initial launch...${NC}"
 
 while :
 do
-    echo "${COLOR}Provisioning keys...${NC}"
+    message 'Provisioning keys...'
     mkdir -p /root/.ssh
     cp $DIR/id_rsa* /root/.ssh
     chmod 600 /root/.ssh/id_rsa*
 
 
-    echo "${COLOR}Checking network connectiviy...${NC}"
+    message 'Checking network connectiviy...'
     ping -c 1 voicerepublic.com
     while  [ $? -ne 0 ]
     do
@@ -38,13 +37,13 @@ do
     done
 
 
-    echo "${COLOR}Updating...${NC}"
+    message 'Updating...'
     (cd $DIR && git pull origin master)
 
 
     (cd $DIR && ./start.sh)
 
 
-    echo "${COLOR}Exited. Restarting in 5.${NC}"
+    message 'Exited. Restarting in 5.'
 	  sleep 5
 done
