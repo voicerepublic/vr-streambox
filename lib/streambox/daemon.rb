@@ -51,18 +51,18 @@ module Streambox
 
     def apply_config(data)
       data.each do |key, value|
-        logger.debug '-> %-20s %-20s' % [key, value]
         @config.send("#{key}=", value)
       end
       logger.level = @config.loglevel
+      data.each do |key, value|
+        logger.debug '-> %-20s %-20s' % [key, value]
+      end
       # TODO set system timezone and update clock
     end
 
     def knock
       logger.info "Knocking..."
       url = @config.endpoint + '/' + identifier
-      p url
-      logger.debug url
       response = faraday.get(url)
       apply_config(JSON.parse(response.body))
     end
@@ -71,8 +71,7 @@ module Streambox
       logger.info "Registering..."
       response = faraday.post(@config.endpoint, device: payload)
       if response.status != 200
-        logger.warn "Registration failed."
-        logger.warn response.body
+        logger.warn "Registration failed.\n" + response.body
         logger.warn "Exiting..."
         exit
       end
