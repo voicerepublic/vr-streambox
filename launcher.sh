@@ -15,7 +15,7 @@
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
-. ./util.sh
+. $DIR/util.sh
 
 message "Initial launch..."
 
