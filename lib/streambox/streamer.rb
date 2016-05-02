@@ -19,6 +19,10 @@ module Streambox
       start!
     end
 
+    def force_stop!
+      %x[ killall darkice ]
+    end
+
     private
 
     def write_config!

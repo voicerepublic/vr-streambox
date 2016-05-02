@@ -11,21 +11,12 @@ require 'faye/authentication'
 require "streambox/version"
 require "streambox/reporter"
 require "streambox/streamer"
+require "streambox/banner"
 
 # TODO introduce a proper state machine
 module Streambox
 
   class Daemon
-
-    CLAIMS = [
-      'A stream you stream alone is only a stream. A stream you stream together is reality. - John Lennon',
-      "I stream. Sometimes I think that's the only right thing to do. - Haruki Murakami",
-      'I stream my painting and I paint my stream. - Vincent van Gogh',
-      "We are the music makers, and we are the streamers of streams. - Arthur O'Shaughnessy",
-      'The future belongs to those who believe in the beauty of their streams. - Eleanor Roosevelt',
-      'Hope is a waking stream. - Aristotle',
-      'All that we see or seem is but a stream within a stream. - Edgar Allen Poe'
-    ]
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
 
@@ -35,7 +26,7 @@ module Streambox
       Thread.abort_on_exception = true
       @config = OpenStruct.new endpoint: ENDPOINT, loglevel: Logger::INFO
       @reporter = Reporter.new
-      banner
+      Banner.new
     end
 
     def identifier
@@ -125,9 +116,7 @@ module Streambox
 
       logger.info "Entering event machine loop..."
       EM.run {
-        logger.debug "Faye URL: #{@config.faye_url}"
         self.client = Faye::Client.new(@config.faye_url)
-        logger.debug "Faye Secret: #{@config.faye_secret}"
         ext = Faye::Authentication::ClientExtension.new(@config.faye_secret)
         client.add_extension(ext)
 
@@ -157,6 +146,12 @@ module Streambox
     def handle_stop_stream(message={})
       @streamer.stop!
       logger.info "Stopped streaming."
+    end
+
+    # { event: 'restart_streaming' }
+    def handle_restart_stream(message={})
+      @streamer.restart!
+      logger.info "Restarted streaming."
     end
 
     # { event: 'eval', eval: '41+1' }
@@ -228,14 +223,6 @@ module Streambox
         f.request :url_encoded
         f.adapter Faraday.default_adapter
       end
-    end
-
-    def banner
-      system('figlet -t "%s"' % claim)
-    end
-
-    def claim
-      CLAIMS[rand(CLAIMS.size)]
     end
 
   end
