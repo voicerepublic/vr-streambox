@@ -26,6 +26,7 @@ module Streambox
       Thread.abort_on_exception = true
       @config = OpenStruct.new endpoint: ENDPOINT, loglevel: Logger::INFO
       @reporter = Reporter.new
+      @streamer = Streamer.new
       Banner.new
     end
 
@@ -137,8 +138,7 @@ module Streambox
 
     # { event: 'start_streaming', icecast: { ... } }
     def handle_start_stream(message={})
-      @streamer = Streamer.new(message['icecast'])
-      @streamer.start!
+      @streamer.start!(message['icecast'])
       logger.info "Streaming with #{message.inspect}"
     end
 

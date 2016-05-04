@@ -2,23 +2,36 @@ require 'erb'
 require 'ostruct'
 
 module Streambox
-  class Streamer < Struct.new(:config)
+  class Streamer
 
-    def start!
+    attr_accessor :config
+
+    def initialize
+      @pid = %x[pgrep darkice].to_i
+      @pid = nil if !!@pid
+    end
+
+    def start!(config=nil)
+      self.config = config if config
       write_config!
+      stop!
       @pid = Process.spawn(stream_cmd)
     end
 
     def stop!
+      return unless @pid
       Process.kill 'HUP', @pid
       Process.wait
+      @pid = nil
     end
 
+    # obsolete?
     def restart!
       stop!
       start!
     end
 
+    # required?
     def force_stop!
       %x[ killall darkice ]
     end
