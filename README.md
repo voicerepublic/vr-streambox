@@ -2,6 +2,159 @@
 
 The VR Audio Proxy in a box.
 
+## The Big Picture
+
+The Streambox interacts with VR Site in 2 phases.
+
+### Phase 1: Knocking & Registering (via HTTPS/REST)
+
+Default Endpoint: `https://voicerepublic.com/api/devices`
+
+#### Knocking Request
+
+**GET /:identifier**
+
+* The request is always performed against the LIVE system, even if the
+  box will be used for staging or a dev system.
+* `:identifier` is a unique string (the streambox uses the cpu serial)
+
+#### Knocking Response (Example)
+
+```
+{
+  loglevel: 1
+  endpoint: "https://voicerepublic.com/api/devices"
+}
+```
+* all subsequent request must be performed against the endpoint given
+  as endpoint
+* the endpoint might container basic auth credentials
+* loglevels are the commonly used loglevels
+
+#### Registering Request
+
+**POST /**
+
+with payload (example)
+
+```
+{
+  identifier: "00000000000000000768172641827",
+  type:       "Streambox",
+  subtype:    "v4"
+}
+```
+
+* `identifier` is the unique string used during knocking
+* `type` is a string naming the client
+* `subtype` is a string (could or example be a build number)
+
+#### Registering Response (Example)
+
+```
+{
+  name: "Nietsche",
+  state: "idle",
+  public_ip_address: "1.2.3.4",
+  report_interval: 30,
+  heartbeat_interval: 5,
+  faye_url: "https://voicerepublic.com:9292/faye",
+  faye_secret: "12345678987654321",
+  pairing_token: "1234"
+}
+```
+
+* `name` is the name of the device as given by the user, should be displayed
+* `state` is the state of the device, states is either `pairing` or `idle`
+* `public_ip_address` the visible public ip (gateway) of the device
+* `report_interval` number of seconds between reports
+* `heartbeat_interval` number of seconds between heartbeats
+* `faye_url` the url to the faye server
+* `faye_secret` the faye secret
+* `pairing_token` a token to identify the device during pairing (coming soon)
+
+NOTE: Faye setup is subject to change, for security reasons.
+
+### Phase 2: Start & Stop Stream (via Faye)
+
+#### Subscription
+
+Using the faye details acquired upon registering, the device has to
+subscribe to the following channel:
+
+    /device/:identifier
+
+Most messages follow the following pattern (but some don't):
+
+* the key `event` describes the typo of message
+* the key named after the value of `event` holds further details
+* events (as used in the streambox)
+  * `start_stream` - starts the stream, details in key `icecast`
+  * `stop_stream` - stops the stream
+  * `restart_stream` - stops and starts with previous parameters
+  * `eval` - evals the code provided in `eval`
+  * `exit` - exits the ruby process (will be restarted)
+  * `shutdown` - shuts the box down
+  * `reboot` - reboots the box
+  * `print` - print (only in loglevel debug)
+  * `heartbeat` (deprecated)
+  * `report` (deprecated)
+  * `error` - ?
+  * `handshake` - ?
+
+`start_stream` `icecast` example:
+
+```
+{
+  event: "start_stream",
+  icecast: {
+    public_ip_address: "1.2.3.4",
+    source_password: "kahsdkjs",
+    mount_point: "1732673-1298736821-19283792-1263",
+    port: 80
+  }
+}
+```
+
+#### Publish Heartbeat (required)
+
+The box publishes a heartbeat to channel
+
+    /heartbeat
+
+with payload (example)
+
+```
+{
+  identifier: "00000000000087434573245",
+  interval: 5
+}
+```
+
+with pauses of n seconds in between heartbeats, where n is given by
+`heartbeat_interval` during registering.
+
+#### Publish Report (optional)
+
+The box publishes reports to channel
+
+    /report
+
+with payload (example)
+
+```
+{
+  identifier: "000000000082734873468732",
+  interval: 30,
+  report: {
+    <report details>
+  }
+}
+```
+
+* report details for depend on the device, but the output of a box can
+  comfortable be observed in the back office.
+
 
 ## Dependencies
 
