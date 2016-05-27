@@ -22,14 +22,14 @@ Default Endpoint: `https://voicerepublic.com/api/devices`
 
 ```
 {
-  loglevel: 1
+  loglevel: 1,
   endpoint: "https://voicerepublic.com/api/devices"
 }
 ```
 * all subsequent request must be performed against the endpoint given
   as endpoint
 * the endpoint might container basic auth credentials
-* loglevels are the commonly used loglevels
+* loglevels are the commonly used loglevels (0-5)
 
 #### Registering Request
 
@@ -53,7 +53,7 @@ with payload (example)
 
 ```
 {
-  name: "Nietsche",
+  name: "Nietzsche",
   state: "idle",
   public_ip_address: "1.2.3.4",
   report_interval: 30,
@@ -152,8 +152,17 @@ with payload (example)
 }
 ```
 
+with pauses of n seconds, where n is given by `report_interval` during registering.
+
 * report details for depend on the device, but the output of a box can
   comfortable be observed in the back office.
+* should/could include:
+  * load
+  * temperature
+  * usb devices
+  * audio sources
+  * bandwidth
+  * ... (more ideas in the icebox of pivotal tracker)
 
 
 ## Dependencies
