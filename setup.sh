@@ -13,7 +13,7 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 message 'Installing base dependencies...'
 sudo apt-get update
-sudo apt-get -y install ruby ruby-dev darkice figlet libssl-dev
+sudo apt-get -y install ruby ruby-dev mplayer figlet libssl-dev
 sudo gem install bundler --force --no-ri --no-rdoc
 
 
