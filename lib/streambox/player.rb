@@ -2,11 +2,11 @@ module Streambox
   class Player < Struct.new(:url)
 
     def play!
-      @pid = spawn("mplayer #{url}")
+      @pid = spawn("mplayer -cache 100 #{url} ")
     end
 
     def stop!
-      Process.kill(@pid)
+      Process.kill('INT', @pid)
     end
 
   end

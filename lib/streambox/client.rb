@@ -50,6 +50,7 @@ module Streambox
       case event = message['event']
       when 'connected'
         config.logger.info "Subscribing to audio stream of #{message['name']}"
+        config.logger.debug message['stream_url']
         player = Player.new(message['stream_url'])
         player.play!
         players[message['slug']] = player
