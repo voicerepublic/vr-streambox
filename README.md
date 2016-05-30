@@ -217,7 +217,7 @@ ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 ```
 
 
-### Step 3: Adjust boot params
+### Step 3: Adjust boot params & "bios"
 
 To
 
@@ -226,6 +226,14 @@ To
 add
 
     quiet consoleblank=0
+
+In
+
+    /boot/config.txt
+
+uncomment the line
+
+    hdmi_force_hotplug=1
 
 
 ### Step 4: Type & Subtype
@@ -308,3 +316,7 @@ Check both keys (public and private) into this repo.
 * for production boxes make commands in scripts silent
 * set the timezone of organization/venue
   * https://www.raspberrypi.org/forums/viewtopic.php?t=4977&f=5
+
+## References
+
+* https://www.raspberrypi.org/documentation/configuration/config-txt.md
