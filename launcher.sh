@@ -48,7 +48,7 @@ do
 
 
     message 'Updating...'
-    (cd $DIR && git pull origin master)
+    (cd $DIR && git pull --no-edit)
 
 
     (cd $DIR && ./start.sh)
