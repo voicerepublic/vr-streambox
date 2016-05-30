@@ -49,14 +49,16 @@ module Streambox
     def dispatch(message)
       case event = message['event']
       when 'connected'
-        logger.info "Subscribing to audio stream of #{message['name']}"
+        config.logger.info "Subscribing to audio stream of #{message['name']}"
         player = Player.new(message['stream_url'])
         player.play!
         players[message['slug']] = player
       when 'disconnected'
         slug = message['slug']
-        players[slug].stop!
-        players.delete(slug)
+        if players[slug]
+          players[slug].stop!
+          players.delete(slug)
+        end
       else
         config.logger.warn "Unknown event: #{event}"
       end
