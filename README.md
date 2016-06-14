@@ -169,22 +169,27 @@ with pauses of n seconds, where n is given by `report_interval` during registeri
 
 All instructions are based on `raspbian jessie lite`.
 
+*By default, raspbian will automatically resize the partitions on startup. Since we want to create an image with as little overhead as possible, this should be deactivated! See the next section for instructions how to do this.*
+
 * Download zip from https://www.raspberrypi.org/downloads/raspbian/
 * unzip
 * dd resulting img to sdcard
 
 E.g.
-on Linux:
 
     dd bs=4M if=2016-03-18-raspbian-jessie.img of=/dev/mmcblk0
-    
-on OSX:
-    
-    sudo dd if=2016-05-27-raspbian-jessie-lite.img of=/dev/rdisk2 bs=4m
 
 This will take a while. (It takes almost 5 minutes on my machine.) You
 can use `time` to find out how long exactly. Or append `&& aplay
 <some-wav>` to get an alert when done.
+
+###  Stop Automatic Resizing on Startup
+Do this before writing the image to the sd card!
+
+* mount image
+* open file `cmdline.txt`
+* remove the part `init=/usr/lib/raspi-config/init_resize.sh`
+* save and unmount the image
 
 
 ## Intial Setup on a clean raspbian image
