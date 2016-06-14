@@ -47,7 +47,7 @@ with payload (example)
 
 * `identifier` is the unique string used during knocking
 * `type` is a string naming the client
-* `subtype` is a string (could or example be a build number)
+* `subtype` is a string (could for example be a build number)
 
 #### Registering Response (Example)
 
@@ -86,7 +86,7 @@ subscribe to the following channel:
 
 Most messages follow the following pattern (but some don't):
 
-* the key `event` describes the typo of message
+* the key `event` describes the type of message
 * the key named after the value of `event` holds further details
 * events (as used in the streambox)
   * `start_stream` - starts the stream, details in key `icecast`
@@ -154,8 +154,8 @@ with payload (example)
 
 with pauses of n seconds, where n is given by `report_interval` during registering.
 
-* report details for depend on the device, but the output of a box can
-  comfortable be observed in the back office.
+* report details depend on the device, but the output of a box can
+  comfortably be observed in the back office.
 * should/could include:
   * load
   * temperature
@@ -185,7 +185,7 @@ can use `time` to find out how long exactly. Or append `&& aplay
 ## Intial Setup on a clean raspbian image
 
 Find the PI in you local network. Connect a display the pi will print
-it's ip address during boot. Otherwise `nmap` or `nc` are helpfull to
+it's ip address during boot. Otherwise `nmap` or `nc` are helpful to
 poke around.
 
 Ssh into the pi with forward agent `-A`.
@@ -230,7 +230,7 @@ add
 
 ### Step 4: Type & Subtype
 
-The type of the box is allways 'Streambox'.
+The type of the box is always 'Streambox'.
 
 The subtype is stored in `/home/pi/subtype`.
 
