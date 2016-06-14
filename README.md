@@ -176,8 +176,12 @@ All instructions are based on `raspbian jessie lite`.
 * dd resulting img to sdcard
 
 E.g.
-
-    dd bs=4M if=2016-03-18-raspbian-jessie.img of=/dev/mmcblk0
+* on Linux:
+  * `dd bs=4M if=2016-03-18-raspbian-jessie.img of=/dev/mmcblk0`
+* on OSX:
+  * `dd bs=4m if=2016-03-18-raspbian-jessie.img of=/dev/rdisk2`
+  * please note that you should use rdisk and not disk to address the device, this improves read/write performance considerably
+  * also, note that the `m` in `bs=4m` needs to be lowercase in OSX
 
 This will take a while. (It takes almost 5 minutes on my machine.) You
 can use `time` to find out how long exactly. Or append `&& aplay
@@ -205,7 +209,9 @@ Username `pi`, password `raspberry`.
 
 ### Step 1: Become root
 
-    sudo -i
+    sudo -i SSH_AUTH_SOCK="$SSH_AUTH_SOCK"
+
+*We need to set `SSH_AUTH_SOCK` so that our forwarded ssh agent is available in the new environment created by sudo.*
 
 
 ### Step 2: Main Setup
@@ -213,17 +219,20 @@ Username `pi`, password `raspberry`.
 ```
 apt-get update
 apt-get -y install git
-( cd /home/pi &&
-  git clone git@gitlab.com:voicerepublic/streambox.git )
+
+# add ssh directory for root and add gitlabs ssh keys to known_hosts
+# this way we avoid manual confirmation of gitlab as unknown host
+mkdir -p /root/.ssh
+ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+ssh-keyscan gitlab.com >> /home/pi/.ssh/known_hosts
+
+git clone git@gitlab.com:voicerepublic/streambox.git /home/pi/streambox
 
 mkdir -p /etc/systemd/system/default.target.wants
 ln -s /home/pi/streambox/streambox.service \
       /etc/systemd/system/default.target.wants
 mv /etc/systemd/system/getty.target.wants/getty@tty1.service \
    /etc/systemd/system/getty.target.wants/getty@tty2.service
-
-mkdir -p /root/.ssh
-ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 ```
 
 
@@ -235,7 +244,7 @@ To
 
 add
 
-    quiet consoleblank=0
+    consoleblank=0
 
 
 ### Step 4: Type & Subtype
@@ -245,15 +254,18 @@ The type of the box is allways 'Streambox'.
 The subtype is stored in `/home/pi/subtype`.
 
 If you make a change to the box setup, which is not covered by the git
-repo, please update the subtype file.
+repo, please update the subtype file and the corresponding list of known usb devices.
 
     echo -n "v0.3prototype" > /home/pi/subtype
+    sudo bash -c "lsusb > /home/pi/streambox/lsusb/$(cat /home/pi/subtype)"
+
+
 
 
 ### Step 5: raspi-config
 
 * use `sudo raspi-config` to
-  * expand file system
+  * expand file system (only if this installation will not be used as an image)
   * change the user password to `aeg9ethoh0thioji`
   * set timezone to berlin (for now)
 
@@ -296,10 +308,16 @@ Send commands to box from rails console, e.g.
 
     dd bs=4M if=/dev/mmcblk0 of=streambox_v0-3prototype.img
 
+For OSX specific command, see [Dependencies](#dependencies).
+
+Ideally, after creating the image, mount it and add `init=/usr/lib/raspi-config/init_resize.sh` to the end of `/boot/cmdline.txt` to reenable automatic expansion of the filesystem on boot. This ensures that the image will always have at its disposal the full size of the medium it runs on.
+
 
 ### Write that image to a new card
 
     dd bs=4M of=/dev/mmcblk0 if=streambox_v0-3prototype.img
+
+For OSX specific command, see [Dependencies](#dependencies).
 
 
 ## Once and only once, I had to do this...
