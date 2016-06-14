@@ -180,7 +180,7 @@ on Linux:
     
 on OSX:
     
-    dd if=2016-05-27-raspbian-jessie-lite.img of=/dev/rdisk2 bs=4m
+    sudo dd if=2016-05-27-raspbian-jessie-lite.img of=/dev/rdisk2 bs=4m
 
 This will take a while. (It takes almost 5 minutes on my machine.) You
 can use `time` to find out how long exactly. Or append `&& aplay
