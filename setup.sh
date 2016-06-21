@@ -10,6 +10,17 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 . ./util.sh
 
+message "Checking if Filesystem needs expanding..."
+
+if get_can_expand; then
+  message "Expanding Filesystem..."
+  raspi-config --expand-rootfs
+  message "Rebooting"
+  sudo reboot
+else
+  message "Filesystem already expanded or not expandable, carrying on..."
+fi
+
 
 message 'Installing base dependencies...'
 sudo apt-get update

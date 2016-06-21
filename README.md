@@ -192,7 +192,7 @@ Do this before writing the image to the sd card!
 
 * mount image
 * open file `cmdline.txt`
-* remove the part `init=/usr/lib/raspi-config/init_resize.sh`
+* remove the part `quiet init=/usr/lib/raspi-config/init_resize.sh`
 * save and unmount the image
 
 
@@ -310,7 +310,7 @@ Send commands to box from rails console, e.g.
 
 For OSX specific command, see [Dependencies](#dependencies).
 
-Ideally, after creating the image, mount it and add `init=/usr/lib/raspi-config/init_resize.sh` to the end of `/boot/cmdline.txt` to reenable automatic expansion of the filesystem on boot. This ensures that the image will always have at its disposal the full size of the medium it runs on.
+Ideally, after creating the image, mount it and add `quiet init=/usr/lib/raspi-config/init_resize.sh` to the end of `/boot/cmdline.txt` to reenable automatic expansion of the filesystem on boot. This ensures that the image will always have at its disposal the full size of the medium it runs on. Please note that the script `init_resize.sh` specifically looks for `/quiet init=.*$/`, so there must be no other options between `quiet` and `init` and the whole string needs to be the last entry in the file.
 
 
 ### Write that image to a new card
