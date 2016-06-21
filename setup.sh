@@ -16,7 +16,7 @@ if get_can_expand; then
   message "Expanding Filesystem..."
   sudo raspi-config --expand-rootfs
   message "Reboot? (y/n)"
-  read $REBOOT
+  read REBOOT
   case $REBOOT in
     y)
       sudo reboot
