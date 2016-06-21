@@ -15,9 +15,15 @@ message "Checking if Filesystem needs expanding..."
 if get_can_expand; then
   message "Expanding Filesystem..."
   sudo raspi-config --expand-rootfs
-  message "Rebooting in 10 seconds"
-  sleep 10
-  sudo reboot
+  message "Reboot? (y/n)"
+  read $REBOOT
+  case $REBOOT in
+    y)
+      sudo reboot
+      ;;
+    *)
+      ;;
+  esac
 else
   message "Filesystem already expanded or not expandable, carrying on..."
 fi
