@@ -12,20 +12,16 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 message "Checking if Filesystem needs expanding..."
 
-if get_can_expand; then
+SIZE=$(df --output=size,target | grep /$ | sed -e /Size/d | sed 's: /$::g')
+
+if (( $SIZE < 2000000)); then
   message "Expanding Filesystem..."
   sudo raspi-config --expand-rootfs
-  message "Reboot? (y/n)"
-  read REBOOT
-  case $REBOOT in
-    y)
-      sudo reboot
-      ;;
-    *)
-      ;;
-  esac
+  message "Rebooting in 10 seconds..."
+  sleep 10
+  sudo reboot
 else
-  message "Filesystem already expanded or not expandable, carrying on..."
+  message "Filesystem already expanded, continuing."
 fi
 
 
