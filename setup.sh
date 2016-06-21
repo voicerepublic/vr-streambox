@@ -14,7 +14,7 @@ message "Checking if Filesystem needs expanding..."
 
 SIZE=$(df --output=size,target | grep /$ | sed -e /Size/d | sed 's: /$::g')
 
-if (( $SIZE < 2000000)); then
+if [ "$SIZE" -lt "2000000" ]; then
   message "Expanding Filesystem..."
   sudo raspi-config --expand-rootfs
   message "Rebooting in 10 seconds..."
