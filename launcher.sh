@@ -48,7 +48,7 @@ do
 
 
     message 'Updating...'
-    (cd $DIR && git pull --no-edit)
+    (branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && cd $DIR && git fetch origin $branch && git reset --hard origin/branch)
 
 
     (cd $DIR && ./start.sh)
