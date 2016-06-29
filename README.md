@@ -169,7 +169,7 @@ with pauses of n seconds, where n is given by `report_interval` during registeri
 
 All instructions are based on `raspbian jessie lite`.
 
-*By default, raspbian will automatically resize the partitions on startup. Since we want to create an image with as little overhead as possible, this should be deactivated! See the next section for instructions how to do this.*
+*By default, raspbian will automatically resize the partitions on startup. Since we want to create an image with as little overhead as possible, this must be deactivated! See the next section for instructions how to do this.*
 
 * Download zip from https://www.raspberrypi.org/downloads/raspbian/
 * unzip
@@ -182,6 +182,7 @@ E.g.
   * `dd bs=4m if=2016-03-18-raspbian-jessie.img of=/dev/rdisk2`
   * please note that you should use rdisk and not disk to address the device, this improves read/write performance considerably
   * also, note that the `m` in `bs=4m` needs to be lowercase in OSX
+  * even better is installing gnuutils and using gnu's dd which behaves exactly the same as on Linux (except for the device name).
 
 This will take a while. (It takes almost 5 minutes on my machine.) You
 can use `time` to find out how long exactly. Or append `&& aplay
@@ -314,7 +315,9 @@ Send commands to box from rails console, e.g.
 
 ### Create an image
 
-    dd bs=4M if=/dev/mmcblk0 of=streambox_v0-3prototype.img
+    dd if=/dev/mmcblk00 of=2016-06-14_streambox_small.img bs=32M iflag=fullblock count=42 status=progress
+
+This ensures that only 42 * 32 MB are written, which is about 1.4 GB. This is important, because otherwise the image will have the full size of the SD card it is copied from.
 
 For OSX specific command, see [Dependencies](#dependencies).
 

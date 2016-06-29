@@ -10,18 +10,23 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 . ./util.sh
 
-message "Checking if Filesystem needs expanding..."
+if [ -e /boot/auto_expand ]; then
 
-SIZE=$(df --output=size,target | grep /$ | sed -e /Size/d | sed 's: /$::g')
+  message "Checking if Filesystem needs expanding..."
 
-if [ "$SIZE" -lt "2000000" ]; then
-  message "Expanding Filesystem..."
-  sudo raspi-config --expand-rootfs
-  message "Rebooting in 10 seconds..."
-  sleep 10
-  sudo reboot
+  SIZE=$(df --output=size,target | grep /$ | sed -e /Size/d | sed 's: /$::g')
+
+  if [ "$SIZE" -lt "2000000" ]; then
+    message "Expanding Filesystem..."
+    sudo raspi-config --expand-rootfs
+    message "Rebooting in 10 seconds..."
+    sleep 10
+    sudo reboot
+  else
+    message "Filesystem already expanded, continuing."
+  fi
 else
-  message "Filesystem already expanded, continuing."
+  message "/boot/auto_expand not present, will not automatically expand filesystem!"
 fi
 
 
