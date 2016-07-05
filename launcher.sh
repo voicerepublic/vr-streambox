@@ -29,7 +29,7 @@ curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
 echo
 
-./expand.sh
+$DIR/expand.sh
 
 while :
 do
