@@ -25,10 +25,12 @@ if [ ! -e $NEED_AUTO_EXPAND ]; then
       sleep 10
       sudo reboot
     else
-      message "Filesystem already expanded, continuing."
+      message "Filesystem already bigger than 2GB, assuming expansion already took place and continuing."
       touch $NEED_AUTO_EXPAND
     fi
   else
     message "$SHOULD_AUTO_EXPAND not present, will not automatically expand filesystem!"
   fi
+else
+  message "Filesystem already marked as expanded, nothing to do here..."
 fi
