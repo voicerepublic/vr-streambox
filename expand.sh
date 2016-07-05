@@ -6,10 +6,14 @@
 # exists. After that, it will not run
 #
 
-SHOULD_AUTO_EXPAND=/boot/auto_expand
-NEED_AUTO_EXPAND=$HOME/expanded
+DIR="$(cd "$(dirname "$0")" && pwd)"
 
-. ./util.sh
+SHOULD_AUTO_EXPAND=/boot/auto_expand
+NEED_AUTO_EXPAND="$DIR/../expanded"
+
+
+
+. $DIR/util.sh
 
 if [ ! -e $NEED_AUTO_EXPAND ]; then
   if [ -e $SHOULD_AUTO_EXPAND ]; then
