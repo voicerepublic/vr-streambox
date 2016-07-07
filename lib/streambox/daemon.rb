@@ -74,6 +74,23 @@ module Streambox
       logger.info "Registration complete."
     end
 
+    def display_pairing_instructions
+      code = @config.pairing_code
+      puts '*' * 60
+      puts
+      puts '             ***  HOW TO CLAIM THIS DEVICE  ***'
+      puts
+      puts 'Your pairing code is'
+      puts
+      system('figlet -t "  %s"' % code)
+      puts
+      puts 'Go to the following url to claim this device.'
+      puts
+      puts '  https://voicerepublic.com/devices/%s' % code
+      puts
+      puts '*' * 60
+    end
+
     def start_heartbeat
       logger.info "Start heartbeat..."
       Thread.new do
@@ -112,6 +129,7 @@ module Streambox
     def run
       knock
       register
+      display_pairing_instructions if @config.state == 'pairing'
       start_heartbeat
       start_reporting
 
