@@ -5,10 +5,10 @@ bufferSecs    = 5
 reconnect     = yes
 
 [input]
-#device = hw:0,0
-#device = hw:0,1
-device = hw:1,0
-#device = hw:1,1
+#device = plughw:0,0
+#device = plughw:0,1
+device = plughw:1,0
+#device = plughw:1,1
 # device = default
 # device = /dev/snd/pcmC0D0p
 # device = /dev/snd/pcmC0D1p
