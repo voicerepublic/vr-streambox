@@ -15,7 +15,8 @@ module Streambox
 
     def run
       # NOTE with multiple processes matching this will fail
-      @pid = %x[pgrep #{pattern}].chomp.to_i
+      output = %x[pgrep #{pattern}]
+      @pid = output.chomp.to_i
 
       Thread.new do
         loop do
@@ -33,6 +34,7 @@ module Streambox
     end
 
     def exists?
+      return false unless @pid
       path = "/proc/#{@pid}"
       File.directory?(path)
     end
