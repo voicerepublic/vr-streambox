@@ -145,14 +145,16 @@ module Streambox
       Thread.new do
         loop do
           logger.info 'Start syncing...'
+          t0 = Time.now
           bucket, region = @config.storage['bucket'].split('@')
           cmd = "AWS_ACCESS_KEY_ID=#{@config.storage['aws_access_key_id']} " +
                 "AWS_SECRET_ACCESS_KEY=#{@config.storage['aws_secret_access_key']} " +
                 "aws s3 sync recordings s3://#{bucket}/#{identifier}" +
-                " --region #{region}"
+                " --region #{region} --quiet"
           logger.debug "RUN: #{cmd}"
           system(cmd)
-          logger.info 'Syncing complete.'
+          logger.info "Syncing complete in #{Time.now - t0}s. " +
+                      "Next sync in #{@config.sync_interval}s."
           sleep @config.sync_interval
         end
       end
