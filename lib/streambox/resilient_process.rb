@@ -16,13 +16,12 @@ module Streambox
     def run
       # NOTE with multiple processes matching this will fail
       output = %x[pgrep #{pattern}]
-      puts output
       @pid = output.chomp.to_i
-      puts @pid
 
       Thread.new do
         loop do
           start unless exists?
+          logger.debug "Waiting for pid #{@pid} (#{pattern})"
           Process.wait(@pid)
         end
       end

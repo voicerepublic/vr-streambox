@@ -43,11 +43,11 @@ do
     service alsa-utils restart
 
     message 'Checking network connectivity...'
-    ping -c 1 voicerepublic.com
+    ping -n -c 1 voicerepublic.com
     while  [ $? -ne 0 ]
     do
         sleep 2
-        ping -c 1 voicerepublic.com
+        ping -n -c 1 voicerepublic.com
     done
 
 
