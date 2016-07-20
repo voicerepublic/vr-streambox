@@ -153,8 +153,8 @@ module Streambox
                 " --region #{region} --quiet"
           logger.debug "RUN: #{cmd}"
           system(cmd)
-          logger.info "Syncing complete in #{Time.now - t0}s. " +
-                      "Next sync in #{@config.sync_interval}s."
+          logger.info 'Syncing complete in %.2fs. Next sync in %ss.' %
+                      [Time.now - t0, @config.sync_interval]
           sleep @config.sync_interval
         end
       end
