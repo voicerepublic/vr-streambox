@@ -185,7 +185,8 @@ module Streambox
     # { event: 'start_streaming', icecast: { ... } }
     def handle_start_stream(message={})
       @streamer.start!(message['icecast'].merge device: @config.device)
-      logger.info "Streaming with #{message.inspect}"
+      logger.info "Started streaming."
+      logger.debug message.inspect
     end
 
     # { event: 'stop_streaming' }

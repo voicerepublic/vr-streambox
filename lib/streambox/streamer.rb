@@ -55,7 +55,7 @@ module Streambox
 
     def stream_cmd
       # uses sudo to make use of posix realtime scheduling
-      "sudo darkice -c #{config_path}"
+      "sudo darkice -v 0 -c #{config_path}"
     end
 
     def config_path
