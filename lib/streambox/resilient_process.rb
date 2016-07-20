@@ -22,7 +22,7 @@ module Streambox
         loop do
           start unless exists?
           logger.debug "Waiting for pid #{@pid} (#{pattern})"
-          Process.wait(@pid)
+          wait
         end
       end
     end
@@ -38,6 +38,16 @@ module Streambox
       return false unless @pid
       path = "/proc/#{@pid}"
       File.directory?(path)
+    end
+
+    def wait
+      # this will work if it is a child process
+      Process.wait(@pid)
+    rescue Errno::ECHILD
+      # otherwise we'll just check the procfs
+      while exists?
+        sleep interval
+      end
     end
 
   end
