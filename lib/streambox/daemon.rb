@@ -28,6 +28,7 @@ module Streambox
       Thread.abort_on_exception = true
       @config = OpenStruct.new endpoint: ENDPOINT,
                                loglevel: Logger::INFO,
+                               device: 'dsnooped',
                                sync_interval: 60 * 3,
                                check_record_interval: 1
       @reporter = Reporter.new
@@ -134,8 +135,8 @@ module Streambox
     def start_recording
       logger.info "Start backup recording..."
       FileUtils.mkdir_p 'recordings'
-      cmd = 'arecord -D plughw:1,0 -f cd -t raw | ' +
-            'oggenc - -r -o recordings/dump_`date +%s`.ogg'
+      cmd = "arecord -q -D #{@config.device} -f cd -t raw | " +
+            'oggenc - -Q -r -o recordings/dump_`date +%s`.ogg'
       ResilientProcess.new(cmd, 'arecord', @config.check_record_interval, logger).run
     end
 
@@ -183,7 +184,7 @@ module Streambox
 
     # { event: 'start_streaming', icecast: { ... } }
     def handle_start_stream(message={})
-      @streamer.start!(message['icecast'])
+      @streamer.start!(message['icecast'].merge device: @config.device)
       logger.info "Streaming with #{message.inspect}"
     end
 
