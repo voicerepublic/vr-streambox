@@ -29,7 +29,7 @@ module Streambox
       @config = OpenStruct.new endpoint: ENDPOINT,
                                loglevel: Logger::INFO,
                                device: 'dsnooped',
-                               sync_interval: 60 * 3,
+                               sync_interval: 60 * 10, # 10 minutes
                                check_record_interval: 1
       @reporter = Reporter.new
       @streamer = Streamer.new
