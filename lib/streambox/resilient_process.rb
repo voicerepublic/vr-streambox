@@ -16,7 +16,9 @@ module Streambox
     def run
       # NOTE with multiple processes matching this will fail
       output = %x[pgrep #{pattern}]
+      puts output
       @pid = output.chomp.to_i
+      puts @pid
 
       Thread.new do
         loop do
