@@ -38,6 +38,9 @@ do
     cp $DIR/id_rsa* /root/.ssh
     chmod 600 /root/.ssh/id_rsa*
 
+    message 'Configuring ALSA dsnooped device...'
+    cp $DIR/asound.conf /etc
+    service alsa-utils restart
 
     message 'Checking network connectivity...'
     ping -c 1 voicerepublic.com
