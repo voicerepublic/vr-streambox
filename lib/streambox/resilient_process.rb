@@ -28,6 +28,7 @@ module Streambox
     private
 
     def start
+      puts cmd
       logger.debug "RUN: #{cmd}"
       @pid = Process.spawn(cmd)
     end
