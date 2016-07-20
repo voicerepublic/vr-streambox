@@ -3,12 +3,19 @@
 # * it will be restarted if its gone
 # * it will survive a restart of the ruby process its spawned from
 #
+# Dev Note
+#
+# On the box you can watch the recordings grow:
+#
+#   watch ls -la streambox/recordings
+#
 module Streambox
 
   class ResilientProcess < Struct.new(:cmd, :pattern, :interval, :logger)
 
     def run
-      @pid = system("pgrep #{pattern}")
+      # NOTE with multiple processes matching this will fail
+      @pid = %x[pgrep #{pattern}].chomp
 
       Thread.new do
         loop do
