@@ -12,8 +12,8 @@ module Streambox
 
       Thread.new do
         loop do
-          start unless exists?(@pid)
-          sleep interval
+          start unless exists?
+          Process.wait(@pid)
         end
       end
     end
@@ -25,12 +25,9 @@ module Streambox
       @pid = Process.spawn(cmd)
     end
 
-    def exists?(pid)
-      return false unless pid
-      Process.getpgid(pid)
-      true
-    rescue Errno::ESRCH
-      false
+    def exists?
+      path = "/proc/#{@pid}"
+      File.directory?(path)
     end
 
   end
