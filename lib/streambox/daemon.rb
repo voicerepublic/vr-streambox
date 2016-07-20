@@ -2,6 +2,7 @@ require 'logger'
 require 'json'
 require 'ostruct'
 require 'uri'
+require 'fileutils'
 
 require 'faraday'
 require 'eventmachine'
@@ -11,6 +12,7 @@ require 'faye/authentication'
 require "streambox/version"
 require "streambox/reporter"
 require "streambox/streamer"
+require "streambox/resilient_process"
 require "streambox/banner"
 
 # TODO introduce a proper state machine
@@ -24,7 +26,10 @@ module Streambox
 
     def initialize
       Thread.abort_on_exception = true
-      @config = OpenStruct.new endpoint: ENDPOINT, loglevel: Logger::INFO
+      @config = OpenStruct.new endpoint: ENDPOINT,
+                               loglevel: Logger::INFO,
+                               sync_interval: 60 * 3,
+                               check_record_interval: 1
       @reporter = Reporter.new
       @streamer = Streamer.new
       Banner.new
@@ -126,14 +131,36 @@ module Streambox
       end
     end
 
+    def start_recording
+      logger.info "Start backup recording..."
+      FileUtils.mkdir_p 'recordings'
+      cmd = 'arecord -D plughw:1,0 -f cd -t raw | ' +
+            'oggenc - -r -o recordings/dump_`date +%s`.ogg'
+      ResilientProcess.new(cmd, 'arecord', @config.check_record_interval, logger).run
+    end
+
+    def start_sync
+      logger.info "Entering sync loop..."
+      Thread.new do
+        loop do
+          logger.info 'Start syncing...'
+          # TODO do sync
+          logger.info 'Syncing complete.'
+          sleep @config.sync_interval
+        end
+      end
+    end
+
     def run
       knock
       register
       display_pairing_instructions if @config.state == 'pairing'
       start_heartbeat
       start_reporting
+      start_recording
+      #start_sync
 
-      logger.info "Entering event machine loop..."
+      logger.info "Entering EM loop..."
       EM.run {
         self.client = Faye::Client.new(@config.faye_url)
         ext = Faye::Authentication::ClientExtension.new(@config.faye_secret)

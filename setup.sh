@@ -13,13 +13,16 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 message 'Installing base dependencies...'
 sudo apt-get update
-sudo apt-get -y install ruby ruby-dev darkice figlet libssl-dev
+sudo apt-get -y install ruby ruby-dev darkice figlet libssl-dev python-pip vorbis-tools
 sudo gem install bundler --force --no-ri --no-rdoc
 
+message 'Installing some more dependencies...'
+sudo pip install awscli
 
+# TODO it would be nice to do this only in case EM has been compiled
+# without ssl, otherwise we're just wasting time here
 message 'Trigger reinstalling some dependencies...'
 sudo gem uninstall -I eventmachine
-
 
 message 'Running bundler (installing main dependencies)...'
 (cd $DIR && bundle install)
