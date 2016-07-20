@@ -145,7 +145,13 @@ module Streambox
       Thread.new do
         loop do
           logger.info 'Start syncing...'
-          # TODO do sync
+          bucket, region = @config.storage['bucket'].split('@')
+          cmd = "AWS_ACCESS_KEY_ID=#{@config.storage['aws_access_key_id']} " +
+                "AWS_SECRET_ACCESS_KEY=#{@config.storage['aws_secret_access_key']} " +
+                "aws s3 sync recordings s3://#{bucket}/#{identifier}" +
+                " --region #{region}"
+          logger.debug "RUN: #{cmd}"
+          system(cmd)
           logger.info 'Syncing complete.'
           sleep @config.sync_interval
         end
@@ -159,7 +165,7 @@ module Streambox
       start_heartbeat
       start_reporting
       start_recording
-      #start_sync
+      start_sync
 
       logger.info "Entering EM loop..."
       EM.run {
