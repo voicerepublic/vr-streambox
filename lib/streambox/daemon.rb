@@ -158,7 +158,7 @@ module Streambox
       display_pairing_instructions if @config.state == 'pairing'
       start_heartbeat
       start_reporting
-      #start_recording
+      start_recording
       #start_sync
 
       logger.info "Entering EM loop..."
