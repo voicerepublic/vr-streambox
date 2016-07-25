@@ -88,13 +88,25 @@ module Streambox
       puts
       puts 'Your pairing code is'
       puts
-      system('figlet -t "  %s"' % code)
+      system('toilet -f mono12 --gay " %s"' % code)
       puts
-      puts 'Go to the following url to claim this device.'
+      puts 'Visit the following URL to claim this device.'
       puts
       puts '  https://voicerepublic.com/devices/%s' % code
       puts
       puts '*' * 60
+    end
+
+    def play_pairing_code
+      Thread.new do
+        url = @config.endpoint.sub('/api/devices', "/tts/#{@config.pairing_code}")
+        system("curl -s -L #{url} > code.ogg")
+        system("amixer -q set PCM 100%")
+        while @config.state == 'pairing'
+          system('ogg123 -q code.ogg')
+          sleep 1.5
+        end
+      end
     end
 
     def start_heartbeat
@@ -163,7 +175,10 @@ module Streambox
     def run
       knock
       register
-      display_pairing_instructions if @config.state == 'pairing'
+      if @config.state == 'pairing'
+        display_pairing_instructions
+        play_pairing_code
+      end
       start_heartbeat
       start_reporting
       start_recording
@@ -196,6 +211,8 @@ module Streambox
       @streamer.start!(config)
       logger.info "Started streaming."
       logger.debug config.inspect
+      # HACK this makes the pairing code play loop stop
+      @config.state = 'streaming'
     end
 
     # { event: 'stop_streaming' }
