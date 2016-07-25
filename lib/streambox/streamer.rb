@@ -9,6 +9,7 @@ module Streambox
     def initialize(logger)
       self.logger = logger
       @pid = %x[pgrep darkice].to_i
+      logger.debug "OLD DARKICE PID: #{@pid}"
       @pid = nil if !!@pid
     end
 
@@ -17,12 +18,15 @@ module Streambox
       write_config!
       stop!
       @pid = Process.spawn(stream_cmd)
+      logger.debug "NEW DARKICE PID: #{@pid}"
+      @pid
     end
 
     def stop!
       logger.debug "STOP PID: #{@pid}"
       return unless @pid
       logger.debug "SEND HUP: #{@pid}"
+      logger.debug "PROCESS NAME: " + %x[ps -p #{@pid} -o comm=]
       Process.kill 'HUP', @pid
       logger.debug "WAIT FOR: #{@pid}"
       Process.wait
@@ -59,7 +63,7 @@ module Streambox
 
     def stream_cmd
       # uses sudo to make use of posix realtime scheduling
-      "sudo darkice -v 0 -c #{config_path} 2>&1 >/dev/null"
+      "darkice -v 0 -c #{config_path} 2>&1 >/dev/null"
     end
 
     def config_path
