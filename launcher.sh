@@ -24,7 +24,7 @@ message "Initial launch..."
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
 BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
-TEXT="Started Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP"
+TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP started."
 JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
 curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
@@ -58,7 +58,7 @@ do
     message 'Exited. Restarting in 5s...'
     sleep 5
 
-    TEXT="Restarting Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP"
+    TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP restarting..."
     JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
     curl -X POST -H 'Content-type: application/json' --data "$JSON" \
          https://hooks.slack.com/services/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
