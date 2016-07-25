@@ -32,7 +32,7 @@ module Streambox
                                sync_interval: 60 * 3,
                                check_record_interval: 1
       @reporter = Reporter.new
-      @streamer = Streamer.new
+      @streamer = Streamer.new(logger)
       Banner.new
     end
 

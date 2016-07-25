@@ -4,9 +4,10 @@ require 'ostruct'
 module Streambox
   class Streamer
 
-    attr_accessor :config
+    attr_accessor :config, :logger
 
-    def initialize
+    def initialize(logger)
+      self.logger = logger
       @pid = %x[pgrep darkice].to_i
       @pid = nil if !!@pid
     end
@@ -19,8 +20,11 @@ module Streambox
     end
 
     def stop!
+      logger.debug "STOP PID: #{@pid}"
       return unless @pid
+      logger.debug "SEND HUP: #{@pid}"
       Process.kill 'HUP', @pid
+      logger.debug "WAIT FOR: #{@pid}"
       Process.wait
       @pid = nil
     end
