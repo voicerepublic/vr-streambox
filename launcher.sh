@@ -23,7 +23,7 @@ message "Initial launch..."
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
-BRANCH=`git rev-parse --abbrev-ref HEAD`
+BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
 TEXT="Started Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP"
 JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
 curl -X POST -H 'Content-type: application/json' --data "$JSON" \
