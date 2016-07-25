@@ -100,12 +100,9 @@ module Streambox
     def play_pairing_code
       Thread.new do
         url = @config.endpoint.sub('/api/devices', "/tts/#{@config.pairing_code}")
-        puts "--- DOWNLOAD FILE FROM #{url}"
         system("curl -s -L #{url} > code.ogg")
-        puts "--- SET VOLUME TO MAX"
         system("amixer -q set PCM 100%")
         while @config.state == 'pairing'
-          puts "--- PLAY PAIRING CODE"
           system('ogg123 -q code.ogg')
           sleep 1.5
         end
@@ -214,6 +211,8 @@ module Streambox
       @streamer.start!(config)
       logger.info "Started streaming."
       logger.debug config.inspect
+      # HACK this makes the pairing code play loop stop
+      @config.state = 'streaming'
     end
 
     # { event: 'stop_streaming' }
