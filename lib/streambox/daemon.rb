@@ -103,8 +103,8 @@ module Streambox
         puts "--- DOWNLOAD FILE FROM #{url}"
         system("curl -s -L #{url} > code.ogg")
         puts "--- SET VOLUME TO MAX"
-        system("amixer set PCM 100%")
-        while @config.status == 'pairing'
+        system("amixer -q set PCM 100%")
+        while @config.state == 'pairing'
           puts "--- PLAY PAIRING CODE"
           system('ogg123 -q code.ogg')
           sleep 1.5
