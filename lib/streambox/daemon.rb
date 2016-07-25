@@ -88,7 +88,7 @@ module Streambox
       puts
       puts 'Your pairing code is'
       puts
-      system('toilet -f mono12 --gay "  %s"' % code)
+      system('toilet -f mono12 --gay " %s"' % code)
       puts
       puts 'Visit the following URL to claim this device.'
       puts
