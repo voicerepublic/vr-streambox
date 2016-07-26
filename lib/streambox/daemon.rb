@@ -30,9 +30,9 @@ module Streambox
                                loglevel: Logger::INFO,
                                device: 'dsnooped',
                                sync_interval: 60 * 3,
-                               check_record_interval: 1
+                               check_record_interval: 1,
+                               check_stream_interval: 1
       @reporter = Reporter.new
-      @streamer = Streamer.new(logger)
       Banner.new
     end
 
@@ -205,10 +205,18 @@ module Streambox
       publish event: 'error', error: "Unknown message: #{message.inspect}"
     end
 
+
+
     # { event: 'start_streaming', icecast: { ... } }
     def handle_start_stream(message={})
       config = message['icecast'].merge(device: @config.device)
-      @streamer.start!(config)
+      write_config!(config)
+      @streamer = ResilientProcess.new(stream_cmd,
+                                       'darkice',
+                                       @config.check_stream_interval,
+                                       logger).run
+
+      #@streamer.start!(config)
       logger.info "Started streaming."
       logger.debug config.inspect
       # HACK this makes the pairing code play loop stop
@@ -296,6 +304,31 @@ module Streambox
         f.request :url_encoded
         f.adapter Faraday.default_adapter
       end
+    end
+
+    private
+
+    def write_config!(config)
+      File.open(config_path, 'w') { |f| f.write(render_config(config)) }
+    end
+
+    def render_config(config)
+      # https://www.youtube.com/watch?v=MzlK0OGpIRs
+      namespace = OpenStruct.new(config)
+      bindink = namespace.instance_eval { binding }
+      ERB.new(config_template).result(bindink)
+    end
+
+    def config_template
+      File.read(File.expand_path(File.join(%w(.. .. .. darkice.cfg.erb)), __FILE__))
+    end
+
+    def stream_cmd
+      "darkice -v 0 -c #{config_path} 2>&1 >/dev/null"
+    end
+
+    def config_path
+      'darkice.cfg'
     end
 
   end

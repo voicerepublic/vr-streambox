@@ -13,25 +13,49 @@ module Streambox
 
   class ResilientProcess < Struct.new(:cmd, :pattern, :interval, :logger)
 
+    attr_accessor :running
+
     def run
+      self.running = true
       # NOTE with multiple processes matching this will fail
       output = %x[pgrep #{pattern}]
       @pid = output.chomp.to_i
+      logger.debug "Found pid #{@pid} (#{name}) for #{pattern}"
 
       Thread.new do
-        loop do
-          start unless exists?
-          logger.debug "Waiting for pid #{@pid} (#{pattern})"
+        while running
+          start unless exists? or
+          logger.debug "Waiting for pid #{@pid} (#{name}) for #{pattern}"
           wait
         end
+        logger.debug "ResilientProcess for #{pattern} is dead now."
       end
+    end
+
+    def stop!
+      self.running = false
+      kill
+    end
+
+    def restart!
+      kill
     end
 
     private
 
+    def kill
+      logger.debug "Killing pid #{@pid} (#{name})"
+      system("kill -HUP #{@pid}")
+    end
+
+    def name
+      %x[ps -p #{@pid} -o comm=]
+    end
+
     def start
-      logger.debug "RUN: #{cmd}"
+      logger.debug "Run: #{cmd}"
       @pid = Process.spawn(cmd)
+      logger.debug "Pid is #{@pid} (#{name})"
     end
 
     def exists?
