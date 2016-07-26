@@ -50,8 +50,10 @@ module Streambox
     def kill
       return if @pid.nil?
       logger.debug "Killing pid #{@pid}"
-      system("kill -HUP #{@pid}")
       File.unlink(@pidfile)
+      pid = @pid
+      @pid = nil
+      system("kill -HUP #{pid}")
     end
 
     def start
