@@ -212,6 +212,7 @@ module Streambox
     def handle_start_stream(message={})
       config = message['icecast'].merge(device: @config.device)
       write_config!(config)
+      @streamer.stop! unless @streamer.nil?
       @streamer = ResilientProcess.new(stream_cmd,
                                        'darkice',
                                        @config.check_stream_interval,
@@ -226,6 +227,7 @@ module Streambox
     # { event: 'stop_streaming' }
     def handle_stop_stream(message={})
       @streamer.stop!
+      @streamer = nil
       logger.info "Stopped streaming."
     end
 
