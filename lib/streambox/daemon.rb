@@ -33,7 +33,6 @@ module Streambox
                                check_record_interval: 1,
                                check_stream_interval: 1
       @reporter = Reporter.new
-      Banner.new
     end
 
     def identifier
@@ -178,6 +177,8 @@ module Streambox
       if @config.state == 'pairing'
         display_pairing_instructions
         play_pairing_code
+      else
+        Banner.new
       end
       start_heartbeat
       start_reporting
