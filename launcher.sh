@@ -32,6 +32,9 @@ echo
 
 $DIR/expand.sh
 
+message 'Removing stale pid files...'
+rm -f ~pi/streambox/*.pid
+
 while :
 do
     message 'Provisioning keys...'
