@@ -190,7 +190,7 @@ module Streambox
       start_reporting
       start_recording
       start_sync
-      streamer.run
+      streamer.run if File.exist?('darkice.pid')
 
       logger.info "Entering EM loop..."
       EM.run {
