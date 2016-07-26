@@ -56,7 +56,7 @@ module Streambox
 
     def name
       return '-' if @pid.nil?
-      %x[ps -p #{@pid} -o comm=]
+      %x[ps -p #{@pid} -o comm=].chomp
     end
 
     def start
