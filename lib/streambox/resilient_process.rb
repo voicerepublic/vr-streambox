@@ -20,6 +20,7 @@ module Streambox
       # NOTE with multiple processes matching this will fail
       output = %x[pgrep #{pattern}]
       @pid = output.chomp.to_i
+      @pid = nil if @pid == 0
       logger.debug "Found pid #{@pid} (#{name}) for #{pattern}"
 
       Thread.new do
@@ -44,12 +45,13 @@ module Streambox
     private
 
     def kill
+      return if @pid.nil?
       logger.debug "Killing pid #{@pid} (#{name})"
       system("kill -HUP #{@pid}")
     end
 
     def name
-      return '-' unless @pid
+      return '-' if @pid.nil?
       %x[ps -p #{@pid} -o comm=]
     end
 
@@ -60,7 +62,7 @@ module Streambox
     end
 
     def exists?
-      return false unless @pid
+      return false if @pid.nil?
       path = "/proc/#{@pid}"
       File.directory?(path)
     end
