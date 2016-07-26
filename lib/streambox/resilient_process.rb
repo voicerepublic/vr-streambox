@@ -20,7 +20,7 @@ module Streambox
       @pidfile = "#{pattern}.pid"
       @pid = File.read(@pidfile).to_i if File.exist?(@pidfile)
       if @pid
-        logger.debug "Found pid #{@pid} (#{name}) for #{pattern}."
+        logger.debug "Found pid #{@pid} for #{pattern}."
       else
         logger.debug "Found no pid for #{pattern}."
       end
@@ -28,7 +28,7 @@ module Streambox
       Thread.new do
         while running
           start unless exists?
-          logger.debug "Waiting for pid #{@pid} (#{name}) for #{pattern}"
+          #logger.debug "Waiting for pid #{@pid} for #{pattern}"
           wait
         end
         logger.debug "ResilientProcess for #{pattern} is dead now."
@@ -48,21 +48,16 @@ module Streambox
 
     def kill
       return if @pid.nil?
-      logger.debug "Killing pid #{@pid} (#{name})"
+      logger.debug "Killing pid #{@pid}"
       system("kill -HUP #{@pid}")
       File.unlink(@pidfile)
-    end
-
-    def name
-      return '-' if @pid.nil?
-      %x[ps -p #{@pid} -o comm=].chomp
     end
 
     def start
       logger.debug "Run: #{cmd}"
       @pid = Process.spawn(cmd)
       File.open(@pidfile, 'w') { |f| f.print(@pid) }
-      logger.debug "Pid is #{@pid} (#{name})"
+      logger.debug "Pid for #{pattern} is #{@pid}"
     end
 
     def exists?
