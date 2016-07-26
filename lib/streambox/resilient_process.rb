@@ -21,11 +21,15 @@ module Streambox
       output = %x[pgrep #{pattern}]
       @pid = output.chomp.to_i
       @pid = nil if @pid == 0
-      logger.debug "Found pid #{@pid} (#{name}) for #{pattern}"
+      if @pid
+        logger.debug "Found pid #{@pid} (#{name}) for #{pattern}."
+      else
+        logger.debug "Found no pid for #{pattern}."
+      end
 
       Thread.new do
         while running
-          start unless exists? or
+          start unless exists?
           logger.debug "Waiting for pid #{@pid} (#{name}) for #{pattern}"
           wait
         end
