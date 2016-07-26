@@ -17,10 +17,8 @@ module Streambox
 
     def run
       self.running = true
-      # NOTE with multiple processes matching this will fail
-      output = %x[pgrep #{pattern}]
-      @pid = output.chomp.to_i
-      @pid = nil if @pid == 0
+      @pidfile = "#{pattern}.pid"
+      @pid = File.read(@pidfile).to_i if File.exist?(@pidfile)
       if @pid
         logger.debug "Found pid #{@pid} (#{name}) for #{pattern}."
       else
@@ -52,6 +50,7 @@ module Streambox
       return if @pid.nil?
       logger.debug "Killing pid #{@pid} (#{name})"
       system("kill -HUP #{@pid}")
+      File.unlink(@pidfile)
     end
 
     def name
@@ -62,6 +61,7 @@ module Streambox
     def start
       logger.debug "Run: #{cmd}"
       @pid = Process.spawn(cmd)
+      File.open(@pidfile, 'w') { |f| f.print(@pid) }
       logger.debug "Pid is #{@pid} (#{name})"
     end
 
