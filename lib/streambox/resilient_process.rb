@@ -61,7 +61,7 @@ module Streambox
 
     def start
       logger.debug "Run: #{cmd}"
-      @pid = Process.spawn(cmd)
+      @pid = Process.spawn(cmd, pgroup: true)
       File.open(@pidfile, 'w') { |f| f.print(@pid) }
       logger.debug "Pid for #{name} is #{@pid}"
     end
