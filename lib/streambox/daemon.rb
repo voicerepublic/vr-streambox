@@ -163,7 +163,7 @@ module Streambox
                 "AWS_SECRET_ACCESS_KEY=#{@config.storage['aws_secret_access_key']} " +
                 "aws s3 sync recordings s3://#{bucket}/#{identifier}" +
                 " --region #{region} --quiet"
-          logger.debug "RUN: #{cmd}"
+          logger.debug "Run: #{cmd}"
           system(cmd)
           logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
                       [Time.now - t0, @config.sync_interval]
@@ -214,9 +214,8 @@ module Streambox
       @streamer = ResilientProcess.new(stream_cmd,
                                        'darkice',
                                        @config.check_stream_interval,
-                                       logger).run
-
-      #@streamer.start!(config)
+                                       logger)
+      @streamer.run
       logger.info "Started streaming."
       logger.debug config.inspect
       # HACK this makes the pairing code play loop stop
