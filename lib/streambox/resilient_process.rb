@@ -56,7 +56,9 @@ module Streambox
       File.unlink(@pidfile)
       _pid = @pid
       @pid = nil
-      system("kill -HUP -#{_pid}")
+      cmd = "kill -HUP -#{_pid}"
+      logger.debug "Exec: #{cmd}"
+      system(cmd)
     end
 
     def start
