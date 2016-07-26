@@ -214,15 +214,13 @@ module Streambox
       publish event: 'error', error: "Unknown message: #{message.inspect}"
     end
 
-
-
     # { event: 'start_streaming', icecast: { ... } }
     def handle_start_stream(message={})
+      logger.info "Starting stream..."
       config = message['icecast'].merge(device: @config.device)
       write_config!(config)
       streamer.stop!
       streamer.run
-      logger.info "Started streaming."
       logger.debug config.inspect
       # HACK this makes the pairing code play loop stop
       @config.state = 'streaming'
@@ -230,14 +228,14 @@ module Streambox
 
     # { event: 'stop_streaming' }
     def handle_stop_stream(message={})
+      logger.info "Stopping stream..."
       streamer.stop!
-      logger.info "Stopped streaming."
     end
 
     # { event: 'restart_streaming' }
     def handle_restart_stream(message={})
+      logger.info "Restarting stream..."
       streamer.restart!
-      logger.info "Restarted streaming."
     end
 
     # { event: 'eval', eval: '41+1' }
