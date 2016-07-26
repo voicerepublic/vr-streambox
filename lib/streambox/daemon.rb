@@ -11,7 +11,6 @@ require 'faye/authentication'
 
 require "streambox/version"
 require "streambox/reporter"
-require "streambox/streamer"
 require "streambox/resilient_process"
 require "streambox/banner"
 
@@ -171,6 +170,13 @@ module Streambox
       end
     end
 
+    def streamer
+      @streamer ||= ResilientProcess.new(stream_cmd,
+                                         'darkice',
+                                         @config.check_stream_interval,
+                                         logger)
+    end
+
     def run
       knock
       register
@@ -184,6 +190,7 @@ module Streambox
       start_reporting
       start_recording
       start_sync
+      streamer # make it detect a running streamer right away
 
       logger.info "Entering EM loop..."
       EM.run {
@@ -212,12 +219,8 @@ module Streambox
     def handle_start_stream(message={})
       config = message['icecast'].merge(device: @config.device)
       write_config!(config)
-      @streamer.stop! unless @streamer.nil?
-      @streamer = ResilientProcess.new(stream_cmd,
-                                       'darkice',
-                                       @config.check_stream_interval,
-                                       logger)
-      @streamer.run
+      streamer.stop!
+      streamer.run
       logger.info "Started streaming."
       logger.debug config.inspect
       # HACK this makes the pairing code play loop stop
@@ -226,14 +229,13 @@ module Streambox
 
     # { event: 'stop_streaming' }
     def handle_stop_stream(message={})
-      @streamer.stop!
-      @streamer = nil
+      streamer.stop!
       logger.info "Stopped streaming."
     end
 
     # { event: 'restart_streaming' }
     def handle_restart_stream(message={})
-      @streamer.restart!
+      streamer.restart!
       logger.info "Restarted streaming."
     end
 
