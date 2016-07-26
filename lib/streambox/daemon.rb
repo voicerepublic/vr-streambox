@@ -3,6 +3,7 @@ require 'json'
 require 'ostruct'
 require 'uri'
 require 'fileutils'
+require 'erb'
 
 require 'faraday'
 require 'eventmachine'
