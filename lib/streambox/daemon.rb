@@ -15,6 +15,9 @@ require "streambox/reporter"
 require "streambox/resilient_process"
 require "streambox/banner"
 
+# Test if an Icecast Server is Running on the given target
+# curl -D - http://192.168.178.21:8000/ | grep Icecast
+
 # TODO introduce a proper state machine
 module Streambox
 
