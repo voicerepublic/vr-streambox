@@ -235,7 +235,8 @@ module Streambox
     # { event: 'restart_streaming' }
     def handle_restart_stream(message={})
       logger.info "Restarting stream..."
-      streamer.restart!
+      system('killall darkice')
+      #streamer.restart!
     end
 
     # { event: 'eval', eval: '41+1' }
