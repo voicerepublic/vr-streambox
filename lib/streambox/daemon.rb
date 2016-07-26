@@ -190,7 +190,7 @@ module Streambox
       start_reporting
       start_recording
       start_sync
-      streamer # make it detect a running streamer right away
+      streamer.run
 
       logger.info "Entering EM loop..."
       EM.run {
