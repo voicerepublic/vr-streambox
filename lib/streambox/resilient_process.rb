@@ -42,6 +42,7 @@ module Streambox
 
     def restart!
       kill
+      sleep interval
     end
 
     private
