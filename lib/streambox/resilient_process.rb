@@ -49,6 +49,7 @@ module Streambox
     end
 
     def name
+      return '-' unless @pid
       %x[ps -p #{@pid} -o comm=]
     end
 
