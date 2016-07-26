@@ -24,7 +24,7 @@ module Streambox
     ]
 
     def initialize
-      system('figlet -t "%s"' % claim)
+      system('toilet -f big -t "%s"' % claim)
     end
 
     def claim

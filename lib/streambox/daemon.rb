@@ -29,7 +29,7 @@ module Streambox
       @config = OpenStruct.new endpoint: ENDPOINT,
                                loglevel: Logger::INFO,
                                device: 'dsnooped',
-                               sync_interval: 60 * 3,
+                               sync_interval: 60 * 10, # 10 minutes
                                check_record_interval: 1,
                                check_stream_interval: 1
       @reporter = Reporter.new
@@ -165,7 +165,7 @@ module Streambox
                 " --region #{region} --quiet"
           logger.debug "RUN: #{cmd}"
           system(cmd)
-          logger.info 'Syncing complete in %.2fs. Next sync in %ss.' %
+          logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
                       [Time.now - t0, @config.sync_interval]
           sleep @config.sync_interval
         end

@@ -23,7 +23,8 @@ message "Initial launch..."
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
-TEXT="Started Streamboxx $SERIAL with $PRIVATE_IP"
+BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
+TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP started."
 JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
 curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
@@ -37,10 +38,6 @@ do
     mkdir -p /root/.ssh
     cp $DIR/id_rsa* /root/.ssh
     chmod 600 /root/.ssh/id_rsa*
-
-    message 'Configuring ALSA dsnooped device...'
-    cp $DIR/asound.conf /etc
-    service alsa-utils restart
 
     message 'Checking network connectivity...'
     ping -n -c 1 voicerepublic.com
@@ -58,6 +55,12 @@ do
     (cd $DIR && ./start.sh)
 
 
-    message 'Exited. Restarting in 5.'
+    message 'Exited. Restarting in 5s...'
     sleep 5
+
+    TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP restarting..."
+    JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
+    curl -X POST -H 'Content-type: application/json' --data "$JSON" \
+         https://hooks.slack.com/services/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
+    echo
 done

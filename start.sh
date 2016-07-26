@@ -7,6 +7,11 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 . ./util.sh
 
 
+message 'Configuring ALSA dsnooped device...'
+cp $DIR/asound.conf /etc
+service alsa-utils restart
+
+
 message 'Syncing clock...'
 sudo ntpd -q -g
 
