@@ -55,8 +55,7 @@ do
     (cd $DIR && ./start.sh)
 
 
-    message 'Exited. Restarting in 5s...'
-    sleep 5
+    message 'Exited. Restarting...'
 
     TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP restarting..."
     JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
