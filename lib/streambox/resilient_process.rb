@@ -11,27 +11,29 @@
 #
 module Streambox
 
-  class ResilientProcess < Struct.new(:cmd, :pattern, :interval, :logger)
+  class ResilientProcess < Struct.new(:cmd, :name, :interval, :logger)
 
     attr_accessor :running
 
     def run
       self.running = true
-      @pidfile = "#{pattern}.pid"
+      @pidfile = "#{name}.pid"
       @pid = File.read(@pidfile).to_i if File.exist?(@pidfile)
+      @pid = nil unless exists?
+
       if @pid
-        logger.debug "Found pid #{@pid} for #{pattern}."
+        logger.debug "Found pid #{@pid} for #{name}."
       else
-        logger.debug "Found no pid for #{pattern}."
+        logger.debug "Found no pid for #{name}."
       end
 
       Thread.new do
         while running
           start unless exists?
-          #logger.debug "Waiting for pid #{@pid} for #{pattern}"
+          #logger.debug "Waiting for pid #{@pid} for #{name}"
           wait
         end
-        logger.debug "ResilientProcess for #{pattern} is dead now."
+        logger.debug "ResilientProcess for #{name} is dead now."
       end
     end
 
@@ -51,16 +53,16 @@ module Streambox
       return if @pid.nil?
       logger.debug "Killing pid #{@pid}"
       File.unlink(@pidfile)
-      pid = @pid
+      _pid = @pid
       @pid = nil
-      system("kill -HUP #{pid}")
+      system("kill -HUP #{_pid}")
     end
 
     def start
       logger.debug "Run: #{cmd}"
       @pid = Process.spawn(cmd)
       File.open(@pidfile, 'w') { |f| f.print(@pid) }
-      logger.debug "Pid for #{pattern} is #{@pid}"
+      logger.debug "Pid for #{name} is #{@pid}"
     end
 
     def exists?
@@ -73,6 +75,7 @@ module Streambox
       # this will work if it is a child process
       Process.wait(@pid)
     rescue Errno::ECHILD
+      logger.debug "Not a child watching via procfs..."
       # otherwise we'll just check the procfs
       while exists?
         sleep interval
