@@ -33,4 +33,7 @@ def branch?(name)
   %x(git branch --list #{name}) != ""
 end
 
-change_git_branch(expected_branch) unless current_branch == expected_branch
+unless current_branch == expected_branch
+  change_git_branch(expected_branch) 
+  %x(reboot)
+end
