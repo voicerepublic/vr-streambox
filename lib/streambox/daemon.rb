@@ -42,7 +42,7 @@ module Streambox
   class FayeIO < Struct.new(:client, :identifier)
 
     def write(*args)
-      client.publish("/device/log/#{identifier}", log: args.inspect)
+      client.publish("/device/log/#{identifier}", log: args.first.chomp)
     end
 
     def close
