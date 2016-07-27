@@ -21,6 +21,36 @@ require "streambox/banner"
 # TODO introduce a proper state machine
 module Streambox
 
+  class MultiIO
+    def initialize(*targets)
+      @targets = targets
+    end
+
+    def write(*args)
+      @targets.each {|t| t.write(*args)}
+    end
+
+    def close
+      @targets.each(&:close)
+    end
+
+    def add(target)
+      @targets << target
+    end
+  end
+
+  class FayeIO < Struct.new(:client, :identifier)
+
+    def write(*args)
+      client.publish("/device/log/#{identifier}", log: args.inspect)
+    end
+
+    def close
+      client.publish("/device/log/#{identifier}", log: 'closed.')
+    end
+
+  end
+
   class Daemon
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
@@ -204,6 +234,8 @@ module Streambox
         ext = Faye::Authentication::ClientExtension.new(@config.faye_secret)
         client.add_extension(ext)
 
+        multi_io.add(FayeIO.new(client, identifier)) if config.loglevel == 0
+
         logger.debug "Subscribing to channel '#{channel}'..."
         client.subscribe(channel) { |message| dispatch(message) }
 
@@ -300,8 +332,12 @@ module Streambox
       client.publish(channel, msg)
     end
 
+    def multi_io
+      @multi_io ||= MultiIO.new(STDOUT)
+    end
+
     def logger
-      @logger ||= Logger.new(STDOUT).tap do |logger|
+      @logger ||= Logger.new(multi_io).tap do |logger|
         logger.level = @config.loglevel
         logger.formatter = proc do |severity, datetime, progname, msg|
           "#{severity[0]} #{datetime.strftime('%H:%M:%S')} #{msg}\n"
