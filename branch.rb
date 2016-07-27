@@ -17,7 +17,7 @@ def expected_branch
   return @branch unless @branch.nil?
   url = ENDPOINT + '/' + identifier
   response = faraday.get(url)
-  br = JSON.parse(response.body)[:branch]
+  br = JSON.parse(response.body)["branch"]
   @branch = br.nil? ? 'master' : br
 end
 
