@@ -32,6 +32,8 @@ echo
 
 $DIR/expand.sh
 
+$DIR/branch.rb
+
 message 'Removing stale pid files...'
 rm -f ~pi/streambox/*.pid
 
