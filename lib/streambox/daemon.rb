@@ -34,7 +34,8 @@ module Streambox
                                device: 'dsnooped',
                                sync_interval: 60 * 10, # 10 minutes
                                check_record_interval: 1,
-                               check_stream_interval: 1
+                               check_stream_interval: 1,
+                               restart_stream_delay: 2
       @reporter = Reporter.new
     end
 
@@ -151,7 +152,7 @@ module Streambox
       FileUtils.mkdir_p 'recordings'
       cmd = "arecord -q -D #{@config.device} -f cd -t raw | " +
             'oggenc - -Q -r -o recordings/dump_`date +%s`.ogg'
-      ResilientProcess.new(cmd, 'arecord', @config.check_record_interval, logger).run
+      ResilientProcess.new(cmd, 'arecord', @config.check_record_interval, 0, logger).run
     end
 
     def start_sync
@@ -178,6 +179,7 @@ module Streambox
       @streamer ||= ResilientProcess.new(stream_cmd,
                                          'darkice',
                                          @config.check_stream_interval,
+                                         @config.restart_stream_delay,
                                          logger)
     end
 

@@ -11,7 +11,7 @@
 #
 module Streambox
 
-  class ResilientProcess < Struct.new(:cmd, :name, :interval, :logger)
+  class ResilientProcess < Struct.new(:cmd, :name, :interval, :delay, :logger)
 
     attr_accessor :running
 
@@ -28,8 +28,9 @@ module Streambox
       end
 
       Thread.new do
+        start unless exists?
         while running
-          start unless exists?
+          start(delay) unless exists?
           #logger.debug "Waiting for pid #{@pid} for #{name}"
           wait
         end
@@ -44,8 +45,6 @@ module Streambox
 
     def restart!
       kill
-      sleep interval
-      sleep 300
     end
 
     private
@@ -61,7 +60,8 @@ module Streambox
       system(cmd)
     end
 
-    def start
+    def start(delay=0)
+      sleep delay
       logger.debug "Run: #{cmd}"
       @pid = Process.spawn(cmd, pgroup: true)
       File.open(@pidfile, 'w') { |f| f.print(@pid) }
