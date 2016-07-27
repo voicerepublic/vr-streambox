@@ -234,7 +234,7 @@ module Streambox
         ext = Faye::Authentication::ClientExtension.new(@config.faye_secret)
         client.add_extension(ext)
 
-        multi_io.add(FayeIO.new(client, identifier)) if config.loglevel == 0
+        multi_io.add(FayeIO.new(client, identifier)) if @config.loglevel == 0
 
         logger.debug "Subscribing to channel '#{channel}'..."
         client.subscribe(channel) { |message| dispatch(message) }
