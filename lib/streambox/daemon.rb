@@ -246,7 +246,7 @@ module Streambox
 
     # TODO maybe rewrite handle_ methods to not use arguments
     def dispatch(message={})
-      logger.debug "Received #{message.inspect}"
+      #logger.debug "Received #{message.inspect}"
       method = "handle_#{message['event']}"
       return send(method, message) if respond_to?(method)
       publish event: 'error', error: "Unknown message: #{message.inspect}"
