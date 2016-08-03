@@ -55,7 +55,7 @@ module Streambox
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
 
-    attr_accessor :client
+    attr_accessor :client, :subscription
 
     def initialize
       Thread.abort_on_exception = true
@@ -237,7 +237,22 @@ module Streambox
         multi_io.add(FayeIO.new(client, identifier)) if @config.loglevel == 0
 
         logger.debug "Subscribing to channel '#{channel}'..."
-        client.subscribe(channel) { |message| dispatch(message) }
+
+        self.subscription = client.subscribe(channel) { |message| dispatch(message) }
+
+        subscription.callback do
+          logger.debug "[SUBSCRIBE SUCCEEDED]"
+        end
+        subscription.errback do |error|
+          logger.debug "[SUBSCRIBE FAILED] #{error.inspect}"
+        end
+
+        client.bind 'transport:down' do
+          logger.debug "[CONNECTION DOWN]"
+        end
+        client.bind 'transport:up' do
+          logger.debug "[CONNECTION UP]"
+        end
 
         publish event: 'print', print: 'Device ready.'
       }
@@ -246,7 +261,7 @@ module Streambox
 
     # TODO maybe rewrite handle_ methods to not use arguments
     def dispatch(message={})
-      #logger.debug "Received #{message.inspect}"
+      logger.debug "Received #{message.inspect}"
       method = "handle_#{message['event']}"
       return send(method, message) if respond_to?(method)
       publish event: 'error', error: "Unknown message: #{message.inspect}"
