@@ -249,6 +249,7 @@ module Streambox
 
         client.bind 'transport:down' do
           logger.debug "[CONNECTION DOWN]"
+          # TODO if connection goes down and stays down for > 1min restart/initialize
         end
         client.bind 'transport:up' do
           logger.debug "[CONNECTION UP]"
