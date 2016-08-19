@@ -241,23 +241,28 @@ module Streambox
         self.subscription = client.subscribe(channel) { |message| dispatch(message) }
 
         subscription.callback do
-          logger.debug "[SUBSCRIBE SUCCEEDED]"
+          logger.debug "Subscribe succeeded."
         end
+
         subscription.errback do |error|
-          logger.debug "[SUBSCRIBE FAILED] #{error.inspect}"
+          logger.warn "Failed to subscribe with #{error.inspect}. Restarting..."
           exit # hardcore method to handle a failed subscription
         end
 
         client.bind 'transport:down' do
-          logger.debug "[CONNECTION DOWN]"
-          # TODO if connection goes down and stays down for > 1min restart/initialize
-          @awaiting_connection = true
+          logger.warn "Connection DOWN: Expecting reconnect..."
+          @awaiting_connection = Time.now
           sleep 60
-          exit if @awaiting_connection
+          unless @awaiting_connection.nil?
+            logger.warn "Connection lost for over 60 seconds. Restarting..."
+            exit
+          end
         end
+
         client.bind 'transport:up' do
-          logger.debug "[CONNECTION UP]"
-          @awaiting_connection = false
+          delta = Time.now - @awaiting_connection
+          logger.warn "Connection UP: Was down for %.2f seconds." % delta
+          @awaiting_connection = nil
         end
 
         publish event: 'print', print: 'Device ready.'
