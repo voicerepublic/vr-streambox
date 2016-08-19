@@ -260,9 +260,11 @@ module Streambox
         end
 
         client.bind 'transport:up' do
-          delta = Time.now - @awaiting_connection
-          logger.warn "Connection UP: Was down for %.2f seconds." % delta
-          @awaiting_connection = nil
+          unless @awaiting_connection.nil?
+            delta = Time.now - @awaiting_connection
+            logger.warn "Connection UP: Was down for %.2f seconds." % delta
+            @awaiting_connection = nil
+          end
         end
 
         publish event: 'print', print: 'Device ready.'
