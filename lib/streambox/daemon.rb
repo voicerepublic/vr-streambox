@@ -252,11 +252,11 @@ module Streambox
         client.bind 'transport:down' do
           logger.warn "Connection DOWN: Expecting reconnect..."
           @awaiting_connection = Time.now
-          sleep 60
-          unless @awaiting_connection.nil?
-            logger.warn "Connection lost for over 60 seconds. Restarting..."
-            exit
-          end
+          #sleep 60
+          #unless @awaiting_connection.nil?
+          #  logger.warn "Connection lost for over 60 seconds. Restarting..."
+          #  exit
+          #end
         end
 
         client.bind 'transport:up' do
