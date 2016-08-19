@@ -259,9 +259,9 @@ module Streambox
                 logger.warn "Connection DOWN for over 60 seconds now. Restarting..."
                 exit
               else
-                logger.warn "Connection DOWN for %.2f seconds now." % delta
+                logger.debug "Connection DOWN for %.0f seconds now." % delta
               end
-              sleep 10
+              sleep 1
             end
           end
         end
