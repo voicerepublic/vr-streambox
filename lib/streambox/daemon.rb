@@ -254,7 +254,6 @@ module Streambox
           @awaiting_connection = Time.now
           Thread.new do
             while @awaiting_connection
-              sleep 10
               delta = Time.now - @awaiting_connection
               if delta > 60
                 logger.warn "Connection DOWN for over 60 seconds now. Restarting..."
@@ -262,6 +261,7 @@ module Streambox
               else
                 logger.warn "Connection DOWN for %.2f seconds now." % delta
               end
+              sleep 10
             end
           end
         end
