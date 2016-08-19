@@ -245,14 +245,19 @@ module Streambox
         end
         subscription.errback do |error|
           logger.debug "[SUBSCRIBE FAILED] #{error.inspect}"
+          exit # hardcore method to handle a failed subscription
         end
 
         client.bind 'transport:down' do
           logger.debug "[CONNECTION DOWN]"
           # TODO if connection goes down and stays down for > 1min restart/initialize
+          @awaiting_connection = true
+          sleep 60
+          exit if @awaiting_connection
         end
         client.bind 'transport:up' do
           logger.debug "[CONNECTION UP]"
+          @awaiting_connection = false
         end
 
         publish event: 'print', print: 'Device ready.'
