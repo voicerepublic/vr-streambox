@@ -423,6 +423,7 @@ module Streambox
 
     def fire_event(event)
       logger.debug ">>>>> #{event}"
+      return if client.nil?
       client.publish '/event/devices', event: event, identifier: identifier
 
       #uri = URI.parse(@config.endpoint + '/' + identifier)
