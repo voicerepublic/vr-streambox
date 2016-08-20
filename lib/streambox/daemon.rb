@@ -422,7 +422,7 @@ module Streambox
     end
 
     def fire_event(event)
-      uri = URI.parse(@config.endpoint)
+      uri = URI.parse(@config.endpoint + '/' + identifier)
       faraday.basic_auth(uri.user, uri.password)
       response = faraday.post(@config.endpoint, device: { event: event })
       logger.warn "Firing event failed.\n" + response.body if response.status != 200
