@@ -55,10 +55,11 @@ module Streambox
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
 
-    attr_accessor :client, :subscription
+    attr_accessor :client, :subscription, :queue
 
     def initialize
       Thread.abort_on_exception = true
+      @queue = []
       @config = OpenStruct.new endpoint: ENDPOINT,
                                loglevel: Logger::INFO,
                                device: 'dsnooped',
@@ -138,6 +139,22 @@ module Streambox
         while @config.state == 'pairing'
           system('ogg123 -q code.ogg')
           sleep 1.5
+        end
+      end
+    end
+
+    def start_publisher
+      Thread.new do
+        loop do
+          if client.nil?
+            sleep 1
+          else
+            until queue.empty?
+              args = self.queue.shift
+              client.publish(*args)
+            end
+            sleep 0.1
+          end
         end
       end
     end
@@ -223,6 +240,7 @@ module Streambox
       else
         Banner.new
       end
+      start_publisher
       start_heartbeat
       start_reporting
       start_recording
@@ -423,8 +441,7 @@ module Streambox
 
     def fire_event(event)
       logger.debug ">>>>> #{event}"
-      return if client.nil?
-      client.publish '/event/devices', event: event, identifier: identifier
+      self.queue << ['/event/devices', {event: event, identifier: identifier}]
 
       #uri = URI.parse(@config.endpoint + '/' + identifier)
       #faraday.basic_auth(uri.user, uri.password)
