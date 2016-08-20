@@ -214,6 +214,7 @@ module Streambox
     end
 
     def run
+      at_exit { fire_event :restart }
       knock
       register
       if @config.state == 'pairing'
@@ -226,7 +227,10 @@ module Streambox
       start_reporting
       start_recording
       start_sync
-      streamer.run if File.exist?('darkice.pid')
+      if File.exist?('darkice.pid')
+        streamer.run
+        fire_event :stream_started
+      end
 
       logger.info "Entering EM loop..."
       EM.run {
@@ -297,12 +301,14 @@ module Streambox
       logger.debug config.inspect
       # HACK this makes the pairing code play loop stop
       @config.state = 'streaming'
+      fire_event :stream_started
     end
 
     # { event: 'stop_streaming' }
     def handle_stop_stream(message={})
       logger.info "Stopping stream..."
       streamer.stop!
+      fire_event :stream_stopped
     end
 
     # { event: 'restart_streaming' }
@@ -310,6 +316,7 @@ module Streambox
       logger.info "Restarting stream..."
       system('killall darkice')
       #streamer.restart!
+      fire_event :stream_restarted
     end
 
     # { event: 'eval', eval: '41+1' }
@@ -331,11 +338,13 @@ module Streambox
 
     def handle_shutdown(message={})
       logger.info "Shutting down..."
+      fire_event :shutdown
       %x[ sudo shutdown -h now ]
     end
 
     def handle_reboot(message={})
       logger.info "Rebooting..."
+      fire_event :restart
       %x[ sudo reboot ]
     end
 
@@ -410,6 +419,13 @@ module Streambox
 
     def config_path
       'darkice.cfg'
+    end
+
+    def fire_event(event)
+      uri = URI.parse(@config.endpoint)
+      faraday.basic_auth(uri.user, uri.password)
+      response = faraday.post(@config.endpoint, device: { event: event })
+      logger.warn "Firing event failed.\n" + response.body if response.status != 200
     end
 
   end
