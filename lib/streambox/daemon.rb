@@ -83,11 +83,12 @@ module Streambox
     end
 
     def apply_config(data)
+      pp data
+
       #device_state = data['state']
       #venue_state = data['venue']['state']
       #logger.debug '%-20s %-20s %-20s' % [identifier, device_state, venue_state]
 
-      #pp data
       # { "state"=>"starting_stream",
       #   "venue"=>{
       #     "name"=>"Phil Hofmann's Venue",
