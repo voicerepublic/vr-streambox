@@ -105,11 +105,11 @@ module Streambox
       #       "port"=>8000}}}
       case data['state']
       when 'starting_stream'
-        handle_start_stream(data['venue'])
+        handle_start_stream(data['venue']) if data['venue']
       when 'restarting_stream'
-        handle_restart_stream(data['venue'])
+        handle_restart_stream(data['venue']) if data['venue']
       when 'stopping_stream'
-        handle_stop_stream(data['venue'])
+        handle_stop_stream
       when 'streaming'
         if data['venue'] && data['venue']['state'] == 'disconnected'
           logger.warn "[RECOVER] Streaming, but venue still disconnected!"
