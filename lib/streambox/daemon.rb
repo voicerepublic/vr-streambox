@@ -88,7 +88,11 @@ module Streambox
 
       device_state = data['state']
       venue_state = data['venue'] && data['venue']['state']
-      logger.debug '%-20s %-20s %-20s' % [identifier, device_state, venue_state]
+      unless @device_state == device_state && @venue_state == venue_state
+        logger.debug '[STATE] Device: %-20s Venue: %-20s' % [device_state, venue_state]
+        @device_state = data['state']
+        @venue_state = data['venue'] && data['venue']['state']
+      end
 
       # { "state"=>"starting_stream",
       #   "venue"=>{
