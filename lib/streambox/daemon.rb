@@ -101,6 +101,11 @@ module Streambox
         handle_restart_stream(data['venue'])
       when 'stopping_stream'
         handle_stop_stream(data['venue'])
+      when 'streaming'
+        if data['venue']['state'] == 'disconnected'
+          logger.warn "Detected: Streaming, but venue is disconnected!"
+          handle_restart_stream(data['venue'])
+        end
       end
 
       data.each do |key, value|
