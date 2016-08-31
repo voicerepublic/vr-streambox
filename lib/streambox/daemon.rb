@@ -194,17 +194,17 @@ module Streambox
     def start_publisher
       Thread.new do
         loop do
-          if client.nil?
-            sleep 1
-          else
-            until queue.empty?
-              # client.publish(*queue.first)
-              message = queue.first.last
-              put(device_url, message)
-              self.queue.shift
-            end
-            sleep 0.1
+          #if client.nil?
+          #  sleep 1
+          #else
+          until queue.empty?
+            # client.publish(*queue.first)
+            message = queue.first.last
+            put(device_url, message)
+            self.queue.shift
           end
+          sleep 0.1
+          #end
         end
       end
     end
@@ -302,17 +302,19 @@ module Streambox
       at_exit { fire_event :restart }
       knock
       register
+      start_publisher
+      start_heartbeat
+      start_reporting
+      start_recording
+      start_sync
+
       if @config.state == 'pairing'
         display_pairing_instructions
         play_pairing_code
       else
         Banner.new
       end
-      start_publisher
-      start_heartbeat
-      start_reporting
-      start_recording
-      start_sync
+
       if File.exist?('darkice.pid')
         streamer.run
         fire_event :found_streaming
