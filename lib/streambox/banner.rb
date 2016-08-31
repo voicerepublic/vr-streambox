@@ -24,7 +24,11 @@ module Streambox
     ]
 
     def initialize
-      system('toilet -f big -t "%s"' % claim)
+      #system('toilet -f big -t "%s"' % claim)
+
+      puts '-' * 60
+      puts claim
+      puts '-' * 60
     end
 
     def claim

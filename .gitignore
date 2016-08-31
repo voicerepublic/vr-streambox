@@ -12,3 +12,7 @@
 *.o
 *.a
 mkmf.log
+/*.pid
+/darkice.log
+/darkice.cfg
+/recordings

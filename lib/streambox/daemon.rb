@@ -83,13 +83,34 @@ module Streambox
     end
 
     def apply_config(data)
+      #pp data
+
+      # { "state"=>"starting_stream",
+      #   "venue"=>{
+      #     "name"=>"Phil Hofmann's Venue",
+      #     "state"=>"awaiting_stream",
+      #     "icecast"=>{
+      #       "public_ip_address"=>"192.168.178.21",
+      #       "source_password"=>"qyifjvpt",
+      #       "mount_point"=>"live",
+      #       "port"=>8000}}}
+      case data['state']
+      when 'starting_stream'
+        handle_start_stream(data['venue'])
+      when 'restarting_stream'
+        handle_restart_stream(data['venue'])
+      when 'stopping_stream'
+        handle_stop_stream(data['venue'])
+      end
+
       data.each do |key, value|
         @config.send("#{key}=", value)
       end
       logger.level = @config.loglevel
-      data.each do |key, value|
-        logger.debug '-> %-20s %-20s' % [key, value]
-      end
+
+      #data.each do |key, value|
+      #  logger.debug '-> %-20s %-20s' % [key, value]
+      #end
       # TODO set system timezone and update clock
     end
 
@@ -98,6 +119,11 @@ module Streambox
       url = @config.endpoint + '/' + identifier
       response = faraday.get(url)
       apply_config(JSON.parse(response.body))
+
+      @config.each do |key, value|
+        logger.debug '-> %-20s %-20s' % [key, value]
+      end
+      logger.info "Knocking complete."
     end
 
     def register
@@ -111,6 +137,10 @@ module Streambox
         exit
       end
       apply_config(JSON.parse(response.body))
+
+      @config.each do |key, value|
+        logger.debug '-> %-20s %-20s' % [key, value]
+      end
       logger.info "Registration complete."
     end
 
@@ -150,12 +180,27 @@ module Streambox
             sleep 1
           else
             until queue.empty?
-              args = self.queue.shift
-              client.publish(*args)
+              # client.publish(*queue.first)
+              message = queue.first.last
+              put(device_url, message)
+              self.queue.shift
             end
             sleep 0.1
           end
         end
+      end
+    end
+
+    def device_url
+      @device_url ||= [@config.endpoint, identifier] * '/'
+    end
+
+    def sound_device
+      if %x[arecord -L | grep #{@config.device}].empty?
+        logger.fatal "--- DEVICE #{@config.device} NOT FOUND, FALLBACK TO default ---"
+        'default'
+      else
+        @config.device
       end
     end
 
@@ -164,14 +209,16 @@ module Streambox
       Thread.new do
         loop do
           sleep @config.heartbeat_interval
-          if client.nil?
-            logger.warn "Skip heartbeat. Client not ready."
-          else
-            client.publish '/heartbeat', {
-                             identifier: identifier,
-                             interval: @config.heartbeat_interval
-                           }
-          end
+          response = put(device_url)
+          apply_config(JSON.parse(response.body))
+          # if client.nil?
+          #   logger.warn "Skip heartbeat. Client not ready."
+          # else
+          #   client.publish '/heartbeat', {
+          #                    identifier: identifier,
+          #                    interval: @config.heartbeat_interval
+          #                  }
+          # end
         end
       end
     end
@@ -197,9 +244,11 @@ module Streambox
     def start_recording
       logger.info "Start backup recording..."
       FileUtils.mkdir_p 'recordings'
-      cmd = "arecord -q -D #{@config.device} -f cd -t raw | " +
-            'oggenc - -Q -r -o recordings/dump_`date +%s`.ogg'
-      ResilientProcess.new(cmd, 'arecord', @config.check_record_interval, 0, logger).run
+      ResilientProcess.new(record_cmd,
+                           'arecord',
+                           @config.check_record_interval,
+                           0,
+                           logger).run
     end
 
     def start_sync
@@ -267,8 +316,7 @@ module Streambox
         end
 
         subscription.errback do |error|
-          logger.warn "Failed to subscribe with #{error.inspect}. Restarting..."
-          exit # hardcore method to handle a failed subscription
+          logger.warn "Failed to subscribe with #{error.inspect}."
         end
 
         client.bind 'transport:down' do
@@ -312,7 +360,7 @@ module Streambox
     # { event: 'start_streaming', icecast: { ... } }
     def handle_start_stream(message={})
       logger.info "Starting stream..."
-      config = message['icecast'].merge(device: @config.device)
+      config = message['icecast'].merge(device: sound_device)
       write_config!(config)
       streamer.stop!
       streamer.run
@@ -414,6 +462,12 @@ module Streambox
       end
     end
 
+    def put(url, data={})
+      uri = URI.parse(url)
+      faraday.basic_auth(uri.user, uri.password)
+      faraday.put(url, data)
+    end
+
     private
 
     def write_config!(config)
@@ -432,7 +486,12 @@ module Streambox
     end
 
     def stream_cmd
-      "darkice -v 0 -c #{config_path} 2>&1 >/dev/null"
+      "darkice -c #{config_path} 2>&1 > darkice.log"
+    end
+
+    def record_cmd
+      "arecord -q -D #{sound_device} -f cd -t raw | " +
+        'oggenc - -Q -r -o recordings/dump_`date +%s`.ogg'
     end
 
     def config_path

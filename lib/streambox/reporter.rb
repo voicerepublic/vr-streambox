@@ -19,7 +19,8 @@ module Streambox
         uptime: uptime,
         usb: usb_devices,
         temperature: temperature,
-        memory: memory
+        memory: memory,
+        disk: disk_free
       }
     end
 
@@ -57,6 +58,17 @@ module Streambox
     def lsusb_path
       @lsusb_path ||= File.expand_path(File.join(%w(.. .. .. lsusb), subtype), __FILE__)
     end
+
+    def disk_free
+      df_cmd = 'df / | tail -1'
+      _, size, used, avail, pcent, _ = %x[#{df_cmd}].chomp.split(/\s+/)
+      { used: used.to_i,
+        avail: avail.to_i,
+        total: size.to_i,
+        pcent: pcent } # 1K-blocks
+    end
+
+    # sudo iwlist wlan0 scan
 
   end
 end
