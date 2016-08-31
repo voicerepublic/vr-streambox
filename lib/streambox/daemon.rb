@@ -83,8 +83,11 @@ module Streambox
     end
 
     def apply_config(data)
-      #pp data
+      device_state = data['state']
+      venue_state = data['venue']['state']
+      logger.debug '%-20s %-20s %-20s' % [identifier, device_state, venue_state]
 
+      #pp data
       # { "state"=>"starting_stream",
       #   "venue"=>{
       #     "name"=>"Phil Hofmann's Venue",
@@ -94,7 +97,7 @@ module Streambox
       #       "source_password"=>"qyifjvpt",
       #       "mount_point"=>"live",
       #       "port"=>8000}}}
-      case data['state']
+      case device_state
       when 'starting_stream'
         handle_start_stream(data['venue'])
       when 'restarting_stream'
@@ -102,7 +105,7 @@ module Streambox
       when 'stopping_stream'
         handle_stop_stream(data['venue'])
       when 'streaming'
-        if data['venue']['state'] == 'disconnected'
+        if venue_state == 'disconnected'
           logger.warn "Detected: Streaming, but venue still disconnected!"
           handle_restart_stream(data['venue'])
         end
