@@ -4,6 +4,7 @@ require 'ostruct'
 require 'uri'
 require 'fileutils'
 require 'erb'
+require 'pp'
 
 require 'faraday'
 require 'eventmachine'
