@@ -22,9 +22,9 @@ module Streambox
       @pid = nil unless exists?
 
       if @pid
-        logger.debug "Found pid #{@pid} for #{name}."
+        logger.debug "[PID] Found #{@pid} for #{name}."
       else
-        logger.debug "Found no pid for #{name}."
+        logger.debug "[PID] Found none for #{name}."
       end
 
       Thread.new do
@@ -62,10 +62,10 @@ module Streambox
 
     def start(delay=0)
       sleep delay
-      logger.debug "Run: #{cmd}"
+      #logger.debug "Run: #{cmd}"
       @pid = Process.spawn(cmd, pgroup: true)
       File.open(@pidfile, 'w') { |f| f.print(@pid) }
-      logger.debug "Pid for #{name} is #{@pid}"
+      logger.debug "[PID] #{name} #{@pid}"
     end
 
     def exists?

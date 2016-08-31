@@ -156,9 +156,9 @@ module Streambox
       end
       apply_config(JSON.parse(response.body))
 
-      @config.each do |key, value|
-        logger.debug '-> %-20s %-20s' % [key, value]
-      end
+      #@config.each do |key, value|
+      #  logger.debug '-> %-20s %-20s' % [key, value]
+      #end
       logger.info "Registration complete."
     end
 
@@ -281,7 +281,7 @@ module Streambox
                 "AWS_SECRET_ACCESS_KEY=#{@config.storage['aws_secret_access_key']} " +
                 "aws s3 sync recordings s3://#{bucket}/#{identifier}" +
                 " --region #{region} --quiet"
-          logger.debug "Run: #{cmd}"
+          #logger.debug "Run: #{cmd}"
           system(cmd)
           logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
                       [Time.now - t0, @config.sync_interval]
@@ -326,12 +326,12 @@ module Streambox
 
         multi_io.add(FayeIO.new(client, identifier)) if @config.loglevel == 0
 
-        logger.debug "Subscribing to channel '#{channel}'..."
+        logger.debug "[FAYE] Subscribing to channel '#{channel}'..."
 
         self.subscription = client.subscribe(channel) { |message| dispatch(message) }
 
         subscription.callback do
-          logger.debug "Subscribe succeeded."
+          logger.debug "[FAYE] Subscribe succeeded."
         end
 
         subscription.errback do |error|
@@ -348,7 +348,7 @@ module Streambox
                 logger.warn "Connection DOWN for over 60 seconds now. Restarting..."
                 exit
               else
-                logger.debug "Connection DOWN for %.0f seconds now." % delta
+                logger.debug "[FAYE] Connection DOWN for %.0f seconds now." % delta
               end
               sleep 1
             end
@@ -370,7 +370,7 @@ module Streambox
 
     # TODO maybe rewrite handle_ methods to not use arguments
     def dispatch(message={})
-      logger.debug "Received #{message.inspect}"
+      logger.debug "[FAYE] Received #{message.inspect}"
       method = "handle_#{message['event']}"
       return send(method, message) if respond_to?(method)
       publish event: 'error', error: "Unknown message: #{message.inspect}"
@@ -383,7 +383,7 @@ module Streambox
       write_config!(config)
       streamer.stop!
       streamer.run
-      logger.debug config.inspect
+      #logger.debug config.inspect
       # HACK this makes the pairing code play loop stop
       @config.state = 'streaming'
       fire_event :stream_started
@@ -407,7 +407,7 @@ module Streambox
     # { event: 'eval', eval: '41+1' }
     def handle_eval(message={})
       code = message['eval']
-      logger.debug "Eval: #{code}"
+      logger.debug "[FAYE] Eval: #{code}"
       output = eval(code)
     rescue => e
       output = 'Error: ' + e.message
@@ -434,13 +434,15 @@ module Streambox
     end
 
     def handle_print(message={})
-      logger.debug "Print: #{message['print']}"
+      logger.debug "[FAYE] Print: #{message['print']}"
     end
 
+    # obsolete
     def handle_heartbeat(message={})
       # ignore
     end
 
+    # obsolete
     def handle_report(message={})
       logger.debug "Report: #{message.inspect}"
     end
@@ -518,7 +520,7 @@ module Streambox
     end
 
     def fire_event(event)
-      logger.debug ">>>>> #{event}"
+      logger.debug "[EVENT] #{event}"
       self.queue << ['/event/devices', {event: event, identifier: identifier}]
 
       #uri = URI.parse(@config.endpoint + '/' + identifier)
