@@ -210,7 +210,8 @@ module Streambox
         loop do
           sleep @config.heartbeat_interval
           response = put(device_url)
-          apply_config(JSON.parse(response.body))
+          p json = JSON.parse(response.body)
+          apply_config(json)
           # if client.nil?
           #   logger.warn "Skip heartbeat. Client not ready."
           # else
