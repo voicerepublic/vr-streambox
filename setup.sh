@@ -14,7 +14,9 @@ message 'Update package database...'
 sudo apt-get update
 
 message 'Installing base dependencies...'
-sudo apt-get -y install ruby ruby-dev darkice toilet libssl-dev python-pip vorbis-tools
+sudo apt-get -y install ruby ruby-dev darkice toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq
+
+message 'Installing bundler...'
 sudo gem install bundler --force --no-ri --no-rdoc
 
 message 'Installing some more dependencies...'

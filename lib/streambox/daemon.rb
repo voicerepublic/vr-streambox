@@ -83,7 +83,7 @@ module Streambox
     end
 
     def apply_config(data)
-      p data
+      #pp data
 
       # { "state"=>"starting_stream",
       #   "venue"=>{
@@ -107,9 +107,10 @@ module Streambox
         @config.send("#{key}=", value)
       end
       logger.level = @config.loglevel
-      data.each do |key, value|
-        logger.debug '-> %-20s %-20s' % [key, value]
-      end
+
+      #data.each do |key, value|
+      #  logger.debug '-> %-20s %-20s' % [key, value]
+      #end
       # TODO set system timezone and update clock
     end
 
@@ -118,6 +119,11 @@ module Streambox
       url = @config.endpoint + '/' + identifier
       response = faraday.get(url)
       apply_config(JSON.parse(response.body))
+
+      @config.each do |key, value|
+        logger.debug '-> %-20s %-20s' % [key, value]
+      end
+      logger.info "Knocking complete."
     end
 
     def register
@@ -131,6 +137,10 @@ module Streambox
         exit
       end
       apply_config(JSON.parse(response.body))
+
+      @config.each do |key, value|
+        logger.debug '-> %-20s %-20s' % [key, value]
+      end
       logger.info "Registration complete."
     end
 
@@ -307,7 +317,6 @@ module Streambox
 
         subscription.errback do |error|
           logger.warn "Failed to subscribe with #{error.inspect}."
-          exit # hardcore method to handle a failed subscription
         end
 
         client.bind 'transport:down' do
