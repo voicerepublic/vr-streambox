@@ -97,7 +97,7 @@ module Streambox
       #       "source_password"=>"qyifjvpt",
       #       "mount_point"=>"live",
       #       "port"=>8000}}}
-      case device_state
+      case data['state']
       when 'starting_stream'
         handle_start_stream(data['venue'])
       when 'restarting_stream'
@@ -105,7 +105,7 @@ module Streambox
       when 'stopping_stream'
         handle_stop_stream(data['venue'])
       when 'streaming'
-        if venue_state == 'disconnected'
+        if data['venue']['state'] == 'disconnected'
           logger.warn "Detected: Streaming, but venue still disconnected!"
           handle_restart_stream(data['venue'])
         end
