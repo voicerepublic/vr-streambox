@@ -103,7 +103,7 @@ module Streambox
         handle_stop_stream(data['venue'])
       when 'streaming'
         if data['venue']['state'] == 'disconnected'
-          logger.warn "Detected: Streaming, but venue is disconnected!"
+          logger.warn "Detected: Streaming, but venue still disconnected!"
           handle_restart_stream(data['venue'])
         end
       end
@@ -215,7 +215,7 @@ module Streambox
         loop do
           sleep @config.heartbeat_interval
           response = put(device_url)
-          p json = JSON.parse(response.body)
+          json = JSON.parse(response.body)
           apply_config(json)
           # if client.nil?
           #   logger.warn "Skip heartbeat. Client not ready."
