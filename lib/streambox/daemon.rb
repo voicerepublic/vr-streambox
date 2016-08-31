@@ -311,7 +311,7 @@ module Streambox
       start_sync
       if File.exist?('darkice.pid')
         streamer.run
-        fire_event :stream_started
+        fire_event :found_streaming
       end
 
       logger.info "Entering EM loop..."
