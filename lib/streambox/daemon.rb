@@ -111,12 +111,12 @@ module Streambox
       when 'stopping_stream'
         handle_stop_stream(data['venue'])
       when 'streaming'
-        if data['venue']['state'] == 'disconnected'
-          logger.warn "Detected: Streaming, but venue still disconnected!"
+        if data['venue'] && data['venue']['state'] == 'disconnected'
+          logger.warn "[RECOVER] Streaming, but venue still disconnected!"
           handle_restart_stream(data['venue'])
         end
-        if data['venue']['state'] == 'disconnect_required'
-          logger.warn "Detected: Streaming, but venue requires disconnect!"
+        if data['venue'] && data['venue']['state'] == 'disconnect_required'
+          logger.warn "[RECOVER] Streaming, but venue requires disconnect!"
           handle_restart_stream(data['venue'])
         end
       end
