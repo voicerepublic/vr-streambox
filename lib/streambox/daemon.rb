@@ -94,7 +94,7 @@ module Streambox
     end
 
     def apply_config(data)
-      pp data
+      #pp data
 
       data.each do |key, value|
         @config.send("#{key}=", value)
@@ -112,8 +112,10 @@ module Streambox
       #       "mount_point"=>"live",
       #       "port"=>8000}}}
 
+
       version = data['version']
-      if version and version < @reporter.version
+      #logger.debug "[VERSION] #{version} #{@reporter.version}"
+      if version and version > @reporter.version
         logger.warn 'Version requirement not satetisfied. Exit, update & restart.'
         exit
       end
