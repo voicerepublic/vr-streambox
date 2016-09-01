@@ -119,6 +119,11 @@ module Streambox
           logger.warn "[RECOVER] Streaming, but venue requires disconnect!"
           handle_restart_stream(data['venue'])
         end
+      when 'idle'
+        if data['venue'] && data['venue']['state'] == 'awaiting_stream'
+          logger.warn "[RECOVER] Idle, but venue is awaiting stream!"
+          handle_start_stream(data['venue'])
+        end
       end
 
       data.each do |key, value|
@@ -513,8 +518,8 @@ module Streambox
     end
 
     def record_cmd
-      "arecord -q -D #{sound_device} -f cd -t raw | " +
-        'oggenc - -Q -r -o recordings/dump_`date +%s`.ogg'
+      "arecord -q -D #{sound_device} -f cd -t raw 2> arecord.log | " +
+        'oggenc - -Q -r -o recordings/dump_`date +%s`.ogg 2> oggenc.log'
     end
 
     def config_path
