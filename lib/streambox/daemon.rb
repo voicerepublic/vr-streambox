@@ -20,6 +20,13 @@ require "streambox/banner"
 # Test if an Icecast Server is Running on the given target
 # curl -D - http://192.168.178.21:8000/ | grep Icecast
 
+# TODO
+# * start right away, do not check for network do not update
+# * start recording
+# * test if network is available, repeat until available
+# * knocking should state which version is up to date
+# * exit if update is required
+# * after exit try to update if network is available
 module Streambox
 
   class MultiIO
@@ -104,8 +111,9 @@ module Streambox
 
       if data['venue']
         state = data['venue']['state'].to_sym
+        name = data['venue']['name']
         unless @state == state
-          logger.debug '[STATE] %-20s' % state
+          logger.debug '[STATE] %-20s %-20s' % [state, name]
           @state = state
         end
 
