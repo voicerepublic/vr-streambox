@@ -13,6 +13,11 @@ module Streambox
                      File.read('/home/pi/subtype') : 'dev'
     end
 
+    def verison
+      @version ||= File.exist?('VERSION') ?
+                     File.read('VERSION').to_i : 0
+    end
+
     # TODO make it a nice hash
     def report
       {

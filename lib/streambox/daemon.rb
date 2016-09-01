@@ -109,6 +109,12 @@ module Streambox
       #       "mount_point"=>"live",
       #       "port"=>8000}}}
 
+      version = data['version']
+      if version and version < @reporter.version
+        logger.warn 'Version requirement not satetisfied. Exit, update & restart.'
+        exit
+      end
+
       if data['venue']
         state = data['venue']['state'].to_sym
         name = data['venue']['name']
@@ -207,6 +213,11 @@ module Streambox
 
     def heartbeat
       response = put(device_url)
+      @network = response.status != 200
+      if @prev_network != @network
+        logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
+        @prev_network = @network
+      end
       json = JSON.parse(response.body)
       apply_config(json)
     end
@@ -293,10 +304,10 @@ module Streambox
 
     def run
       at_exit { fire_event :restart }
+      start_heartbeat
       knock
       register
       start_publisher
-      start_heartbeat
       start_reporting
       start_recording
       start_observer 'darkice'
@@ -383,7 +394,7 @@ module Streambox
       new_streamer!
       @streamer.run
       # HACK this makes the pairing code play loop stop
-      @config.state = 'streaming'
+      @config.state = 'running'
       fire_event :stream_started
     end
 
