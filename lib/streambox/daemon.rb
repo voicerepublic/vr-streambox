@@ -11,6 +11,7 @@ require 'eventmachine'
 require 'faye'
 require 'faye/authentication'
 
+require "fifo"
 require "streambox/version"
 require "streambox/reporter"
 require "streambox/resilient_process"
@@ -19,7 +20,6 @@ require "streambox/banner"
 # Test if an Icecast Server is Running on the given target
 # curl -D - http://192.168.178.21:8000/ | grep Icecast
 
-# TODO introduce a proper state machine
 module Streambox
 
   class MultiIO
@@ -86,13 +86,11 @@ module Streambox
     def apply_config(data)
       #pp data
 
-      device_state = data['state']
-      venue_state = data['venue'] && data['venue']['state']
-      unless @device_state == device_state && @venue_state == venue_state
-        logger.debug '[STATE] Device: %-20s Venue: %-20s' % [device_state, venue_state]
-        @device_state = data['state']
-        @venue_state = data['venue'] && data['venue']['state']
+      data.each do |key, value|
+        @config.send("#{key}=", value)
       end
+      logger.level = @config.loglevel
+      # TODO set system timezone and update clock
 
       # { "state"=>"starting_stream",
       #   "venue"=>{
@@ -103,42 +101,23 @@ module Streambox
       #       "source_password"=>"qyifjvpt",
       #       "mount_point"=>"live",
       #       "port"=>8000}}}
-      case data['state']
-      when 'starting_stream'
-        handle_start_stream(data['venue']) if data['venue']
-      when 'restarting_stream'
-        handle_restart_stream(data['venue']) if data['venue']
-      when 'stopping_stream'
-        handle_stop_stream
-      when 'streaming'
-        if data['venue'] && data['venue']['state'] == 'disconnected'
-          logger.warn "[RECOVER] Streaming, but venue still disconnected!"
-          handle_restart_stream(data['venue'])
+
+      if data['venue']
+        state = data['venue']['state'].to_sym
+        unless @state == state
+          logger.debug '[STATE] %-20s' % state
+          @state = state
         end
-        if data['venue'] && data['venue']['state'] == 'disconnect_required'
-          logger.warn "[RECOVER] Streaming, but venue requires disconnect!"
-          handle_restart_stream(data['venue'])
-        end
-      when 'idle'
-        if data['venue'] && data['venue']['state'] == 'awaiting_stream'
-          logger.warn "[RECOVER] Idle, but venue is awaiting stream!"
+
+        # in certain states we have to react
+        case state
+        when :awaiting_stream, :disconnected
           handle_start_stream(data['venue'])
-        end
-        if data['venue'] && data['venue']['state'] == 'disconnect_required'
-          logger.warn "[RECOVER] Idle, but venue requires disconnect!"
-          handle_restart_stream(data['venue'])
+        when :disconnect_required
+          handle_stop_stream
         end
       end
 
-      data.each do |key, value|
-        @config.send("#{key}=", value)
-      end
-      logger.level = @config.loglevel
-
-      #data.each do |key, value|
-      #  logger.debug '-> %-20s %-20s' % [key, value]
-      #end
-      # TODO set system timezone and update clock
     end
 
     def knock
@@ -203,17 +182,13 @@ module Streambox
     def start_publisher
       Thread.new do
         loop do
-          #if client.nil?
-          #  sleep 1
-          #else
           until queue.empty?
-            # client.publish(*queue.first)
             message = queue.first.last
+            logger.debug "[EVENT] #{message.inspect}"
             put(device_url, message)
             self.queue.shift
           end
-          sleep 0.1
-          #end
+          sleep 0.1 # rate limited to 10 messages per second
         end
       end
     end
@@ -231,22 +206,32 @@ module Streambox
       end
     end
 
+    def heartbeat
+      response = put(device_url)
+      json = JSON.parse(response.body)
+      apply_config(json)
+    end
+
+    def start_observer(name)
+      file = name + '.log'
+      File.unlink(file) if File.exist?(file) and File.ftype(file) != 'fifo'
+
+      logger.info "Start observer for #{name}..."
+      fifo = Fifo.new(file)
+      Thread.new do
+        loop do
+          line = fifo.gets
+          logger.debug "[#{name.upcase}] #{line}"
+        end
+      end
+    end
+
     def start_heartbeat
       logger.info "Start heartbeat..."
       Thread.new do
         loop do
+          heartbeat
           sleep @config.heartbeat_interval
-          response = put(device_url)
-          json = JSON.parse(response.body)
-          apply_config(json)
-          # if client.nil?
-          #   logger.warn "Skip heartbeat. Client not ready."
-          # else
-          #   client.publish '/heartbeat', {
-          #                    identifier: identifier,
-          #                    interval: @config.heartbeat_interval
-          #                  }
-          # end
         end
       end
     end
@@ -256,6 +241,7 @@ module Streambox
       Thread.new do
         loop do
           sleep @config.report_interval
+          # TODO rewrite to http request
           if client.nil?
             logger.warn "Skip report. Client not ready."
           else
@@ -290,7 +276,6 @@ module Streambox
                 "AWS_SECRET_ACCESS_KEY=#{@config.storage['aws_secret_access_key']} " +
                 "aws s3 sync recordings s3://#{bucket}/#{identifier}" +
                 " --region #{region} --quiet"
-          #logger.debug "Run: #{cmd}"
           system(cmd)
           logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
                       [Time.now - t0, @config.sync_interval]
@@ -315,6 +300,9 @@ module Streambox
       start_heartbeat
       start_reporting
       start_recording
+      start_observer 'darkice'
+      start_observer 'arecord'
+      start_observer 'oggenc'
       start_sync
 
       if @config.state == 'pairing'
@@ -531,7 +519,6 @@ module Streambox
     end
 
     def fire_event(event)
-      logger.debug "[EVENT] #{event}"
       self.queue << ['/event/devices', {event: event, identifier: identifier}]
 
       #uri = URI.parse(@config.endpoint + '/' + identifier)
