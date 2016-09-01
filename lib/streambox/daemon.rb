@@ -68,12 +68,15 @@ module Streambox
     def initialize
       Thread.abort_on_exception = true
       @queue = []
+      # these are just defaults
       @config = OpenStruct.new endpoint: ENDPOINT,
                                loglevel: Logger::INFO,
                                device: 'dsnooped',
                                sync_interval: 60 * 10, # 10 minutes
                                check_record_interval: 1,
                                check_stream_interval: 1,
+                               heartbeat_interval: 10,
+                               reportinterval: 60,
                                restart_stream_delay: 2
       @reporter = Reporter.new
     end
@@ -304,6 +307,9 @@ module Streambox
 
     def run
       at_exit { fire_event :restart }
+
+      logger.warn "Version #{version}"
+
       start_heartbeat
       knock
       register
