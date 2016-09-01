@@ -121,7 +121,7 @@ module Streambox
         case state
         when :awaiting_stream, :disconnected
           handle_start_stream(data['venue'])
-        when :disconnect_required
+        when :disconnect_required, :offline, :available, :provisioning
           handle_stop_stream
         end
       end
@@ -130,13 +130,8 @@ module Streambox
 
     def knock
       logger.info "Knocking..."
-      url = @config.endpoint + '/' + identifier
-      response = faraday.get(url)
+      response = faraday.get(device_url)
       apply_config(JSON.parse(response.body))
-
-      @config.each do |key, value|
-        logger.debug '-> %-20s %-20s' % [key, value]
-      end
       logger.info "Knocking complete."
     end
 
@@ -151,10 +146,6 @@ module Streambox
         exit
       end
       apply_config(JSON.parse(response.body))
-
-      #@config.each do |key, value|
-      #  logger.debug '-> %-20s %-20s' % [key, value]
-      #end
       logger.info "Registration complete."
     end
 
@@ -202,7 +193,7 @@ module Streambox
     end
 
     def device_url
-      @device_url ||= [@config.endpoint, identifier] * '/'
+      [@config.endpoint, identifier] * '/'
     end
 
     def sound_device
@@ -292,12 +283,12 @@ module Streambox
       end
     end
 
-    def streamer
-      @streamer ||= ResilientProcess.new(stream_cmd,
-                                         'darkice',
-                                         @config.check_stream_interval,
-                                         @config.restart_stream_delay,
-                                         logger)
+    def new_streamer!
+      @streamer = ResilientProcess.new(stream_cmd,
+                                       'darkice',
+                                       @config.check_stream_interval,
+                                       @config.restart_stream_delay,
+                                       logger)
     end
 
     def run
@@ -388,9 +379,9 @@ module Streambox
       logger.info "Starting stream..."
       config = message['icecast'].merge(device: sound_device)
       write_config!(config)
-      streamer.stop!
-      streamer.run
-      #logger.debug config.inspect
+      @streamer and @streamer.stop!
+      new_streamer!
+      @streamer.run
       # HACK this makes the pairing code play loop stop
       @config.state = 'streaming'
       fire_event :stream_started
@@ -399,16 +390,8 @@ module Streambox
     # { event: 'stop_streaming' }
     def handle_stop_stream(message={})
       logger.info "Stopping stream..."
-      streamer.stop!
+      @streamer && @streamer.stop!
       fire_event :stream_stopped
-    end
-
-    # { event: 'restart_streaming' }
-    def handle_restart_stream(message={})
-      logger.info "Restarting stream..."
-      system('killall darkice')
-      #streamer.restart!
-      fire_event :stream_restarted
     end
 
     # { event: 'eval', eval: '41+1' }
@@ -518,8 +501,8 @@ module Streambox
     end
 
     def record_cmd
-      "arecord -q -D #{sound_device} -f cd -t raw 2> arecord.log | " +
-        'oggenc - -Q -r -o recordings/dump_`date +%s`.ogg 2> oggenc.log'
+      "arecord -D #{sound_device} -f cd -t raw 2> arecord.log | " +
+        'oggenc - -r -o recordings/dump_`date +%s`.ogg 2>&1 > oggenc.log'
     end
 
     def config_path
