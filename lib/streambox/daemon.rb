@@ -124,6 +124,10 @@ module Streambox
           logger.warn "[RECOVER] Idle, but venue is awaiting stream!"
           handle_start_stream(data['venue'])
         end
+        if data['venue'] && data['venue']['state'] == 'disconnect_required'
+          logger.warn "[RECOVER] Idle, but venue requires disconnect!"
+          handle_restart_stream(data['venue'])
+        end
       end
 
       data.each do |key, value|
