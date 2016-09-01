@@ -159,7 +159,7 @@ module Streambox
       faraday.basic_auth(uri.user, uri.password)
       response = faraday.post(@config.endpoint, device: payload)
       if response.status != 200
-        logger.warn "Registration failed.\n" + response.body
+        logger.warn "Registration failed with #{response.status}.\n" + response.body
         logger.warn "Exiting..."
         exit
       end
