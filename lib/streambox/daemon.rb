@@ -308,7 +308,7 @@ module Streambox
     def run
       at_exit { fire_event :restart }
 
-      logger.warn "Version #{version}"
+      logger.warn "Version #{@reporter.version}"
 
       start_heartbeat
       knock
