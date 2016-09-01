@@ -229,7 +229,7 @@ module Streambox
       Thread.new do
         loop do
           line = fifo.gets
-          logger.debug "[#{name.upcase}] #{line}"
+          logger.debug "[#{name.upcase}] #{line.chomp}"
         end
       end
     end
