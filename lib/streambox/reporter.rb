@@ -13,7 +13,7 @@ module Streambox
                      File.read('/home/pi/subtype') : 'dev'
     end
 
-    def verison
+    def version
       @version ||= File.exist?('VERSION') ?
                      File.read('VERSION').to_i : 0
     end
