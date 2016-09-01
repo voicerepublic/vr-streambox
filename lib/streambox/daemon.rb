@@ -122,7 +122,7 @@ module Streambox
         when :awaiting_stream, :disconnected
           handle_start_stream(data['venue'])
         when :disconnect_required, :offline, :available, :provisioning
-          handle_stop_stream
+          handle_stop_stream if @streamer
         end
       end
 
@@ -501,8 +501,8 @@ module Streambox
     end
 
     def record_cmd
-      "arecord -D #{sound_device} -f cd -t raw 2> arecord.log | " +
-        'oggenc - -r -o recordings/dump_`date +%s`.ogg 2>&1 > oggenc.log'
+      "arecord -q -D #{sound_device} -f cd -t raw 2> arecord.log | " +
+        'oggenc - -Q -r -o recordings/dump_`date +%s`.ogg > oggenc.log'
     end
 
     def config_path
