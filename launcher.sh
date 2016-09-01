@@ -19,6 +19,11 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 message "Initial launch..."
 
+$DIR/expand.sh
+
+message 'Removing stale pid files...'
+rm -f ~pi/streambox/*.pid
+
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
@@ -28,11 +33,6 @@ JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","user
 curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
 echo
-
-$DIR/expand.sh
-
-message 'Removing stale pid files...'
-rm -f ~pi/streambox/*.pid
 
 while :
 do
