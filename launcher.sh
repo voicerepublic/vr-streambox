@@ -19,12 +19,11 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 message "Initial launch..."
 
-
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
 BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
-TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP started."
+TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP starting..."
 JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
 curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
@@ -37,26 +36,8 @@ rm -f ~pi/streambox/*.pid
 
 while :
 do
-    message 'Provisioning keys...'
-    mkdir -p /root/.ssh
-    cp $DIR/id_rsa* /root/.ssh
-    chmod 600 /root/.ssh/id_rsa*
-
-    message 'Checking network connectivity...'
-    ping -n -c 1 voicerepublic.com
-    while  [ $? -ne 0 ]
-    do
-        sleep 2
-        ping -n -c 1 voicerepublic.com
-    done
-
-
-    message 'Updating...'
-    (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
-
 
     (cd $DIR && ./start.sh)
-
 
     message 'Exited. Restarting in 5s...'
     sleep 5
@@ -66,4 +47,21 @@ do
     curl -X POST -H 'Content-type: application/json' --data "$JSON" \
          https://hooks.slack.com/services/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
     echo
+
+    message 'Provisioning keys...'
+    mkdir -p /root/.ssh
+    cp $DIR/id_rsa* /root/.ssh
+    chmod 600 /root/.ssh/id_rsa*
+
+    # message 'Checking network connectivity...'
+    # ping -n -c 1 voicerepublic.com
+    # while  [ $? -ne 0 ]
+    # do
+    #     sleep 2
+    #     ping -n -c 1 voicerepublic.com
+    # done
+
+    message 'Updating...'
+    (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
+
 done
