@@ -113,7 +113,7 @@ module Streambox
         state = data['venue']['state'].to_sym
         name = data['venue']['name']
         unless @state == state
-          logger.debug '[STATE] %-20s %-20s' % [state, name]
+          logger.debug '[STATE] %-30s -> %-20s' % [name, state.to_s.upcase]
           @state = state
         end
 
