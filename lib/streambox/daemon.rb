@@ -316,7 +316,7 @@ module Streambox
       knock
       register
       start_publisher
-      start_reporting
+      #start_reporting
       start_recording
       start_observer 'darkice'
       start_observer 'arecord'
@@ -335,53 +335,57 @@ module Streambox
         fire_event :found_streaming
       end
 
-      logger.info "Entering EM loop..."
-      EM.run {
-        self.client = Faye::Client.new(@config.faye_url)
-        ext = Faye::Authentication::ClientExtension.new(@config.faye_secret)
-        client.add_extension(ext)
+      # logger.info "Entering EM loop..."
+      # EM.run {
+      #   self.client = Faye::Client.new(@config.faye_url)
+      #   ext = Faye::Authentication::ClientExtension.new(@config.faye_secret)
+      #   client.add_extension(ext)
+      #
+      #   multi_io.add(FayeIO.new(client, identifier)) if @config.loglevel == 0
+      #
+      #   logger.debug "[FAYE] Subscribing to channel '#{channel}'..."
+      #
+      #   self.subscription = client.subscribe(channel) { |message| dispatch(message) }
+      #
+      #   subscription.callback do
+      #     logger.debug "[FAYE] Subscribe succeeded."
+      #   end
+      #
+      #   subscription.errback do |error|
+      #     logger.warn "Failed to subscribe with #{error.inspect}."
+      #   end
+      #
+      #   client.bind 'transport:down' do
+      #     logger.warn "Connection DOWN. Expecting reconnect..."
+      #     @awaiting_connection = Time.now
+      #     Thread.new do
+      #       while @awaiting_connection
+      #         delta = Time.now - @awaiting_connection
+      #         if delta > 60
+      #           logger.warn "Connection DOWN for over 60 seconds now. Restarting..."
+      #           exit
+      #         else
+      #           logger.debug "[FAYE] Connection DOWN for %.0f seconds now." % delta
+      #         end
+      #         sleep 1
+      #       end
+      #     end
+      #   end
+      #
+      #   client.bind 'transport:up' do
+      #     unless @awaiting_connection.nil?
+      #       delta = Time.now - @awaiting_connection
+      #       logger.warn "Connection UP. Was down for %.2f seconds." % delta
+      #       @awaiting_connection = nil
+      #     end
+      #   end
+      #
+      #   publish event: 'print', print: 'Device ready.'
+      # }
+      loop do
+        sleep 5
+      end
 
-        multi_io.add(FayeIO.new(client, identifier)) if @config.loglevel == 0
-
-        logger.debug "[FAYE] Subscribing to channel '#{channel}'..."
-
-        self.subscription = client.subscribe(channel) { |message| dispatch(message) }
-
-        subscription.callback do
-          logger.debug "[FAYE] Subscribe succeeded."
-        end
-
-        subscription.errback do |error|
-          logger.warn "Failed to subscribe with #{error.inspect}."
-        end
-
-        client.bind 'transport:down' do
-          logger.warn "Connection DOWN. Expecting reconnect..."
-          @awaiting_connection = Time.now
-          Thread.new do
-            while @awaiting_connection
-              delta = Time.now - @awaiting_connection
-              if delta > 60
-                logger.warn "Connection DOWN for over 60 seconds now. Restarting..."
-                exit
-              else
-                logger.debug "[FAYE] Connection DOWN for %.0f seconds now." % delta
-              end
-              sleep 1
-            end
-          end
-        end
-
-        client.bind 'transport:up' do
-          unless @awaiting_connection.nil?
-            delta = Time.now - @awaiting_connection
-            logger.warn "Connection UP. Was down for %.2f seconds." % delta
-            @awaiting_connection = nil
-          end
-        end
-
-        publish event: 'print', print: 'Device ready.'
-      }
       logger.warn "Exiting."
     end
 
