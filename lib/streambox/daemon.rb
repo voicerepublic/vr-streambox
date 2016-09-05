@@ -414,6 +414,7 @@ module Streambox
     def handle_stop_stream(message={})
       logger.info "Stopping stream..."
       @streamer && @streamer.stop!
+      @streamer = nil
       fire_event :stream_stopped
     end
 
