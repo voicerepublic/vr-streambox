@@ -332,7 +332,7 @@ module Streambox
 
       if File.exist?('darkice.pid')
         new_streamer!
-        fire_event :found_streaming
+        #fire_event :found_streaming
       end
 
       # logger.info "Entering EM loop..."
