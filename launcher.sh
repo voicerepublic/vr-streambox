@@ -24,6 +24,9 @@ $DIR/expand.sh
 message 'Removing stale pid files...'
 rm -f ~pi/streambox/*.pid
 
+message 'Wait 3s for network device to settle...'
+sleep 3
+
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`

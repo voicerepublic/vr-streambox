@@ -345,6 +345,19 @@ Check both keys (public and private) into this repo.
 * for production boxes make commands in scripts silent
 * set the timezone of organization/venue
   * https://www.raspberrypi.org/forums/viewtopic.php?t=4977&f=5
+* `sudo dpkg --configure -a` sometimes helps and seems idempotent
+* `sudo bing -e 200 localhost voicerepublic.com`
+* What happens if we `bing` from behind a FW?
+
+```
+wget -c https://github.com/raboof/nethogs/archive/v0.8.5.tar.gz
+tar xf v0.8.5.tar.gz 
+cd ./nethogs-0.8.5/
+sudo apt-get -y install libncurses5-dev libpcap-dev
+make && sudo make install
+nethogs -V
+sudo nethogs
+```
 
 ## References
 
