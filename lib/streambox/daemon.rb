@@ -331,7 +331,7 @@ module Streambox
       end
 
       if File.exist?('darkice.pid')
-        streamer.run
+        new_streamer!
         fire_event :found_streaming
       end
 
