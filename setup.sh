@@ -12,6 +12,13 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 message 'Update package database...'
 sudo apt-get update
+if [ $? -eq 0 ]; then
+    message 'All good!'
+else
+    message 'Update failed, attempt to fix...'
+    sudo dpkg --configure -a
+    sudo apt-get update
+fi
 
 message 'Installing base dependencies...'
 sudo apt-get -y install ruby ruby-dev darkice toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq
