@@ -294,7 +294,9 @@ module Streambox
           cmd = "AWS_ACCESS_KEY_ID=#{@config.storage['aws_access_key_id']} " +
                 "AWS_SECRET_ACCESS_KEY=#{@config.storage['aws_secret_access_key']} " +
                 "aws s3 sync recordings s3://#{bucket}/#{identifier}" +
-                " --region #{region} --quiet"
+                " --region #{region} --quiet" +
+                # if successful delete all but the most recent file
+                " && (cd recordings; ls -1tp | tail -n +2 | xargs -I {} rm -- {})"
           system(cmd)
           logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
                       [Time.now - t0, @config.sync_interval]
