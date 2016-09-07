@@ -18,6 +18,18 @@ module Streambox
                      File.read('VERSION').to_i : 0
     end
 
+    def private_ip_address
+      `hostname -I | cut -d ' ' -f 1`.chomp
+    end
+
+    def mac_address_ethernet
+      File.read('/sys/class/net/eth0/address').chomp
+    end
+
+    def mac_address_wifi
+      File.read('/sys/class/net/wlan0/address').chomp
+    end
+
     # TODO make it a nice hash
     def report
       {

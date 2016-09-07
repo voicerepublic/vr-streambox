@@ -87,9 +87,13 @@ module Streambox
 
     def payload
       {
-        identifier: identifier,
-        type: 'Streambox',
-        subtype: @reporter.subtype
+        identifier:           identifier,
+        type:                 'Streambox',
+        subtype:              @reporter.subtype,
+        private_ip_address:   @reporter.private_ip_address,
+        mac_address_ethernet: @reporter.mac_address_ethernet,
+        mac_address_wifi:     @reporter.mac_address_wifi,
+        version:              @reporter.version
       }
     end
 
@@ -310,10 +314,11 @@ module Streambox
     def run
       at_exit { fire_event :restart }
 
-      logger.warn "Version #{@reporter.version}"
+      logger.info "Id #{identifier}, Version #{@reporter.version}"
 
       start_heartbeat
       knock
+      logger.debug "Endpoint #{@config.endpoint}"
       register
       start_publisher
       #start_reporting
