@@ -20,7 +20,7 @@ def expected_branch
   url = ENDPOINT + '/' + identifier
   response = faraday.get(url)
   br = JSON.parse(response.body)["branch"]
-  @branch = br.nil? ? 'master' : br
+  @branch = br.nil? ? current_branch : br
 end
 
 def current_branch
@@ -36,6 +36,6 @@ def branch?(name)
 end
 
 unless current_branch == expected_branch
-  change_git_branch(expected_branch) 
+  change_git_branch(expected_branch)
   %x(reboot)
 end
