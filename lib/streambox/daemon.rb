@@ -148,6 +148,10 @@ module Streambox
       response = faraday.get(device_url)
       apply_config(JSON.parse(response.body))
       logger.info "Knocking complete."
+
+    rescue Faraday::ConnectionFailed
+      logger.fatal "Error: The internet connection seems to be down."
+      exit
     end
 
     def register
@@ -162,6 +166,10 @@ module Streambox
       end
       apply_config(JSON.parse(response.body))
       logger.info "Registration complete."
+
+    rescue Faraday::ConnectionFailed
+      logger.fatal "Error: The internet connection seems to be down."
+      exit
     end
 
     def display_pairing_instructions
@@ -315,14 +323,14 @@ module Streambox
       at_exit { fire_event :restart }
 
       logger.info "Id #{identifier}, Version #{@reporter.version}"
+      start_recording
 
-      start_heartbeat
       knock
       logger.debug "Endpoint #{@config.endpoint}"
       register
+      start_heartbeat
       start_publisher
       #start_reporting
-      start_recording
       start_observer 'darkice'
       start_observer 'arecord'
       start_observer 'oggenc'
@@ -506,6 +514,10 @@ module Streambox
       uri = URI.parse(url)
       faraday.basic_auth(uri.user, uri.password)
       faraday.put(url, data)
+
+    rescue Faraday::ConnectionFailed
+      logger.fatal "Error: The internet connection seems to be down."
+      exit
     end
 
     private
