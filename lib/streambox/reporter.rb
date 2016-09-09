@@ -14,8 +14,8 @@ module Streambox
     end
 
     def version
-      @version ||= File.exist?('VERSION') ?
-                     File.read('VERSION').to_i : 0
+      File.exist?('VERSION') ?
+        File.read('VERSION').to_i : 0
     end
 
     def private_ip_address

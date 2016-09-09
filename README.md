@@ -351,13 +351,53 @@ Check both keys (public and private) into this repo.
 
 ```
 wget -c https://github.com/raboof/nethogs/archive/v0.8.5.tar.gz
-tar xf v0.8.5.tar.gz 
+tar xf v0.8.5.tar.gz
 cd ./nethogs-0.8.5/
 sudo apt-get -y install libncurses5-dev libpcap-dev
 make && sudo make install
 nethogs -V
 sudo nethogs
 ```
+
+## A general layout for future versions
+
+The streambox has to do a couple of things, some intertwined, some not.
+
+I suggest a "timed" queue of jobs, which is worked off sequentially.
+
+The starting of an agent may be a job. Agents may put new jobs on the
+queue. But jobs may also put new jobs on the queue. For example a job
+that needs an internet connection may enqueue itself upon failure to
+facilitate a retries until successful.
+
+Timeing is an issue so jobs may have a time at which they sould be
+executed. Two special time values like `:asap` or `:inorder` could
+provide special features like high priority or the job should be
+executed at the position it was put on the queue, resepcitvely.
+
+## Updates
+
+https://gitlab.com/voicerepublic/streambox/repository/archive.tar.gz?ref=v12
+
+On the current initial images `/home/pi/streambox` is a directory
+containing the git repo.
+
+To facilitate 2 different update mechanisms for development &
+production, we will change this to a symlink which will later either
+point to `/home/pi/streambox-repo` or a release
+`/home/pi/streambox-master-...`.
+
+Before the first upgrade to a release the launcher will touch a file
+`/boot/dev_box` if the git repo is currently on another branch than
+`master`. If it's on master no file will be created.
+
+On upgrade to a release we will allways set the the symlink to the
+release path.
+
+But if the box has the file `/boot/dev_box` the launcher will overwrite
+the symlink and make it point back to `/home/pi/streambox-repo`.
+
+
 
 ## References
 

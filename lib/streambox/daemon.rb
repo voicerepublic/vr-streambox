@@ -97,6 +97,47 @@ module Streambox
       }
     end
 
+    def token
+      @token ||= File.read('PRIVATE_TOKEN')
+    end
+
+    # this only works for releases
+    def reboot_required?(from, to)
+      return true if from < 13
+
+      false
+    end
+
+    def dev_box?
+      File.exist?('/boot/dev_box')
+    end
+
+    def upgrade(from, to)
+      if dev_box?
+        system "./update_development.sh"
+      else
+        system "VERSION=%s TOKEN=%s ./upgrade_to_release.sh" % [to, token]
+
+        if reboot_required?(from, to)
+          logger.warn 'Rebooting...'
+          system 'reboot'
+          return
+        end
+      end
+
+      logger.warn 'Restart...'
+      exit
+    end
+
+    def check_version
+      response = faraday.get 'https://voicerepublic.com/versions/streamboxx'
+      version = response.body.to_i
+      if version > @reporter.version
+        logger.warn 'Version requirement not satisfied. Update...'
+        upgrade(@reporter.version, version)
+      end
+    end
+
     def apply_config(data)
       #pp data
 
@@ -314,11 +355,16 @@ module Streambox
     def run
       at_exit { fire_event :restart }
 
-      logger.info "Id #{identifier}, Version #{@reporter.version}"
+      logger.info "Id %s, IP %s, Version %s" %
+                  [identifier,
+                   @reporter.private_ip_address,
+                   @reporter.version]
 
-      start_heartbeat
+      start_recording
+      check_version
       knock
       logger.debug "Endpoint #{@config.endpoint}"
+      start_heartbeat
       register
       start_publisher
       #start_reporting
@@ -335,7 +381,7 @@ module Streambox
         Banner.new
       end
 
-      if File.exist?('darkice.pid')
+      if File.exist?('../darkice.pid')
         new_streamer!
         #fire_event :found_streaming
       end

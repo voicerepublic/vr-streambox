@@ -27,6 +27,8 @@ rm -f ~pi/streambox/*.pid
 message 'Wait 3s for network device to settle...'
 sleep 3
 
+
+
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
@@ -37,11 +39,27 @@ curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
 echo
 
-message 'Attempt to update before starting...'
-(cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
+# persist the dev box trait on /boot
+if [ "$BRANCH" -ne "master" ]; then
+    touch /boot/dev_box
+fi
+
+# migrate repo somewhere else to make space for symlink
+if [ -d ~pi/streambox ]; then
+    mv ~pi/streambox ~pi/streambox-repo
+    ln -sf ~pi/streambox-repo ~pi/streambox
+fi
+
+#message 'Attempt to update before starting...'
+#(cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
 while :
 do
+
+    # make sure dev boxes use the repo
+    if [ -e /boot/dev_box ]; then
+        ln -sf ~pi/streambox-repo ~pi/streambox
+    fi
 
     (cd $DIR && ./start.sh)
 
@@ -67,7 +85,7 @@ do
     #     ping -n -c 1 voicerepublic.com
     # done
 
-    message 'Updating...'
-    (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
+    #message 'Updating...'
+    #(cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
 done
