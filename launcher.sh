@@ -27,8 +27,6 @@ rm -f ~pi/streambox/*.pid
 message 'Wait 3s for network device to settle...'
 sleep 3
 
-
-
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
@@ -50,15 +48,14 @@ if [ -d ~pi/streambox ]; then
     ln -sf ~pi/streambox-repo ~pi/streambox
 fi
 
-#message 'Attempt to update before starting...'
-#(cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
-
 while :
 do
 
     # make sure dev boxes use the repo
     if [ -e /boot/dev_box ]; then
+        message 'Attempt to update before starting...'
         ln -sf ~pi/streambox-repo ~pi/streambox
+        ./update_development.sh
     fi
 
     (cd $DIR && ./start.sh)
@@ -84,8 +81,5 @@ do
     #     sleep 2
     #     ping -n -c 1 voicerepublic.com
     # done
-
-    #message 'Updating...'
-    #(cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
 done

@@ -113,16 +113,12 @@ module Streambox
     end
 
     def upgrade(from, to)
-      if dev_box?
-        system "./update_development.sh"
-      else
-        system "VERSION=%s TOKEN=%s ./upgrade_to_release.sh" % [to, token]
+      system "VERSION=%s TOKEN=%s ./upgrade_to_release.sh" % [to, token]
 
-        if reboot_required?(from, to)
-          logger.warn 'Rebooting...'
-          system 'reboot'
-          return
-        end
+      if reboot_required?(from, to)
+        logger.warn 'Rebooting...'
+        system 'reboot'
+        return
       end
 
       logger.warn 'Restart...'
@@ -361,7 +357,7 @@ module Streambox
                    @reporter.version]
 
       start_recording
-      check_version
+      check_version unless dev_box?
       knock
       logger.debug "Endpoint #{@config.endpoint}"
       start_heartbeat
