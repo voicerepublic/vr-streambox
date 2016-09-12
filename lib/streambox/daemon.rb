@@ -530,8 +530,8 @@ module Streambox
     end
 
     def record_cmd
-      "arecord -q -D #{sound_device} -f cd -t raw 2> arecord.log | " +
-        'oggenc - -Q -r -o recordings/dump_`date +%s`.ogg > oggenc.log'
+      "arecord -q -D #{sound_device} -f cd -c 1 -t raw 2> arecord.log | " +
+        'oggenc - -Q -r -C 1 -o recordings/dump_`date +%s`.ogg > oggenc.log'
     end
 
     def config_path
