@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'logger'
 require 'json'
 require 'ostruct'
@@ -278,7 +279,7 @@ module Streambox
       logger.info "Start backup recording..."
       FileUtils.mkdir_p 'recordings'
       ResilientProcess.new(record_cmd,
-                           'arecord',
+                           'record.sh',
                            @config.check_record_interval,
                            0,
                            logger).run
@@ -290,12 +291,7 @@ module Streambox
         loop do
           logger.info 'Start syncing...'
           t0 = Time.now
-          bucket, region = @config.storage['bucket'].split('@')
-          cmd = "AWS_ACCESS_KEY_ID=#{@config.storage['aws_access_key_id']} " +
-                "AWS_SECRET_ACCESS_KEY=#{@config.storage['aws_secret_access_key']} " +
-                "aws s3 sync recordings s3://#{bucket}/#{identifier}" +
-                " --region #{region} --quiet"
-          system(cmd)
+          system(sync_cmd)
           logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
                       [Time.now - t0, @config.sync_interval]
           sleep @config.sync_interval
@@ -314,18 +310,19 @@ module Streambox
     def run
       at_exit { fire_event :restart }
 
-      logger.info "Id #{identifier}, Version #{@reporter.version}"
+      logger.info "Id %s, IP %s, Version %s" %
+                  [identifier,
+                   @reporter.private_ip_address,
+                   @reporter.version]
 
-      start_heartbeat
+      start_recording
       knock
       logger.debug "Endpoint #{@config.endpoint}"
+      start_heartbeat
       register
       start_publisher
       #start_reporting
-      start_recording
       start_observer 'darkice'
-      start_observer 'arecord'
-      start_observer 'oggenc'
       start_sync
 
       if @config.state == 'pairing'
@@ -335,7 +332,7 @@ module Streambox
         Banner.new
       end
 
-      if File.exist?('darkice.pid')
+      if File.exist?('../darkice.pid')
         new_streamer!
         #fire_event :found_streaming
       end
@@ -530,8 +527,20 @@ module Streambox
     end
 
     def record_cmd
-      "arecord -q -D #{sound_device} -f cd -c 1 -t raw 2> arecord.log | " +
-        'oggenc - -Q -r -C 1 -o recordings/dump_`date +%s`.ogg > oggenc.log'
+      "DEVICE=%s ./record.sh" % sound_device
+    end
+
+    def sync_cmd
+      bucket, region = @config.storage['bucket'].split('@')
+      vars = {
+        AWS_ACCESS_KEY_ID: @config.storage['aws_access_key_id'],
+        AWS_SECRET_ACCESS_KEY: @config.storage['aws_secret_access_key'],
+        BUCKET: bucket,
+        IDENTIFIER: identifier,
+        REGION: region
+      }
+      vars = vars.map { |v| v * '=' } * ' ' # ¯\_(ツ)_/¯
+      "%s ./sync.sh" % vars
     end
 
     def config_path

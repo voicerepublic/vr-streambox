@@ -17,7 +17,7 @@ module Streambox
 
     def run
       self.running = true
-      @pidfile = "#{name}.pid"
+      @pidfile = "../#{name}.pid"
       @pid = File.read(@pidfile).to_i if File.exist?(@pidfile)
       @pid = nil unless exists?
 

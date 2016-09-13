@@ -22,7 +22,7 @@ message "Initial launch..."
 $DIR/expand.sh
 
 message 'Removing stale pid files...'
-rm -f ~pi/streambox/*.pid
+rm -f ~pi/*.pid
 
 message 'Wait 3s for network device to settle...'
 sleep 3
@@ -37,11 +37,19 @@ curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
 echo
 
-message 'Attempt to update before starting...'
-(cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
+message "Entering restart loop..."
 
 while :
 do
+
+    # set the dev box flag
+    if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
+        message "Woot! This is a dev box! Living on the egde..."
+        touch /boot/dev_box
+    fi
+
+    message 'Updating...'
+    (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
     (cd $DIR && ./start.sh)
 
@@ -66,8 +74,5 @@ do
     #     sleep 2
     #     ping -n -c 1 voicerepublic.com
     # done
-
-    message 'Updating...'
-    (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
 done
