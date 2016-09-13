@@ -1,7 +1,13 @@
 #!/bin/sh
 
-# test if avail
+set -e
+
 VERSION=`cat VERSION`
+
+git tag v$VERSION
+git push
+
+# test if avail
 TOKEN=`cat GITLAB_TOKEN`
 BASE="https://gitlab.com/voicerepublic/streambox/repository/archive.tar.gz"
 SOURCE="$BASE?ref=v$VERSION&private_token=$TOKEN"

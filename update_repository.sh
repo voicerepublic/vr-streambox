@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo -n "Updating repository..."
+
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
 BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
@@ -8,4 +10,4 @@ BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
 
 sync
 
-echo "Update complete."
+echo "complete."
