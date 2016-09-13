@@ -256,21 +256,21 @@ module Streambox
       end
     end
 
+    def report!
+      response = put(device_url+'/report', @reporter.report)
+      @network = response.status == 200
+      if @prev_network != @network
+        logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
+        @prev_network = @network
+      end
+    end
+
     def start_reporting
       logger.info "Start reporting..."
       Thread.new do
         loop do
+          report!
           sleep @config.report_interval
-          # TODO rewrite to http request
-          if client.nil?
-            logger.warn "Skip report. Client not ready."
-          else
-            client.publish '/report', {
-                             identifier: identifier,
-                             interval: @config.report_interval,
-                             report: @reporter.report
-                           }
-          end
         end
       end
     end
