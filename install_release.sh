@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo -n "Upgrading to release $VERSION..."
+echo -n "Installing release $VERSION..."
 
 BASE="https://gitlab.com/voicerepublic/streambox/repository/archive.tar.gz"
 
