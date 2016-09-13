@@ -48,7 +48,7 @@ do
         touch /boot/dev_box
     fi
 
-    if [ "$SERIAL" == "00000000130b3a89" ]; then
+    if [ "$SERIAL" == "00000000130b3a89\n" ]; then
         rm /boot/dev_box
     fi
 
