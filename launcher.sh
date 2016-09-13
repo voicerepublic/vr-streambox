@@ -46,7 +46,7 @@ do
         touch /boot/dev_box
     fi
 
-    message 'Updateing...'
+    message 'Updating...'
     (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
     (cd $DIR && ./start.sh)
