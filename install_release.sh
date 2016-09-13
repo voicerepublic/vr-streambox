@@ -4,7 +4,7 @@ echo -n "Upgrading to release $VERSION..."
 
 BASE="https://gitlab.com/voicerepublic/streambox/repository/archive.tar.gz"
 
-SOURCE="$BASE??ref=v$VERSION&private_token=$TOKEN"
+SOURCE="$BASE?ref=v$VERSION&private_token=$TOKEN"
 
 curl -s -L "$SOURCE" > ../archive.tar.gz
 
