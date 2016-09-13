@@ -278,7 +278,7 @@ module Streambox
       logger.info "Start backup recording..."
       FileUtils.mkdir_p 'recordings'
       ResilientProcess.new(record_cmd,
-                           'arecord',
+                           'record.sh',
                            @config.check_record_interval,
                            0,
                            logger).run
@@ -324,8 +324,6 @@ module Streambox
       #start_reporting
       start_recording
       start_observer 'darkice'
-      start_observer 'arecord'
-      start_observer 'oggenc'
       start_sync
 
       if @config.state == 'pairing'
