@@ -38,7 +38,7 @@ curl -X POST -H 'Content-type: application/json' --data "$JSON" \
 echo
 
 # set the dev box flag
-if [ "$BRANCH" != "" && "$BRANCH" != "master" ]; then
+if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
     message "Woot! This is a dev box! Living on the egde..."
     touch /boot/dev_box
 fi
