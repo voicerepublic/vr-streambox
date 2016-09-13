@@ -86,7 +86,7 @@ module Streambox
       @reporter.serial
     end
 
-    def payload
+    def register_payload
       {
         identifier:           identifier,
         type:                 'Streambox',
@@ -155,7 +155,7 @@ module Streambox
       logger.info "Registering..."
       uri = URI.parse(@config.endpoint)
       faraday.basic_auth(uri.user, uri.password)
-      response = faraday.post(@config.endpoint, device: payload)
+      response = faraday.post(@config.endpoint, device: register_payload)
       if response.status != 200
         logger.warn "Registration failed with #{response.status}.\n" + response.body
         logger.warn "Exiting..."
@@ -320,8 +320,8 @@ module Streambox
       logger.debug "Endpoint #{@config.endpoint}"
       start_heartbeat
       register
+      start_reporting
       start_publisher
-      #start_reporting
       start_observer 'darkice'
       start_sync
 
