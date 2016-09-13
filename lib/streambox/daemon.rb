@@ -530,9 +530,7 @@ module Streambox
     end
 
     def record_cmd
-      # 'sox -t alsa default ./recording.flac silence 1 0.1 5% 1 1.0 5%'
-      "arecord -q -D #{sound_device} -f cd -t raw 2> arecord.log | " +
-        'oggenc - -Q -r -o recordings/dump_`date +%s`.ogg > oggenc.log'
+      "DEVICE=%s ./record.sh" % sound_device
     end
 
     def config_path
