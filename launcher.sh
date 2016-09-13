@@ -37,6 +37,11 @@ curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
 echo
 
+# set the dev box flag
+if [ "$BRANCH" != "" && "$BRANCH" != "master" ]; then
+    touch /boot/dev_box
+fi
+
 message 'Attempt to update before starting...'
 (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
