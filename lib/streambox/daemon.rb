@@ -149,6 +149,13 @@ module Streambox
       response = faraday.get(device_url)
       apply_config(JSON.parse(response.body))
       logger.info "Knocking complete."
+
+    rescue Faraday::TimeoutError
+      logger.fatal "Error: Knocking timed out."
+      exit
+    rescue Faraday::ConnectionFailed
+      logger.fatal "Error: The internet connection seems to be down."
+      exit
     end
 
     def register
@@ -163,6 +170,13 @@ module Streambox
       end
       apply_config(JSON.parse(response.body))
       logger.info "Registration complete."
+
+    rescue Faraday::TimeoutError
+      logger.fatal "Error: Register timed out."
+      exit
+    rescue Faraday::ConnectionFailed
+      logger.fatal "Error: The internet connection seems to be down."
+      exit
     end
 
     def display_pairing_instructions
@@ -230,6 +244,8 @@ module Streambox
       end
       json = JSON.parse(response.body)
       apply_config(json)
+    rescue Faraday::TimeoutError
+      logger.error "Error: Heartbeat timed out."
     end
 
     def start_observer(name)
@@ -263,6 +279,8 @@ module Streambox
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
         @prev_network = @network
       end
+    rescue Faraday::TimeoutError
+      logger.error "Error: Reporting timed out."
     end
 
     def start_reporting
@@ -322,6 +340,7 @@ module Streambox
       start_reporting
       start_publisher
       start_observer 'darkice'
+      start_observer 'record.sh'
       start_sync
 
       if @config.state == 'pairing'
@@ -502,6 +521,10 @@ module Streambox
       uri = URI.parse(url)
       faraday.basic_auth(uri.user, uri.password)
       faraday.put(url, data)
+
+    rescue Faraday::ConnectionFailed
+      logger.fatal "Error: The internet connection seems to be down."
+      exit
     end
 
     private
