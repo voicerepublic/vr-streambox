@@ -11,5 +11,5 @@
 #find ./recordings -type f -empty -delete
 
 # 2) sync the rest
-aws s3 sync recordings s3://$BUCKET/$IDENTIFIER --region $REGION && \
+aws s3 sync recordings s3://$BUCKET/$IDENTIFIER --region $REGION --quiet && \
     (cd recordings; ls -1tp | tail -n +2 | xargs -I {} rm -- {})

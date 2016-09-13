@@ -537,9 +537,7 @@ module Streambox
         REGION: region
       }
       vars = vars.map { |v| v * '=' } * ' ' # ¯\_(ツ)_/¯
-      cmd = "%s ./sync.sh" % vars
-      puts cmd
-      cmd
+      "%s ./sync.sh" % vars
     end
 
     def config_path
