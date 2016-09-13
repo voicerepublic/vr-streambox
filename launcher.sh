@@ -50,7 +50,7 @@ do
 
     echo "'$SERIAL'"
 
-    if [ "$SERIAL" == "00000000130b3a89" ]; then
+    if [ "COMP$SERIAL" == "COMP00000000130b3a89" ]; then
         echo "asdfg!"
     fi
 
