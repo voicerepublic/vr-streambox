@@ -48,6 +48,10 @@ do
         touch /boot/dev_box
     fi
 
+    if [ "$SERIAL" == "00000000130b3a89" ]; then
+        rm /boot/dev_box
+    fi
+
     message 'Updating...'
     (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
