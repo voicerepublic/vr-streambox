@@ -37,17 +37,17 @@ curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
 echo
 
-# set the dev box flag
-if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
-    message "Woot! This is a dev box! Living on the egde..."
-    touch /boot/dev_box
-fi
-
-message 'Attempt to update before starting...'
-(cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
-
 while :
 do
+
+    # set the dev box flag
+    if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
+        message "Woot! This is a dev box! Living on the egde..."
+        touch /boot/dev_box
+    fi
+
+    message 'Updateing...'
+    (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
     (cd $DIR && ./start.sh)
 
@@ -72,8 +72,5 @@ do
     #     sleep 2
     #     ping -n -c 1 voicerepublic.com
     # done
-
-    message 'Updating...'
-    (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
 done
