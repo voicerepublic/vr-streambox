@@ -310,15 +310,18 @@ module Streambox
     def run
       at_exit { fire_event :restart }
 
-      logger.info "Id #{identifier}, Version #{@reporter.version}"
+      logger.info "Id %s, IP %s, Version %s" %
+                  [identifier,
+                   @reporter.private_ip_address,
+                   @reporter.version]
 
-      start_heartbeat
+      start_recording
       knock
       logger.debug "Endpoint #{@config.endpoint}"
+      start_heartbeat
       register
       start_publisher
       #start_reporting
-      start_recording
       start_observer 'darkice'
       start_sync
 
@@ -329,7 +332,7 @@ module Streambox
         Banner.new
       end
 
-      if File.exist?('darkice.pid')
+      if File.exist?('../darkice.pid')
         new_streamer!
         #fire_event :found_streaming
       end
