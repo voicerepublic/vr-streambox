@@ -15,8 +15,8 @@ channel = 1
 
 [icecast2-0]
 format = vorbis
-bitrateMode = vbr
-quality = 1
+bitrateMode = cbr
+bitrate = 48
 server = <%= public_ip_address %>
 port = <%= port %>
 password = <%= source_password %>
