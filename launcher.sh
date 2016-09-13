@@ -22,7 +22,7 @@ message "Initial launch..."
 $DIR/expand.sh
 
 message 'Removing stale pid files...'
-rm -f ~pi/streambox/*.pid
+rm -f ~pi/*.pid
 
 message 'Wait 3s for network device to settle...'
 sleep 3
