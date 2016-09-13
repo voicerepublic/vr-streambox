@@ -314,6 +314,8 @@ module Streambox
                    @reporter.private_ip_address,
                    @reporter.version]
 
+      check_for_release unless dev_box?
+
       start_recording
       knock
       logger.debug "Endpoint #{@config.endpoint}"
@@ -553,6 +555,45 @@ module Streambox
       #faraday.basic_auth(uri.user, uri.password)
       #response = faraday.post(@config.endpoint, device: { event: event })
       #logger.warn "Firing event failed.\n" + response.body if response.status != 200
+    end
+
+    def dev_box?
+       File.exist?('/boot/dev_box')
+    end
+
+    def gitlab_token
+      @token ||= File.read('GITLAB_TOKEN')
+    end
+
+    def check_for_release
+      response = faraday.get 'https://voicerepublic.com/versions/streamboxx'
+      version = response.body.to_i
+      logger.debug "Installed release %s, current release %s." %
+                   [@reporter.version, version]
+      if version > @reporter.version
+        logger.info 'Newer release available. Updating...'
+        # TODO update(@reporter.version, version)
+      end
+    end
+
+    def install_release(from, to)
+      system "VERSION=%s TOKEN=%s ./install_release.sh" % [to, gitlab_token]
+
+      if reboot_required?(from, to)
+        logger.warn 'Rebooting...'
+        system 'reboot'
+        return
+      end
+
+      logger.warn 'Exit for restart...'
+      exit
+    end
+
+    # this only works for releases
+    def reboot_required?(from, to)
+      return true if from < 14
+
+      false
     end
 
   end
