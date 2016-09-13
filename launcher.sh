@@ -49,8 +49,9 @@ do
     fi
 
     echo "'$SERIAL'"
-    if [ "$SERIAL" == "00000000130b3a89" ]; then
-        echo "yeah"
+    if [ "$SERIAL" = "00000000130b3a89" ]; then
+        echo "Yeah!"
+        rm /boot/dev_box
     fi
 
     message 'Updating...'
