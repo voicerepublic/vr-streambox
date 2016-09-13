@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'logger'
 require 'json'
 require 'ostruct'
@@ -290,14 +291,7 @@ module Streambox
         loop do
           logger.info 'Start syncing...'
           t0 = Time.now
-          bucket, region = @config.storage['bucket'].split('@')
-          cmd = "AWS_ACCESS_KEY_ID=#{@config.storage['aws_access_key_id']} " +
-                "AWS_SECRET_ACCESS_KEY=#{@config.storage['aws_secret_access_key']} " +
-                "aws s3 sync recordings s3://#{bucket}/#{identifier}" +
-                " --region #{region} --quiet" +
-                # if successful delete all but the most recent file
-                " && (cd recordings; ls -1tp | tail -n +2 | xargs -I {} rm -- {})"
-          system(cmd)
+          system(sync_cmd)
           logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
                       [Time.now - t0, @config.sync_interval]
           sleep @config.sync_interval
@@ -531,6 +525,19 @@ module Streambox
 
     def record_cmd
       "DEVICE=%s ./record.sh" % sound_device
+    end
+
+    def sync_cmd
+      bucket, region = @config.storage['bucket'].split('@')
+      vars = {
+        AWS_ACCESS_KEY_ID: @config.storage['aws_access_key_id'],
+        AWS_SECRET_ACCESS_KEY: @config.storage['aws_secret_access_key'],
+        BUCKET: bucket,
+        IDENTIFIER: identifier,
+        REGION: region
+      }
+      vars = vars.map { |v| v * '=' } * ' ' # ¯\_(ツ)_/¯
+      "%s ./sync.sh" % vars
     end
 
     def config_path
