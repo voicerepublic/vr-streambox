@@ -37,11 +37,20 @@ module Streambox
         usb: usb_devices,
         temperature: temperature,
         memory: memory,
-        disk: disk_free
+        disk: disk_free,
+        devices: devices
       }
     end
 
     private
+
+    def devices
+      key = nil
+      %x[arecord -L].split("\n").inject(Hash.new { |h, k| h[k] = [] }) do |r, l|
+        l.match(/^\s+/) ? r[key].push(l.strip) : key=l
+        r
+      end
+    end
 
     def serial_fallback
       [%x[ whoami ].chomp, %x[ hostname ].chomp] * '@'
