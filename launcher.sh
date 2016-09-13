@@ -49,8 +49,9 @@ do
     fi
 
     echo "'$SERIAL'"
+
     if [ "$SERIAL" == "00000000130b3a89" ]; then
-        rm /boot/dev_box
+        echo "asdfg!"
     fi
 
     message 'Updating...'
