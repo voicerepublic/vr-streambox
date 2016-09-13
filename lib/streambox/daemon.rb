@@ -277,7 +277,6 @@ module Streambox
 
     def start_recording
       logger.info "Start backup recording..."
-      FileUtils.mkdir_p 'recordings'
       ResilientProcess.new(record_cmd,
                            'record.sh',
                            @config.check_record_interval,
