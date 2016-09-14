@@ -144,15 +144,19 @@ module Streambox
 
     end
 
-    def knock
-      logger.info "Knocking..."
+    def knock!
       response = faraday.get(device_url)
       apply_config(JSON.parse(response.body))
-      logger.info "Knocking complete."
+
+    rescue Faraday::TimeoutError
+      logger.fatal "Error: Knocking timed out."
+      exit
+    rescue Faraday::ConnectionFailed
+      logger.fatal "Error: The internet connection seems to be down."
+      exit
     end
 
-    def register
-      logger.info "Registering..."
+    def register!
       uri = URI.parse(@config.endpoint)
       faraday.basic_auth(uri.user, uri.password)
       response = faraday.post(@config.endpoint, device: register_payload)
@@ -162,7 +166,13 @@ module Streambox
         exit
       end
       apply_config(JSON.parse(response.body))
-      logger.info "Registration complete."
+
+    rescue Faraday::TimeoutError
+      logger.fatal "Error: Register timed out."
+      exit
+    rescue Faraday::ConnectionFailed
+      logger.fatal "Error: The internet connection seems to be down."
+      exit
     end
 
     def display_pairing_instructions
@@ -230,13 +240,14 @@ module Streambox
       end
       json = JSON.parse(response.body)
       apply_config(json)
+    rescue Faraday::TimeoutError
+      logger.error "Error: Heartbeat timed out."
     end
 
     def start_observer(name)
       file = name + '.log'
       File.unlink(file) if File.exist?(file) and File.ftype(file) != 'fifo'
 
-      logger.info "Start observer for #{name}..."
       fifo = Fifo.new(file)
       Thread.new do
         loop do
@@ -247,7 +258,6 @@ module Streambox
     end
 
     def start_heartbeat
-      logger.info "Start heartbeat..."
       Thread.new do
         loop do
           heartbeat
@@ -263,10 +273,11 @@ module Streambox
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
         @prev_network = @network
       end
+    rescue Faraday::TimeoutError
+      logger.error "Error: Reporting timed out."
     end
 
     def start_reporting
-      logger.info "Start reporting..."
       Thread.new do
         loop do
           report!
@@ -276,7 +287,6 @@ module Streambox
     end
 
     def start_recording
-      logger.info "Start backup recording..."
       ResilientProcess.new(record_cmd,
                            'record.sh',
                            @config.check_record_interval,
@@ -285,7 +295,6 @@ module Streambox
     end
 
     def start_sync
-      logger.info "Entering sync loop..."
       Thread.new do
         loop do
           logger.info 'Start syncing...'
@@ -306,22 +315,57 @@ module Streambox
                                        logger)
     end
 
+
+    def special_check_for_reboot_required
+      unless File.symlink?('/home/pi/streambox')
+        logger.warn "Reboot required!"
+        system 'reboot'
+      end
+    end
+
     def run
       at_exit { fire_event :restart }
+
+      special_check_for_reboot_required
 
       logger.info "Id %s, IP %s, Version %s" %
                   [identifier,
                    @reporter.private_ip_address,
                    @reporter.version]
 
+      logger.info "[0] Start recording..."
       start_recording
-      knock
+
+      logger.info "[1] Knocking..."
+      knock!
+      logger.info "[2] Knocking complete."
       logger.debug "Endpoint #{@config.endpoint}"
+
+      if dev_box?
+        logger.warn "[3] Dev Box detected! Skipping check for release."
+      else
+        logger.warn "[3] Checking for release..."
+        check_for_release
+      end
+
+      logger.info "[4] Start heartbeat..."
       start_heartbeat
-      register
+
+      logger.info "[5] Registering..."
+      register!
+      logger.info "[6] Registration complete."
+
+      logger.info "[7] Start reporting..."
       start_reporting
+
+      logger.info "[8] Start publisher..."
       start_publisher
+
+      logger.info "[9] Start observers..."
       start_observer 'darkice'
+      start_observer 'record.sh'
+
+      logger.info "[A] Start sync loop..."
       start_sync
 
       if @config.state == 'pairing'
@@ -502,6 +546,10 @@ module Streambox
       uri = URI.parse(url)
       faraday.basic_auth(uri.user, uri.password)
       faraday.put(url, data)
+
+    rescue Faraday::ConnectionFailed
+      logger.fatal "Error: The internet connection seems to be down."
+      exit
     end
 
     private
@@ -553,6 +601,43 @@ module Streambox
       #faraday.basic_auth(uri.user, uri.password)
       #response = faraday.post(@config.endpoint, device: { event: event })
       #logger.warn "Firing event failed.\n" + response.body if response.status != 200
+    end
+
+    def dev_box?
+       File.exist?('/boot/dev_box')
+    end
+
+    def check_for_release
+      response = faraday.get 'https://voicerepublic.com/versions/streamboxx'
+      version = response.body.to_i
+
+      logger.debug 'Installed release %s, announced release %s.' %
+                   [@reporter.version, version]
+
+      if version > @reporter.version
+        logger.info 'Newer release available. Updating...'
+        install_release(@reporter.version, version)
+      else
+        logger.info 'Already up-to-date.'
+      end
+    end
+
+    def install_release(from, to)
+      system "./install_release.sh"
+
+      if reboot_required?(from, to)
+        logger.warn 'Rebooting...'
+        system 'reboot'
+        return
+      end
+
+      logger.warn 'Exit for restart...'
+      exit
+    end
+
+    # this only works for releases
+    def reboot_required?(from, to)
+      false
     end
 
   end

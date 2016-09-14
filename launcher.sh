@@ -27,52 +27,77 @@ rm -f ~pi/*.pid
 message 'Wait 3s for network device to settle...'
 sleep 3
 
+message 'Synchronizing clock...'
+service ntp stop
+ntpd -q -q
+service ntp start
+
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
 BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
-TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP starting..."
+TEXT="Streamboxx-L $SERIAL on $PRIVATE_IP starting..."
 JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
 curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
 echo
+
+# set the dev box flag
+if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
+    message "Woot! This is a dev box! Living on the egde..."
+    touch /boot/dev_box
+fi
+
+if [ "$SERIAL" = "00000000130b3a89" ]; then
+    echo "Yeah! It's phil's dev box."
+    rm /boot/dev_box
+fi
+
+if [ ! -L ~pi/streambox ]; then
+    message "Moving stuff around..."
+    mv ~pi/streambox/setup.sh.old ~pi/
+    mv ~pi/streambox ~pi/streambox-repo
+    ln -sf streambox-repo ~pi/streambox
+    message "Rebooting after moving repo..."
+    reboot
+fi
 
 message "Entering restart loop..."
 
 while :
 do
 
-    # set the dev box flag
-    if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
-        message "Woot! This is a dev box! Living on the egde..."
-        touch /boot/dev_box
+    # this is just a safety net
+    if [ -e /boot/reboot ]; then
+        message "Reboot requested..."
+        rm /boot/reboot
+        reboot
     fi
 
-    message 'Updating...'
-    (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
+    # update dev boxes
+    if [ -e /boot/dev_box ]; then
+        message 'Provisioning keys...'
+        mkdir -p /root/.ssh
+        cp $DIR/id_rsa* /root/.ssh
+        chmod 600 /root/.ssh/id_rsa*
 
+        message 'Updating via GIT...'
+        ln -sf ~pi/streambox-repo ~pi/streambox
+        (cd $DIR && ./update_repository.sh)
+    fi
+
+    # start
     (cd $DIR && ./start.sh)
 
+    # stall
     message 'Exited. Restarting in 5s...'
     sleep 5
 
-    TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP restarting..."
+    # slack
+    TEXT="Streamboxx-L $SERIAL ($BRANCH) on $PRIVATE_IP restarting..."
     JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
     curl -X POST -H 'Content-type: application/json' --data "$JSON" \
          https://hooks.slack.com/services/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
     echo
-
-    message 'Provisioning keys...'
-    mkdir -p /root/.ssh
-    cp $DIR/id_rsa* /root/.ssh
-    chmod 600 /root/.ssh/id_rsa*
-
-    # message 'Checking network connectivity...'
-    # ping -n -c 1 voicerepublic.com
-    # while  [ $? -ne 0 ]
-    # do
-    #     sleep 2
-    #     ping -n -c 1 voicerepublic.com
-    # done
 
 done
