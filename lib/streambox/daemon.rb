@@ -323,7 +323,12 @@ module Streambox
                    @reporter.private_ip_address,
                    @reporter.version]
 
-      check_for_release unless dev_box?
+      if dev_box?
+        logger.warn "[0] Dev Box detected! Skipping check for release."
+      else
+        logger.warn "[0] Checking for release..."
+        check_for_release
+      end
 
       logger.info "[1] Start backup recording..."
       start_recording
