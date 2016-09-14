@@ -37,24 +37,38 @@ curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
 echo
 
+# set the dev box flag
+if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
+    message "Woot! This is a dev box! Living on the egde..."
+    touch /boot/dev_box
+fi
+
+if [ "$SERIAL" = "00000000130b3a89" ]; then
+    echo "Yeah! It's phil's dev box."
+    rm /boot/dev_box
+fi
+
+if [ -d ~pi/streambox ]; then
+    mv ~pi/streambox ~pi/streambox-repo
+    ln -sf ~pi/streambox-repo ~pi/streambox
+    reboot
+fi
+
 message "Entering restart loop..."
 
 while :
 do
 
-    # set the dev box flag
-    if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
-        message "Woot! This is a dev box! Living on the egde..."
-        touch /boot/dev_box
-    fi
+    if [ -e /boot/dev_box ]; then
+        message 'Provisioning keys for git...'
+        mkdir -p /root/.ssh
+        cp $DIR/id_rsa* /root/.ssh
+        chmod 600 /root/.ssh/id_rsa*
 
-    if [ "$SERIAL" = "00000000130b3a89" ]; then
-        echo "Yeah! It's phil's dev box."
-        rm /boot/dev_box
+        message 'Updating dev box via git...'
+        ln -sf ~pi/streambox-repo ~pi/streambox
+        ./update_repository.sh
     fi
-
-    message 'Updating...'
-    (cd $DIR && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) && git fetch origin $branch && git reset --hard origin/$branch)
 
     (cd $DIR && ./start.sh)
 
@@ -66,18 +80,5 @@ do
     curl -X POST -H 'Content-type: application/json' --data "$JSON" \
          https://hooks.slack.com/services/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
     echo
-
-    message 'Provisioning keys...'
-    mkdir -p /root/.ssh
-    cp $DIR/id_rsa* /root/.ssh
-    chmod 600 /root/.ssh/id_rsa*
-
-    # message 'Checking network connectivity...'
-    # ping -n -c 1 voicerepublic.com
-    # while  [ $? -ne 0 ]
-    # do
-    #     sleep 2
-    #     ping -n -c 1 voicerepublic.com
-    # done
 
 done
