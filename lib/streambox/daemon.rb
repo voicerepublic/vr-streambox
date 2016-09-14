@@ -620,7 +620,7 @@ module Streambox
 
       if version > @reporter.version
         logger.info 'Newer release available. Updating...'
-        # TODO install_release(@reporter.version, version)
+        install_release(@reporter.version, version)
       else
         logger.info 'Already up-to-date.'
       end
@@ -641,8 +641,6 @@ module Streambox
 
     # this only works for releases
     def reboot_required?(from, to)
-      return true if from < 14
-
       false
     end
 
