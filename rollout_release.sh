@@ -12,6 +12,8 @@ git tag v$VERSION
 
 git push origin --tags
 
+git push || git pull && git push
+
 # test if avail
 TOKEN=`cat GITLAB_TOKEN`
 BASE="https://gitlab.com/voicerepublic/streambox/repository/archive.tar.gz"
