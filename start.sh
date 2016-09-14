@@ -17,11 +17,11 @@ sudo ntpd -q -g
 
 
 message 'Checking setup...'
-diff -N $DIR/setup.sh $DIR/setup.sh.old 2>&1 >/dev/null
+diff -N $DIR/setup.sh $DIR/../setup.sh.old 2>&1 >/dev/null
 if [ $? -ne 0 ]; then
   message 'Setting up...'
   $DIR/setup.sh
-  cp $DIR/setup.sh $DIR/setup.sh.old
+  cp $DIR/setup.sh $DIR/../setup.sh.old
 fi
 
 
