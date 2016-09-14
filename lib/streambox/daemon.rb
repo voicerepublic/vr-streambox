@@ -140,7 +140,7 @@ module Streambox
         when :offline, :available, :provisioning
           handle_stop_stream if @streamer
         when :disconnect_required
-          new_streamer! unless @streamer
+          new_streamer!.run unless @streamer
           handle_stop_stream
         end
       end
@@ -311,6 +311,7 @@ module Streambox
     end
 
     def new_streamer!
+      logger.debug "Start new ResilientProcess"
       @streamer = ResilientProcess.new(stream_cmd,
                                        'darkice',
                                        @config.check_stream_interval,
@@ -379,7 +380,7 @@ module Streambox
       end
 
       if File.exist?('../darkice.pid')
-        new_streamer!
+        new_streamer!.run
         #fire_event :found_streaming
       end
 
