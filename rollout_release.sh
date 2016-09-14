@@ -10,7 +10,7 @@ git commit -m "bump version to $VERSION" VERSION
 
 git tag v$VERSION
 
-git push
+git push origin --tags
 
 # test if avail
 TOKEN=`cat GITLAB_TOKEN`
