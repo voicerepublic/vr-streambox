@@ -315,8 +315,16 @@ module Streambox
                                        logger)
     end
 
+
+    def special_check_for_reboot_required
+      logger.warn "Reboot required!"
+      system 'reboot' unless File.symlink?('/home/pi/streambox')
+    end
+
     def run
       at_exit { fire_event :restart }
+
+      special_check_for_reboot_required
 
       logger.info "Id %s, IP %s, Version %s" %
                   [identifier,
@@ -610,7 +618,7 @@ module Streambox
 
       if version > @reporter.version
         logger.info 'Newer release available. Updating...'
-        # TODO update(@reporter.version, version)
+        # TODO install_release(@reporter.version, version)
       else
         logger.info 'Already up-to-date.'
       end

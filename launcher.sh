@@ -31,7 +31,7 @@ sleep 3
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
 BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
-TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP starting..."
+TEXT="Streamboxx-L $SERIAL on $PRIVATE_IP starting..."
 JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
 curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
@@ -45,37 +45,50 @@ fi
 
 if [ "$SERIAL" = "00000000130b3a89" ]; then
     echo "Yeah! It's phil's dev box."
-    rm /boot/dev_box
+    # rm /boot/dev_box
 fi
 
-#if [ -d ~pi/streambox ]; then
-#    mv ~pi/streambox ~pi/streambox-repo
-#    ln -sf ~pi/streambox-repo ~pi/streambox
-#    reboot
-#fi
+if [ ! -L ~pi/streambox ]; then
+    message "Moving repo..."
+    mv ~pi/streambox ~pi/streambox-repo
+    ln -sf ~pi/streambox-repo ~pi/streambox
+    message "Rebooting after moving repo..."
+    reboot
+fi
 
 message "Entering restart loop..."
 
 while :
 do
 
-    #if [ -e /boot/dev_box ]; then
-    message 'Provisioning keys...'
-    mkdir -p /root/.ssh
-    cp $DIR/id_rsa* /root/.ssh
-    chmod 600 /root/.ssh/id_rsa*
+    # this is just a safety net
+    if [ -e /boot/reboot ]; then
+        message "Reboot requested..."
+        rm /boot/reboot
+        reboot
+    fi
 
-    message 'Updating via GIT...'
-    ln -sf ~pi/streambox-repo ~pi/streambox
-    ./update_repository.sh
-    #fi
+    # update dev boxes
+    if [ -e /boot/dev_box ]; then
+        message 'Provisioning keys...'
+        mkdir -p /root/.ssh
+        cp $DIR/id_rsa* /root/.ssh
+        chmod 600 /root/.ssh/id_rsa*
 
+        message 'Updating via GIT...'
+        ln -sf ~pi/streambox-repo ~pi/streambox
+        ./update_repository.sh
+    fi
+
+    # start
     (cd $DIR && ./start.sh)
 
+    # stall
     message 'Exited. Restarting in 5s...'
     sleep 5
 
-    TEXT="Streamboxx $SERIAL ($BRANCH) on $PRIVATE_IP restarting..."
+    # slack
+    TEXT="Streamboxx-L $SERIAL ($BRANCH) on $PRIVATE_IP restarting..."
     JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
     curl -X POST -H 'Content-type: application/json' --data "$JSON" \
          https://hooks.slack.com/services/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
