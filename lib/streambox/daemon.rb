@@ -602,6 +602,8 @@ module Streambox
     end
 
     def check_for_release
+      puts "hello"
+      logger.info "hello"
       response = faraday.get 'https://voicerepublic.com/versions/streamboxx'
       version = response.body.to_i
       logger.debug "Installed release %s, current release %s." %
@@ -609,6 +611,8 @@ module Streambox
       if version > @reporter.version
         logger.info 'Newer release available. Updating...'
         # TODO update(@reporter.version, version)
+      else
+        logger.info 'Already up-to-date.'
       end
     end
 
