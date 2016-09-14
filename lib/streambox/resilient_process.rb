@@ -16,10 +16,11 @@ module Streambox
     attr_accessor :running
 
     def run
-      logger.debug "PWD: #{Dir.pwd}"
-
       self.running = true
       @pidfile = "../#{name}.pid"
+      @pidilfe = File.expand_path(@pidfile, Dir.pwd)
+      logger.debug "[PID] File: #{@pidilfe}"
+
       @pid = File.read(@pidfile).to_i if File.exist?(@pidfile)
       @pid = nil unless exists?
 
