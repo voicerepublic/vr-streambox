@@ -43,10 +43,10 @@ if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
     touch /boot/dev_box
 fi
 
-# if [ "$SERIAL" = "00000000130b3a89" ]; then
-#     echo "Yeah! It's phil's dev box."
-#     rm /boot/dev_box
-# fi
+if [ "$SERIAL" = "00000000130b3a89" ]; then
+    echo "Yeah! It's phil's dev box."
+    rm /boot/dev_box
+fi
 
 if [ ! -L ~pi/streambox ]; then
     message "Moving stuff around..."
