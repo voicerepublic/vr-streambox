@@ -27,6 +27,11 @@ rm -f ~pi/*.pid
 message 'Wait 3s for network device to settle...'
 sleep 3
 
+message 'Synchronizing clock...'
+service ntp stop
+ntpd -q -q
+service ntp start
+
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
@@ -49,7 +54,8 @@ if [ "$SERIAL" = "00000000130b3a89" ]; then
 fi
 
 if [ ! -L ~pi/streambox ]; then
-    message "Moving repo..."
+    message "Moving stuff around..."
+    mv ~pi/streambox/setup.sh.old ~pi/
     mv ~pi/streambox ~pi/streambox-repo
     ln -sf streambox-repo ~pi/streambox
     message "Rebooting after moving repo..."

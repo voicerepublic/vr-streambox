@@ -609,10 +609,6 @@ module Streambox
        File.exist?('/boot/dev_box')
     end
 
-    def gitlab_token
-      @token ||= File.read('GITLAB_TOKEN')
-    end
-
     def check_for_release
       response = faraday.get 'https://voicerepublic.com/versions/streamboxx'
       version = response.body.to_i
@@ -622,14 +618,14 @@ module Streambox
 
       if version > @reporter.version
         logger.info 'Newer release available. Updating...'
-        # TODO install_release(@reporter.version, version)
+        install_release(@reporter.version, version)
       else
         logger.info 'Already up-to-date.'
       end
     end
 
     def install_release(from, to)
-      system "VERSION=%s TOKEN=%s ./install_release.sh" % [to, gitlab_token]
+      system "./install_release.sh"
 
       if reboot_required?(from, to)
         logger.warn 'Rebooting...'
@@ -643,8 +639,6 @@ module Streambox
 
     # this only works for releases
     def reboot_required?(from, to)
-      return true if from < 14
-
       false
     end
 
