@@ -48,27 +48,27 @@ if [ "$SERIAL" = "00000000130b3a89" ]; then
     rm /boot/dev_box
 fi
 
-if [ -d ~pi/streambox ]; then
-    mv ~pi/streambox ~pi/streambox-repo
-    ln -sf ~pi/streambox-repo ~pi/streambox
-    reboot
-fi
+#if [ -d ~pi/streambox ]; then
+#    mv ~pi/streambox ~pi/streambox-repo
+#    ln -sf ~pi/streambox-repo ~pi/streambox
+#    reboot
+#fi
 
 message "Entering restart loop..."
 
 while :
 do
 
-    if [ -e /boot/dev_box ]; then
-        message 'Provisioning keys for git...'
-        mkdir -p /root/.ssh
-        cp $DIR/id_rsa* /root/.ssh
-        chmod 600 /root/.ssh/id_rsa*
+    #if [ -e /boot/dev_box ]; then
+    message 'Provisioning keys...'
+    mkdir -p /root/.ssh
+    cp $DIR/id_rsa* /root/.ssh
+    chmod 600 /root/.ssh/id_rsa*
 
-        message 'Updating dev box via git...'
-        ln -sf ~pi/streambox-repo ~pi/streambox
-        ./update_repository.sh
-    fi
+    message 'Updating via GIT...'
+    ln -sf ~pi/streambox-repo ~pi/streambox
+    ./update_repository.sh
+    #fi
 
     (cd $DIR && ./start.sh)
 
