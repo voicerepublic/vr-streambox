@@ -1,9 +1,10 @@
 #!/bin/sh
 
-echo -n "Installing release $VERSION..."
+echo "Installing new release..."
 
+VERSION=`curl https://voicerepublic.com/versions/streamboxx`
+TOKEN=`cat GITLAB_TOKEN`
 BASE="https://gitlab.com/voicerepublic/streambox/repository/archive.tar.gz"
-
 SOURCE="$BASE?ref=v$VERSION&private_token=$TOKEN"
 
 echo $SOURCE
@@ -23,4 +24,4 @@ echo ln -sf `basename $RECENT` ../streambox
 
 sync
 
-echo "complete."
+echo "Install complete."
