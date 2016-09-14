@@ -8,5 +8,9 @@
 # - IDENTIFIER
 # - REGION
 
+echo 'Sync...'
+
+pwd
+
 aws s3 sync ../recordings s3://$BUCKET/$IDENTIFIER --region $REGION --quiet && \
     (cd ../recordings; ls -1tp | tail -n +2 | xargs -I {} rm -- {})
