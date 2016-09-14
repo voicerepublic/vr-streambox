@@ -15,7 +15,7 @@ RECENT=`ls -dArt ../streambox-v* | tail -n 1`
 
 sync
 
-ln -sf `basename $RECENT` ../streambox-L
+ln -sf `basename $RECENT` ../streambox
 
 sync
 
