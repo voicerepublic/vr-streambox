@@ -11,6 +11,6 @@
 (
     cd ../recordings
 
-    aws s3 sync . s3://$BUCKET/$IDENTIFIER --region $REGION &&
+    aws s3 sync . s3://$BUCKET/$IDENTIFIER --region $REGION >sync.log 2>&1 &&
         (ls -1tp | tail -n +2 | xargs -I {} rm -- {})
 )

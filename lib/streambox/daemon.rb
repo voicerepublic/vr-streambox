@@ -367,7 +367,8 @@ module Streambox
 
       logger.info "[9] Start observers..."
       start_observer 'darkice'
-      start_observer 'record.sh'
+      start_observer 'record'
+      start_observer 'sync'
 
       logger.info "[A] Start sync loop..."
       start_sync

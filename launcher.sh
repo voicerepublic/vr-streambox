@@ -71,7 +71,7 @@ do
 
     message 'Synchronizing clock...'
     service ntp stop
-    ntpd -q -g
+    htpdate -s de.pool.ntp.org
     service ntp start
 
     # update dev boxes
