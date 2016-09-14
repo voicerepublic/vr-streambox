@@ -27,11 +27,6 @@ rm -f ~pi/*.pid
 message 'Wait 3s for network device to settle...'
 sleep 3
 
-message 'Synchronizing clock...'
-service ntp stop
-ntpd -q -q
-service ntp start
-
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
@@ -73,6 +68,11 @@ do
         rm /boot/reboot
         reboot
     fi
+
+    message 'Synchronizing clock...'
+    service ntp stop
+    ntpd -q -q
+    service ntp start
 
     # update dev boxes
     if [ -e /boot/dev_box ]; then
