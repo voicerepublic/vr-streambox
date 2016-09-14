@@ -71,7 +71,7 @@ do
 
     message 'Synchronizing clock...'
     service ntp stop
-    ntpd -q -q
+    ntpd -q -g
     service ntp start
 
     # update dev boxes
