@@ -48,9 +48,8 @@ do
         touch /boot/dev_box
     fi
 
-    echo "'$SERIAL'"
     if [ "$SERIAL" = "00000000130b3a89" ]; then
-        echo "Yeah!"
+        echo "Yeah! It's phil's dev box."
         rm /boot/dev_box
     fi
 

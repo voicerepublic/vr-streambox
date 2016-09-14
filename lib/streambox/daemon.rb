@@ -145,10 +145,10 @@ module Streambox
     end
 
     def knock
-      logger.info "Knocking..."
+      logger.info "(2) Knocking..."
       response = faraday.get(device_url)
       apply_config(JSON.parse(response.body))
-      logger.info "Knocking complete."
+      logger.info "(3) Knocking complete."
     end
 
     def register
@@ -276,7 +276,7 @@ module Streambox
     end
 
     def start_recording
-      logger.info "Start backup recording..."
+      logger.info "(1) Start backup recording..."
       ResilientProcess.new(record_cmd,
                            'record.sh',
                            @config.check_record_interval,
