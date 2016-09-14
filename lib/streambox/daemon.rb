@@ -323,20 +323,20 @@ module Streambox
                    @reporter.private_ip_address,
                    @reporter.version]
 
-      if dev_box?
-        logger.warn "[0] Dev Box detected! Skipping check for release."
-      else
-        logger.warn "[0] Checking for release..."
-        check_for_release
-      end
-
-      logger.info "[1] Start backup recording..."
+      logger.info "[0] Start recording..."
       start_recording
 
-      logger.info "[2] Knocking..."
+      logger.info "[1] Knocking..."
       knock!
-      logger.info "[3] Knocking complete."
+      logger.info "[2] Knocking complete."
       logger.debug "Endpoint #{@config.endpoint}"
+
+      if dev_box?
+        logger.warn "[3] Dev Box detected! Skipping check for release."
+      else
+        logger.warn "[3] Checking for release..."
+        check_for_release
+      end
 
       logger.info "[4] Start heartbeat..."
       start_heartbeat
@@ -605,9 +605,8 @@ module Streambox
       response = faraday.get 'https://voicerepublic.com/versions/streamboxx'
       version = response.body.to_i
 
-      puts msg = 'Installed release %s, current release %s.' % [@reporter.version, version]
-      logger.debug(msg)
-
+      logger.debug 'Installed release %s, announced release %s.' %
+                   [@reporter.version, version]
 
       if version > @reporter.version
         logger.info 'Newer release available. Updating...'
