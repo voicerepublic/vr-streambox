@@ -13,10 +13,11 @@ curl -s -L "$SOURCE" > ../archive.tar.gz
 
 RECENT=`ls -dArt ../streambox-v* | tail -n 1`
 
-sync
+time sync
 
+echo "Activating new release..."
 ln -nsf `basename $RECENT` ../streambox
 
-sync
+time sync
 
 echo "Install complete."
