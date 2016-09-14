@@ -137,8 +137,11 @@ module Streambox
         case state
         when :awaiting_stream, :disconnected
           handle_start_stream(data['venue'])
-        when :disconnect_required, :offline, :available, :provisioning
+        when :offline, :available, :provisioning
           handle_stop_stream if @streamer
+        when :disconnect_required
+          new_streamer! unless @streamer
+          handle_stop_stream
         end
       end
 
