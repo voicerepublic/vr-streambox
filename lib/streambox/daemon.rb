@@ -317,8 +317,10 @@ module Streambox
 
 
     def special_check_for_reboot_required
-      logger.warn "Reboot required!"
-      system 'reboot' unless File.symlink?('/home/pi/streambox')
+      unless File.symlink?('/home/pi/streambox')
+        logger.warn "Reboot required!"
+        system 'reboot'
+      end
     end
 
     def run

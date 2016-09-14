@@ -51,7 +51,7 @@ fi
 if [ ! -L ~pi/streambox ]; then
     message "Moving repo..."
     mv ~pi/streambox ~pi/streambox-repo
-    ln -sf ~pi/streambox-repo ~pi/streambox
+    ln -sf streambox-repo ~pi/streambox
     message "Rebooting after moving repo..."
     reboot
 fi
@@ -77,7 +77,7 @@ do
 
         message 'Updating via GIT...'
         ln -sf ~pi/streambox-repo ~pi/streambox
-        ./update_repository.sh
+        (cd $DIR && ./update_repository.sh)
     fi
 
     # start
