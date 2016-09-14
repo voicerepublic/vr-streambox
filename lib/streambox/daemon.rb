@@ -328,6 +328,8 @@ module Streambox
 
       special_check_for_reboot_required
 
+      logger.info "Welcome to Test-Release v15!"
+
       logger.info "Id %s, IP %s, Version %s" %
                   [identifier,
                    @reporter.private_ip_address,
