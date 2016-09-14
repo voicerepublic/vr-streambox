@@ -7,12 +7,7 @@ TOKEN=`cat GITLAB_TOKEN`
 BASE="https://gitlab.com/voicerepublic/streambox/repository/archive.tar.gz"
 SOURCE="$BASE?ref=v$VERSION&private_token=$TOKEN"
 
-echo $SOURCE
-
 curl -s -L "$SOURCE" > ../archive.tar.gz
-
-ls -la ../archive.tar.gz
-file ../archive.tar.gz
 
 (cd ..; tar xfz archive.tar.gz)
 
