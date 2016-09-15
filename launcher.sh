@@ -71,7 +71,7 @@ do
 
     message 'Synchronizing clock...'
     service ntp stop
-    htpdate -s de.pool.ntp.org
+    htpdate -s voicerepublic.com
     service ntp start
 
     # update dev boxes
