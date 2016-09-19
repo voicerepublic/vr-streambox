@@ -61,6 +61,7 @@ module Streambox
     end
 
     def stop!
+      kill_all! unless running
       self.running = false
       kill
     end
