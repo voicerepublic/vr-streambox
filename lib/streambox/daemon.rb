@@ -50,7 +50,7 @@ module Streambox
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
 
-    attr_accessor :client, :subscription, :queue
+    attr_accessor :queue
 
     def initialize
       Thread.abort_on_exception = true
@@ -66,11 +66,6 @@ module Streambox
                                reportinterval: 60,
                                restart_stream_delay: 2
       @reporter = Reporter.new
-      @streamer = ResilientProcess.new(stream_cmd,
-                                       'darkice',
-                                       @config.check_stream_interval,
-                                       @config.restart_stream_delay,
-                                       logger)
     end
 
     def identifier
@@ -303,6 +298,14 @@ module Streambox
       end
     end
 
+    def start_streamer
+      @streamer = ResilientProcess.new(stream_cmd,
+                                       'darkice',
+                                       @config.check_stream_interval,
+                                       @config.restart_stream_delay,
+                                       logger)
+    end
+
     def special_check_for_reboot_required
       unless File.symlink?('/home/pi/streambox')
         logger.warn "Reboot required!"
@@ -328,32 +331,36 @@ module Streambox
       logger.info "[2] Knocking complete."
       logger.debug "Endpoint #{@config.endpoint}"
 
+      logger.info "[3] Start Streamer..."
+      start_streamer
+      logger.info "[4] Streamer started."
+
       if dev_box?
-        logger.warn "[3] Dev Box detected! Skipping check for release."
+        logger.warn "[5] Dev Box detected! Skipping check for release."
       else
-        logger.warn "[3] Checking for release..."
+        logger.warn "[5] Checking for release..."
         check_for_release
       end
 
-      logger.info "[4] Start heartbeat..."
+      logger.info "[6] Start heartbeat..."
       start_heartbeat
 
-      logger.info "[5] Registering..."
+      logger.info "[7] Registering..."
       register!
-      logger.info "[6] Registration complete."
+      logger.info "[8] Registration complete."
 
-      logger.info "[7] Start reporting..."
+      logger.info "[9] Start reporting..."
       start_reporting
 
-      logger.info "[8] Start publisher..."
+      logger.info "[A] Start publisher..."
       start_publisher
 
-      logger.info "[9] Start observers..."
+      logger.info "[B] Start observers..."
       start_observer 'darkice'
       start_observer 'record'
       start_observer 'sync'
 
-      logger.info "[A] Start sync loop..."
+      logger.info "[C] Start sync loop..."
       start_sync
 
       if @config.state == 'pairing'
@@ -441,10 +448,6 @@ module Streambox
 
     def channel
       "/device/#{identifier}"
-    end
-
-    def publish(msg={})
-      client.publish(channel, msg)
     end
 
     def multi_io

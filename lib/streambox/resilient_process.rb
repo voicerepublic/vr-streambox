@@ -18,6 +18,8 @@ module Streambox
     attr_accessor :running
 
     def initialize(cmd, name, interval, delay, logger)
+      logger.debug "[PROCESS] Init #{name}"
+
       self.cmd = cmd
       self.name = name
       self.interval = interval
