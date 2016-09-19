@@ -11,12 +11,19 @@
 #
 module Streambox
 
-  class ResilientProcess < Struct.new(:cmd, :name, :interval, :delay, :logger)
+  class ResilientProcess
+
+    attr_accessor :cmd, :name, :interval, :delay, :logger
 
     attr_accessor :running
 
-    def run
-      self.running = true
+    def initialize(cmd, name, interval, delay, logger)
+      self.cmd = cmd
+      self.name = name
+      self.interval = interval
+      self.delay = delay
+      self.logger = logger
+
       @pidfile = "../#{name}.pid"
       @pidilfe = File.expand_path(@pidfile, Dir.pwd)
       logger.debug "[PID] File: #{@pidilfe}"
@@ -25,12 +32,22 @@ module Streambox
       @pid = nil unless exists?
 
       if @pid
+        logger.debug "[PID] Detected #{@pid} for #{name}. Resume running..."
+        run
+      end
+    end
+
+    def run
+      self.running = true
+
+      if @pid
         logger.debug "[PID] Found #{@pid} for #{name}."
       else
         logger.debug "[PID] Found none for #{name}."
       end
 
       Thread.new do
+        logger.debug "[PID] Start watching #{name}."
         start unless exists?
         while running
           start(delay) unless exists?
@@ -48,6 +65,11 @@ module Streambox
 
     def restart!
       kill
+    end
+
+    def kill_all!
+      self.running = false
+      system "killall #{name}"
     end
 
     private

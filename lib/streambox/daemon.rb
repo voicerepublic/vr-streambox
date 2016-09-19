@@ -9,8 +9,6 @@ require 'pp'
 
 require 'faraday'
 require 'eventmachine'
-require 'faye'
-require 'faye/authentication'
 
 require "fifo"
 require "streambox/version"
@@ -48,18 +46,6 @@ module Streambox
     end
   end
 
-  class FayeIO < Struct.new(:client, :identifier)
-
-    def write(*args)
-      client.publish("/device/log/#{identifier}", log: args.first.chomp)
-    end
-
-    def close
-      client.publish("/device/log/#{identifier}", log: 'closed.')
-    end
-
-  end
-
   class Daemon
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
@@ -80,6 +66,11 @@ module Streambox
                                reportinterval: 60,
                                restart_stream_delay: 2
       @reporter = Reporter.new
+      @streamer = ResilientProcess.new(stream_cmd,
+                                       'darkice',
+                                       @config.check_stream_interval,
+                                       @config.restart_stream_delay,
+                                       logger)
     end
 
     def identifier
@@ -138,10 +129,9 @@ module Streambox
         when :awaiting_stream, :disconnected
           handle_start_stream(data['venue'])
         when :offline, :available, :provisioning
-          handle_stop_stream if @streamer
+          @streamer.stop!
         when :disconnect_required
-          new_streamer!.run unless @streamer
-          handle_stop_stream
+          @streamer.stop!
         end
       end
 
@@ -255,6 +245,9 @@ module Streambox
       Thread.new do
         loop do
           line = fifo.gets
+          if line.match(/mountpoint occupied, or maximum sources reached/)
+            logger.debug "Two resilitent process for darkice running?"
+          end
           logger.debug "[#{name.upcase}] #{line.chomp}"
         end
       end
@@ -309,16 +302,6 @@ module Streambox
         end
       end
     end
-
-    def new_streamer!
-      logger.debug "Start new ResilientProcess"
-      @streamer = ResilientProcess.new(stream_cmd,
-                                       'darkice',
-                                       @config.check_stream_interval,
-                                       @config.restart_stream_delay,
-                                       logger)
-    end
-
 
     def special_check_for_reboot_required
       unless File.symlink?('/home/pi/streambox')
@@ -380,58 +363,6 @@ module Streambox
         Banner.new
       end
 
-      if File.exist?('../darkice.pid')
-        new_streamer!.run
-        #fire_event :found_streaming
-      end
-
-      # logger.info "Entering EM loop..."
-      # EM.run {
-      #   self.client = Faye::Client.new(@config.faye_url)
-      #   ext = Faye::Authentication::ClientExtension.new(@config.faye_secret)
-      #   client.add_extension(ext)
-      #
-      #   multi_io.add(FayeIO.new(client, identifier)) if @config.loglevel == 0
-      #
-      #   logger.debug "[FAYE] Subscribing to channel '#{channel}'..."
-      #
-      #   self.subscription = client.subscribe(channel) { |message| dispatch(message) }
-      #
-      #   subscription.callback do
-      #     logger.debug "[FAYE] Subscribe succeeded."
-      #   end
-      #
-      #   subscription.errback do |error|
-      #     logger.warn "Failed to subscribe with #{error.inspect}."
-      #   end
-      #
-      #   client.bind 'transport:down' do
-      #     logger.warn "Connection DOWN. Expecting reconnect..."
-      #     @awaiting_connection = Time.now
-      #     Thread.new do
-      #       while @awaiting_connection
-      #         delta = Time.now - @awaiting_connection
-      #         if delta > 60
-      #           logger.warn "Connection DOWN for over 60 seconds now. Restarting..."
-      #           exit
-      #         else
-      #           logger.debug "[FAYE] Connection DOWN for %.0f seconds now." % delta
-      #         end
-      #         sleep 1
-      #       end
-      #     end
-      #   end
-      #
-      #   client.bind 'transport:up' do
-      #     unless @awaiting_connection.nil?
-      #       delta = Time.now - @awaiting_connection
-      #       logger.warn "Connection UP. Was down for %.2f seconds." % delta
-      #       @awaiting_connection = nil
-      #     end
-      #   end
-      #
-      #   publish event: 'print', print: 'Device ready.'
-      # }
       loop do
         sleep 5
       end
@@ -439,21 +370,11 @@ module Streambox
       logger.warn "Exiting."
     end
 
-    # TODO maybe rewrite handle_ methods to not use arguments
-    def dispatch(message={})
-      logger.debug "[FAYE] Received #{message.inspect}"
-      method = "handle_#{message['event']}"
-      return send(method, message) if respond_to?(method)
-      publish event: 'error', error: "Unknown message: #{message.inspect}"
-    end
-
     # { event: 'start_streaming', icecast: { ... } }
     def handle_start_stream(message={})
       logger.info "Starting stream..."
       config = message['icecast'].merge(device: sound_device)
       write_config!(config)
-      @streamer and @streamer.stop!
-      new_streamer!
       @streamer.run
       # HACK this makes the pairing code play loop stop
       @config.state = 'running'
@@ -463,15 +384,14 @@ module Streambox
     # { event: 'stop_streaming' }
     def handle_stop_stream(message={})
       logger.info "Stopping stream..."
-      @streamer && @streamer.stop!
-      @streamer = nil
+      @streamer.stop!
       fire_event :stream_stopped
     end
 
     # { event: 'eval', eval: '41+1' }
     def handle_eval(message={})
       code = message['eval']
-      logger.debug "[FAYE] Eval: #{code}"
+      logger.debug "Eval: #{code}"
       output = eval(code)
     rescue => e
       output = 'Error: ' + e.message
@@ -498,7 +418,7 @@ module Streambox
     end
 
     def handle_print(message={})
-      logger.debug "[FAYE] Print: #{message['print']}"
+      logger.debug "Print: #{message['print']}"
     end
 
     # obsolete
