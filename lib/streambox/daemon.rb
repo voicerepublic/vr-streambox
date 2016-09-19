@@ -103,7 +103,6 @@ module Streambox
       #       "mount_point"=>"live",
       #       "port"=>8000}}}
 
-
       version = data['version']
       #logger.debug "[VERSION] #{version} #{@reporter.version}"
       if version and version > @reporter.version
@@ -123,8 +122,6 @@ module Streambox
         case state
         when :awaiting_stream, :disconnected
           handle_start_stream(data['venue'])
-        when :offline, :available, :provisioning
-          @streamer.stop!
         when :disconnect_required
           @streamer.stop!
         end
@@ -196,7 +193,7 @@ module Streambox
       Thread.new do
         loop do
           until queue.empty?
-            message = queue.first.last
+            message = queue.first
             logger.debug "[EVENT] #{message.inspect}"
             put(device_url, message)
             self.queue.shift
@@ -388,67 +385,16 @@ module Streambox
       fire_event :stream_started
     end
 
-    # { event: 'stop_streaming' }
-    def handle_stop_stream(message={})
-      logger.info "Stopping stream..."
-      @streamer.stop!
-      fire_event :stream_stopped
-    end
-
-    # { event: 'eval', eval: '41+1' }
-    def handle_eval(message={})
-      code = message['eval']
-      logger.debug "Eval: #{code}"
-      output = eval(code)
-    rescue => e
-      output = 'Error: ' + e.message
-    ensure
-      publish event: 'print', print: output.inspect
-    end
-
-    # TODO exit, shutdown, and reboot should stop streaming first
-    def handle_exit(message={})
-      logger.info "Exiting..."
-      exit
-    end
-
-    def handle_shutdown(message={})
-      logger.info "Shutting down..."
-      fire_event :shutdown
-      %x[ sudo shutdown -h now ]
-    end
-
-    def handle_reboot(message={})
-      logger.info "Rebooting..."
-      fire_event :restart
-      %x[ sudo reboot ]
-    end
-
-    def handle_print(message={})
-      logger.debug "Print: #{message['print']}"
-    end
-
-    # obsolete
-    def handle_heartbeat(message={})
-      # ignore
-    end
-
-    # obsolete
-    def handle_report(message={})
-      logger.debug "Report: #{message.inspect}"
-    end
-
-    def handle_error(message={})
-      logger.warn message.error
-    end
-
-    def handle_handshake(message={})
-      publish event: 'print', print: 'Connection established.'
-    end
-
-    def channel
-      "/device/#{identifier}"
-    end
+    # # { event: 'eval', eval: '41+1' }
+    # def handle_eval(message={})
+    #   code = message['eval']
+    #   logger.debug "Eval: #{code}"
+    #   output = eval(code)
+    # rescue => e
+    #   output = 'Error: ' + e.message
+    # ensure
+    #   publish event: 'print', print: output.inspect
+    # end
 
     def multi_io
       @multi_io ||= MultiIO.new(STDOUT)
@@ -523,12 +469,7 @@ module Streambox
     end
 
     def fire_event(event)
-      self.queue << ['/event/devices', {event: event, identifier: identifier}]
-
-      #uri = URI.parse(@config.endpoint + '/' + identifier)
-      #faraday.basic_auth(uri.user, uri.password)
-      #response = faraday.post(@config.endpoint, device: { event: event })
-      #logger.warn "Firing event failed.\n" + response.body if response.status != 200
+      self.queue << { event: event, identifier: identifier }
     end
 
     def dev_box?

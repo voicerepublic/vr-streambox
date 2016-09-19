@@ -61,7 +61,10 @@ module Streambox
     end
 
     def stop!
-      kill_all! unless running
+      unless running
+        logger.debug "[PROCESS] Stop #{name} but not running. Attempt to kill all..."
+        kill_all!
+      end
       self.running = false
       kill
     end
