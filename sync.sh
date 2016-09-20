@@ -13,6 +13,11 @@
 
     rm -f sync.log
 
+    # TODO purge empty files before sync
+    # ACTIVE_PATH=`lsof -c sox | grep recordings | tr -s ' ' | cut -d ' ' -f 9`
+    # ACTIVE_FILE=`basename $ACTIVE_PATH`
+    # find -empty | grep -v $ACTIVE_FILE | xargs -I {} rm -- {}
+
     aws s3 sync . s3://$BUCKET/$IDENTIFIER --region $REGION \
         >>../streambox/sync.log 2>&1
 
