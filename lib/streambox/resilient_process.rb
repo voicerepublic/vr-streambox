@@ -58,6 +58,8 @@ module Streambox
         end
         logger.debug "ResilientProcess for #{name} is dead now."
       end
+
+      self
     end
 
     def stop!
