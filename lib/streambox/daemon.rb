@@ -246,15 +246,11 @@ module Streambox
           end
           if line.match(/sox WARN alsa: No such device/)
             recorder.stop!
-            # drain fifo
-            # system 'dd if=record.sh.log iflag=nonblock of=/dev/null'
-            # warn
-            system 'toilet -f mono12 "Noooooo!"'
             puts
-            puts "Plug the audio device back in, the power cycle the box!"
+            system 'toilet -f mono12 "Shutdown"'
             puts
-            puts "Shutdown in 30 seconds..."
-            sleep 30
+            puts "Shutdown after sync..."
+            sync
             system 'shutdown -h now'
           end
           logger.debug "[#{name.upcase}] #{line.chomp}"
@@ -300,14 +296,18 @@ module Streambox
                                        logger).run
     end
 
+    def sync
+      logger.info 'Start syncing...'
+      t0 = Time.now
+      system(sync_cmd)
+      logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
+                  [Time.now - t0, @config.sync_interval]
+    end
+
     def start_sync
       Thread.new do
         loop do
-          logger.info 'Start syncing...'
-          t0 = Time.now
-          system(sync_cmd)
-          logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
-                      [Time.now - t0, @config.sync_interval]
+          sync
           sleep @config.sync_interval
         end
       end
