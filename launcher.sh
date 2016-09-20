@@ -25,12 +25,13 @@ message 'Removing stale pid files...'
 rm -f ~pi/*.pid
 
 message 'Start offline recording...'
-(cd $DIR; DEVICE=dsnooped ./record.sh &)
-echo $! > $DIR/../record.sh.pid
-
+(
+cd $DIR
+DEVICE=dsnooped ./record.sh &
+echo $! > ../record.sh.pid
+)
 
 # debug
-echo $!
 echo $DIR/../record.sh.pid
 cat $DIR/../record.sh.pid
 ps aux | grep sox
