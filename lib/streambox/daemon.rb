@@ -244,6 +244,12 @@ module Streambox
           if line.match(/mountpoint occupied, or maximum sources reached/)
             logger.debug "Two resilitent process for darkice running?"
           end
+          if line.match(/sox WARN alsa: No such device/)
+            @recorder.stop!
+            system('toilet -f mono12 " Nooooooooo!"')
+            puts "Please plug the audio device back in!"
+            exit
+          end
           logger.debug "[#{name.upcase}] #{line.chomp}"
         end
       end
@@ -280,11 +286,11 @@ module Streambox
     end
 
     def start_recording
-      ResilientProcess.new(record_cmd,
-                           'record.sh',
-                           @config.check_record_interval,
-                           0,
-                           logger).run
+      @recorder = ResilientProcess.new(record_cmd,
+                                       'record.sh',
+                                       @config.check_record_interval,
+                                       0,
+                                       logger).run
     end
 
     def start_sync
