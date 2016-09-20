@@ -219,7 +219,7 @@ module Streambox
     def heartbeat
       t0 = Time.now
       response = put(device_url)
-      @dt = Time.now = t0
+      @dt = Time.now - t0
       @network = response.status == 200
       if @prev_network != @network
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
