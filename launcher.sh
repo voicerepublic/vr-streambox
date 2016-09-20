@@ -31,19 +31,6 @@ DEVICE=dsnooped ./record.sh &
 echo $! > ../record.sh.pid
 )
 
-# debug
-echo $DIR/../record.sh.pid
-cat $DIR/../record.sh.pid
-ps aux | grep sox
-ls -la $DIR/../recordings
-sleep 3
-ls -la $DIR/../recordings
-sleep 3
-ls -la $DIR/../recordings
-sleep 3
-ls -la $DIR/../recordings
-
-
 message 'Wait 3s for network device to settle...'
 sleep 3
 
