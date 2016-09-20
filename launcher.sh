@@ -24,6 +24,10 @@ $DIR/expand.sh
 message 'Removing stale pid files...'
 rm -f ~pi/*.pid
 
+message 'Start offline recording...'
+DEVICE=dsnooped $DIR/record.sh &
+echo $! > $DIR/../record.sh.pid
+
 message 'Wait 3s for network device to settle...'
 sleep 3
 

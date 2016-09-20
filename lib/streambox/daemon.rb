@@ -217,7 +217,9 @@ module Streambox
     end
 
     def heartbeat
+      t0 = Time.now
       response = put(device_url)
+      @dt = Time.now = t0
       @network = response.status == 200
       if @prev_network != @network
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
@@ -227,6 +229,8 @@ module Streambox
       apply_config(json)
     rescue Faraday::TimeoutError
       logger.error "Error: Heartbeat timed out."
+    rescue JSON::ParserError
+      logger.error "Error: Heartbeat could not parse JSON."
     end
 
     def start_observer(name)
@@ -255,7 +259,8 @@ module Streambox
     end
 
     def report!
-      response = put(device_url+'/report', @reporter.report)
+      report = @reporter.report.merge(heartbeat_response_time: @dt)
+      response = put(device_url+'/report', report)
       @network = response.status == 200
       if @prev_network != @network
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
