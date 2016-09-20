@@ -50,7 +50,7 @@ module Streambox
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
 
-    attr_accessor :queue
+    attr_accessor :queue, :recorder
 
     def initialize
       Thread.abort_on_exception = true
@@ -245,7 +245,7 @@ module Streambox
             logger.debug "Two resilitent process for darkice running?"
           end
           if line.match(/sox WARN alsa: No such device/)
-            @recorder.stop!
+            recorder.stop!
             system('toilet -f mono12 " Nooooooooo!"')
             puts "Please plug the audio device back in!"
             exit
@@ -286,7 +286,7 @@ module Streambox
     end
 
     def start_recording
-      @recorder = ResilientProcess.new(record_cmd,
+      self.recorder = ResilientProcess.new(record_cmd,
                                        'record.sh',
                                        @config.check_record_interval,
                                        0,
