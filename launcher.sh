@@ -25,8 +25,23 @@ message 'Removing stale pid files...'
 rm -f ~pi/*.pid
 
 message 'Start offline recording...'
-DEVICE=dsnooped $DIR/record.sh &
+(cd $DIR; DEVICE=dsnooped ./record.sh &)
 echo $! > $DIR/../record.sh.pid
+
+
+# debug
+echo $!
+echo $DIR/../record.sh.pid
+cat $DIR/../record.sh.pid
+ps aux | grep sox
+ls -la $DIR/../recordings
+sleep 3
+ls -la $DIR/../recordings
+sleep 3
+ls -la $DIR/../recordings
+sleep 3
+ls -la $DIR/../recordings
+
 
 message 'Wait 3s for network device to settle...'
 sleep 3
