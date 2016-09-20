@@ -511,6 +511,8 @@ module Streambox
 
     # this only works for releases
     def reboot_required?(from, to)
+      return true if from == 21
+
       false
     end
 
