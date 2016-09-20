@@ -6,7 +6,7 @@ VERSION=$((`cat VERSION`+1))
 
 echo $VERSION > VERSION
 
-git commit -m "bump version to $VERSION" VERSION
+git commit -m "bump version to $VERSION and rollout release" VERSION
 
 git tag v$VERSION
 
