@@ -247,11 +247,15 @@ module Streambox
           if line.match(/sox WARN alsa: No such device/)
             recorder.stop!
             # drain fifo
-            system 'dd if=record.sh.log iflag=nonblock of=/dev/null'
+            # system 'dd if=record.sh.log iflag=nonblock of=/dev/null'
             # warn
             system 'toilet -f mono12 "Noooooo!"'
-            puts "Please plug the audio device back in!"
-            exit
+            puts
+            puts "Plug the audio device back in, the power cycle the box!"
+            puts
+            puts "Shutdown in 30 seconds..."
+            sleep 30
+            system 'shutdown -h now'
           end
           logger.debug "[#{name.upcase}] #{line.chomp}"
         end
