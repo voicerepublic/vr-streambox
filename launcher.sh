@@ -34,21 +34,26 @@ echo $! > ../record.sh.pid
 message 'Wait 3s for network device to settle...'
 sleep 3
 
-# just for debugging
-SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
-PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
-BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
-TEXT="Streamboxx-L $SERIAL on $PRIVATE_IP starting..."
-JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
-curl -X POST -H 'Content-type: application/json' --data "$JSON" \
-     https://hooks.slack.com/services/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
-echo
-
 # set the dev box flag
+BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
 if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
     message "Woot! This is a dev box! Living on the egde..."
     touch /boot/dev_box
 fi
+
+# just for debugging
+SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
+PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
+NAME="Streamboxx"
+if [ -e /boot/dev_box ]; then
+    NAME="Streamboxx DEV"
+fi
+URL="https://voicerepublic.com:444/admin/devices/$SERIAL"
+TEXT="$NAME <$URL|$SERIAL> on $PRIVATE_IP starting..."
+JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
+curl -X POST -H 'Content-type: application/json' --data "$JSON" \
+     https://hooks.slack.com/services/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
+echo
 
 #if [ "$SERIAL" = "00000000130b3a89" ]; then
 #    echo "Yeah! It's phil's dev box."
@@ -101,7 +106,7 @@ do
     sleep 5
 
     # slack
-    TEXT="Streamboxx-L $SERIAL ($BRANCH) on $PRIVATE_IP restarting..."
+    TEXT="Streamboxx-L $SERIAL on $PRIVATE_IP restarting..."
     JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
     curl -X POST -H 'Content-type: application/json' --data "$JSON" \
          https://hooks.slack.com/services/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
