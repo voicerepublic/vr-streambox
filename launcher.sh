@@ -44,12 +44,13 @@ fi
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
+VERSION=`cat VERSION`
 NAME="Streamboxx"
 if [ -e /boot/dev_box ]; then
     NAME="Streamboxx DEV"
 fi
 URL="https://voicerepublic.com:444/admin/devices/$SERIAL"
-TEXT="$NAME <$URL|$SERIAL> on $PRIVATE_IP starting..."
+TEXT="$NAME <$URL|$SERIAL> with v$VERSION on $PRIVATE_IP starting..."
 JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
 curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
