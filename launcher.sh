@@ -44,7 +44,7 @@ fi
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
-VERSION=`cat VERSION`
+VERSION=`cat $DIR/VERSION`
 NAME="Streamboxx"
 if [ -e /boot/dev_box ]; then
     NAME="Streamboxx DEV"
