@@ -31,6 +31,7 @@ DEVICE=dsnooped ./record.sh &
 echo $! > ../record.sh.pid
 )
 
+# TODO instead use http request to wait for a network connection
 message 'Wait 3s for network device to settle...'
 sleep 3
 
