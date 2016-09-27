@@ -254,7 +254,9 @@ module Streambox
             system 'shutdown -h now'
           end
           if line.match(/RequestTimeTooSkewed/)
+            logger.info "Syncing clock..."
             system "sync_clock.sh"
+            logger.info "Syncing clock complete."
             # TODO retry
           end
           logger.debug "[#{name.upcase}] #{line.chomp}"
