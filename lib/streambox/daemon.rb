@@ -8,7 +8,7 @@ require 'erb'
 require 'pp'
 
 require 'faraday'
-require 'eventmachine'
+require 'rb-inotify'
 
 require "fifo"
 require "streambox/version"
@@ -50,7 +50,7 @@ module Streambox
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
 
-    attr_accessor :queue, :recorder
+    attr_accessor :queue, :recorder, :recordings
 
     def initialize
       Thread.abort_on_exception = true
@@ -276,6 +276,7 @@ module Streambox
 
     def report!
       report = @reporter.report.merge(heartbeat_response_time: @dt)
+      report = @reporter.report.merge(recordings: recordings)
       response = put(device_url+'/report', report)
       @network = response.status == 200
       if @prev_network != @network
@@ -301,6 +302,36 @@ module Streambox
                                        @config.check_record_interval,
                                        0,
                                        logger).run
+    end
+
+    def start_recording_monitor
+      notifier = INotify::Notifier.new
+      events = [:create, :delete, :close_write, :modify]
+      self.recordings = {}
+
+      notifier.watch('../recordings', *events) do |event|
+        name = event.name
+        self.recordings[name] ||= {}
+
+        case event.flags
+        when [:modify]
+          self.recordings[name][:first_updated] ||= Time.now
+          self.recordings[name][:last_updated] = Time.now
+          self.recordings[name][:size] = File.size(event.absolute_name)
+        when [:close_write, :close]
+          self.recordings[name][:closed] ||= Time.now
+        when [:create]
+          self.recordings[name][:created] = Time.now
+        when [:delete]
+          self.recordings[name][:deleted] = Time.now
+        end
+
+        # puts recordings.to_yaml
+      end
+
+      Thread.new do
+        notifier.run
+      end
     end
 
     def sync
@@ -348,41 +379,44 @@ module Streambox
       logger.info "[0] Start recording..."
       start_recording
 
-      logger.info "[1] Knocking..."
+      logger.info "[1] Start recording monitor..."
+      start_recording_monitor
+
+      logger.info "[2] Knocking..."
       knock!
-      logger.info "[2] Knocking complete."
+      logger.info "[3] Knocking complete."
       logger.debug "Endpoint #{@config.endpoint}"
 
-      logger.info "[3] Start Streamer..."
+      logger.info "[4] Start Streamer..."
       start_streamer
-      logger.info "[4] Streamer started."
+      logger.info "[5] Streamer started."
 
       if dev_box?
-        logger.warn "[5] Dev Box detected! Skipping check for release."
+        logger.warn "[6] Dev Box detected! Skipping check for release."
       else
-        logger.warn "[5] Checking for release..."
+        logger.warn "[6] Checking for release..."
         check_for_release
       end
 
-      logger.info "[6] Start heartbeat..."
+      logger.info "[7] Start heartbeat..."
       start_heartbeat
 
-      logger.info "[7] Registering..."
+      logger.info "[8] Registering..."
       register!
-      logger.info "[8] Registration complete."
+      logger.info "[9] Registration complete."
 
-      logger.info "[9] Start reporting..."
+      logger.info "[A] Start reporting..."
       start_reporting
 
-      logger.info "[A] Start publisher..."
+      logger.info "[B] Start publisher..."
       start_publisher
 
-      logger.info "[B] Start observers..."
+      logger.info "[C] Start observers..."
       start_observer 'darkice'
       start_observer 'record'
       start_observer 'sync'
 
-      logger.info "[C] Start sync loop..."
+      logger.info "[D] Start sync loop..."
       start_sync
 
       if @config.state == 'pairing'
