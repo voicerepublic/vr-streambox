@@ -37,4 +37,5 @@ sudo pip install awscli
 message 'Running bundler (installing main dependencies)...'
 (cd $DIR && bundle install)
 
+
 message 'Setup done.'
