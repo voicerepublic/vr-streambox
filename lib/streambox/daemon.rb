@@ -275,8 +275,12 @@ module Streambox
     end
 
     def report!
-      report = @reporter.report.merge(heartbeat_response_time: @dt)
-      report = @reporter.report.merge(recordings: recordings)
+      more = {
+        heartbeat_response_time: @dt,
+        recordings: recordings,
+        now: Time.now
+      }
+      report = more.merge(@reporter.report)
       response = put(device_url+'/report', report)
       @network = response.status == 200
       if @prev_network != @network
