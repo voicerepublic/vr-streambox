@@ -24,6 +24,11 @@ $DIR/expand.sh
 message 'Removing stale pid files...'
 rm -f ~pi/*.pid
 
+message 'Synchronizing clock...'
+service ntp stop
+htpdate -s voicerepublic.com
+service ntp start
+
 message 'Start offline recording...'
 (
 cd $DIR
