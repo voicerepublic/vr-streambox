@@ -24,6 +24,9 @@ $DIR/expand.sh
 message 'Removing stale pid files...'
 rm -f ~pi/*.pid
 
+message 'Wait 3s for network device to settle...'
+sleep 3
+
 $DIR/sync_clock.sh
 
 message 'Start offline recording...'
@@ -32,10 +35,6 @@ cd $DIR
 DEVICE=dsnooped ./record.sh &
 echo $! > ../record.sh.pid
 )
-
-# TODO instead use http request to wait for a network connection
-message 'Wait 3s for network device to settle...'
-sleep 3
 
 # set the dev box flag
 BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
