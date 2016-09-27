@@ -258,10 +258,8 @@ module Streambox
           end
 
           if line.match(/RequestTimeTooSkewed/)
-            logger.info "Syncing clock..."
             system './sync_clock.sh'
-            logger.info "Syncing clock complete."
-            # TODO retry
+            sync # extra sync after clock is fixed
           end
         end
       end
