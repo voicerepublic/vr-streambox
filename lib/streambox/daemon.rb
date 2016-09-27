@@ -255,7 +255,7 @@ module Streambox
           end
           if line.match(/RequestTimeTooSkewed/)
             system "sync_clock.sh"
-            sync
+            # TODO retry
           end
           logger.debug "[#{name.upcase}] #{line.chomp}"
         end
