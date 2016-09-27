@@ -241,9 +241,12 @@ module Streambox
       Thread.new do
         loop do
           line = fifo.gets
+          logger.debug "[#{name.upcase}] #{line.chomp}"
+
           if line.match(/mountpoint occupied, or maximum sources reached/)
             logger.debug "Two resilitent process for darkice running?"
           end
+
           if line.match(/sox WARN alsa: No such device/)
             recorder.stop!
             puts
@@ -253,14 +256,13 @@ module Streambox
             sync
             system 'shutdown -h now'
           end
+
           if line.match(/RequestTimeTooSkewed/)
-            puts "HAAAAAAAAAAAAAAALLLLLOOOOO"
             logger.info "Syncing clock..."
-            system "sync_clock.sh"
+            system './sync_clock.sh'
             logger.info "Syncing clock complete."
             # TODO retry
           end
-          logger.debug "[#{name.upcase}] #{line.chomp}"
         end
       end
     end
