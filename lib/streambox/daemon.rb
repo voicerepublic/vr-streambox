@@ -253,6 +253,10 @@ module Streambox
             sync
             system 'shutdown -h now'
           end
+          if line.match(/RequestTimeTooSkewed/)
+            system "sync_clock.sh"
+            sync
+          end
           logger.debug "[#{name.upcase}] #{line.chomp}"
         end
       end

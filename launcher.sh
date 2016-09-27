@@ -24,10 +24,7 @@ $DIR/expand.sh
 message 'Removing stale pid files...'
 rm -f ~pi/*.pid
 
-message 'Synchronizing clock...'
-service ntp stop
-htpdate -s voicerepublic.com
-service ntp start
+$DIR/sync_clock.sh
 
 message 'Start offline recording...'
 (
@@ -87,11 +84,6 @@ do
         rm /boot/reboot
         reboot
     fi
-
-    message 'Synchronizing clock...'
-    service ntp stop
-    htpdate -s voicerepublic.com
-    service ntp start
 
     # update dev boxes
     if [ -e /boot/dev_box ]; then
