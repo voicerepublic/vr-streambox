@@ -2,11 +2,8 @@
 
 mkdir -p ../recordings
 
-#sox -q -t alsa $DEVICE ../recordings/recording_`date +%s`_%4n.ogg \
-#    silence 1 0:01 0% 1 0:10 0% : newfile : restart >record.log 2>&1
-
 sox -q -t alsa $DEVICE ../recordings/recording_`date +%s`_%4n.ogg \
-    silence 1 0:01 0.1% 1 0:10 0.1% : newfile : restart >record.log 2>&1
+    silence 1 0:00.3 1% 1 0:10 1% : newfile : restart >record.log 2>&1
 
 echo 'Recording terminated. Is an audio device plugged in?' >record.log
 
