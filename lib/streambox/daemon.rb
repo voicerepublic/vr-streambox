@@ -50,7 +50,7 @@ module Streambox
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
 
-    attr_accessor :queue, :recorder, :recordings
+    attr_accessor :queue, :recorder, :recordings, :bandwidth
 
     def initialize
       Thread.abort_on_exception = true
@@ -278,6 +278,7 @@ module Streambox
       more = {
         heartbeat_response_time: @dt,
         recordings: recordings,
+        bandwidth: bandwidth,
         now: Time.now
       }
       report = more.merge(@reporter.report)
@@ -339,11 +340,20 @@ module Streambox
     end
 
     def sync
-      logger.info 'Start syncing...'
+      total = 0
+      Dir.glob('../recordings/*.ogg').each do |path|
+        total += File.size(path)
+      end
+
+      logger.info 'Start syncing %.2fkb...' % (total/1024)
+
       t0 = Time.now
       system(sync_cmd)
-      logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
-                  [Time.now - t0, @config.sync_interval]
+      dt = Time.now - t0
+      self.bandwidth = total / dt # in bytes per second
+      logger.info 'Syncing completed in %.2fs at %.2fkbps. Next sync in %ss.' %
+                  [dt, bandwidth/1024, @config.sync_interval]
+
     end
 
     def start_sync
