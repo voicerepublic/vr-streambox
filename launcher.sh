@@ -104,7 +104,7 @@ do
     sleep 5
 
     # slack
-    TEXT="$NAME $SERIAL with v$VERSION on $PRIVATE_IP restarting..."
+    TEXT="$NAME <$URL|$SERIAL> with v$VERSION on $PRIVATE_IP restarting..."
     JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
     curl -X POST -H 'Content-type: application/json' --data "$JSON" \
          https://hooks.slack.com/services/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
