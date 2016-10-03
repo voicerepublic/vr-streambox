@@ -261,6 +261,10 @@ module Streambox
             system './sync_clock.sh'
             sync # extra sync after clock is fixed
           end
+
+          if line.match(/Darkice: TcpSocket.cpp:251: connect error \[111\]/)
+            # handle lots of defunct processes
+          end
         end
       end
     end
