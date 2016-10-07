@@ -230,8 +230,10 @@ ssh-keyscan gitlab.com >> /home/pi/.ssh/known_hosts
 git clone git@gitlab.com:voicerepublic/streambox.git /home/pi/streambox
 
 mkdir -p /etc/systemd/system/default.target.wants
-ln -s /home/pi/streambox/streambox.service \
-      /etc/systemd/system/default.target.wants
+ln -vs /home/pi/streambox/streambox.service \
+       /etc/systemd/system/default.target.wants
+ln -vs /home/pi/streambox/monitor.service \
+       /etc/systemd/system/default.target.wants
 mv /etc/systemd/system/getty.target.wants/getty@tty1.service \
    /etc/systemd/system/getty.target.wants/getty@tty2.service
 ```
@@ -351,7 +353,7 @@ Check both keys (public and private) into this repo.
 
 ```
 wget -c https://github.com/raboof/nethogs/archive/v0.8.5.tar.gz
-tar xf v0.8.5.tar.gz 
+tar xf v0.8.5.tar.gz
 cd ./nethogs-0.8.5/
 sudo apt-get -y install libncurses5-dev libpcap-dev
 make && sudo make install
