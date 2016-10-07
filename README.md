@@ -235,7 +235,7 @@ ln -vs /home/pi/streambox/streambox.service \
 ln -vs /home/pi/streambox/monitor.service \
        /etc/systemd/system/default.target.wants
 mv /etc/systemd/system/getty.target.wants/getty@tty1.service \
-   /etc/systemd/system/getty.target.wants/getty@tty2.service
+   /etc/systemd/system/getty.target.wants/getty@tty3.service
 ```
 
 

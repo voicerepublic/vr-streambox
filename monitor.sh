@@ -3,7 +3,8 @@
 mkdir -p ../recordings
 
 /usr/bin/watch -n 3 \
-  "uptime; \
+  "pwd; \
+   uptime; \
    cat VERSION; \
    cat ../subtype; \
    test -e /boot/dev_box && echo 'DEV BOX'; \
@@ -12,6 +13,7 @@ mkdir -p ../recordings
    cat /sys/class/net/wlan0/address; \
    hostname -I | cut -d ' ' -f 1; \
    vcgencmd measure_temp; \
+   cat /proc/meminfo | head -3; \
    ps aux | grep sox; \
    ps aux | grep darkice; \
    df -h; \
