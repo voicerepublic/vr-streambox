@@ -67,7 +67,7 @@ if [ ! -L ~pi/streambox ]; then
     message "Moving stuff around..."
     mv ~pi/streambox/setup.sh.old ~pi/
     mv ~pi/streambox ~pi/streambox-repo
-    ln -sf streambox-repo ~pi/streambox
+    ln -s streambox-repo ~pi/streambox
     message "Rebooting after moving repo..."
     reboot
 fi
@@ -92,7 +92,8 @@ do
         chmod 600 /root/.ssh/id_rsa*
 
         message 'Updating via GIT...'
-        ln -sf ~pi/streambox-repo ~pi/streambox
+        rm ~pi/streambox
+        ln -sf streambox-repo ~pi/streambox
         (cd $DIR && ./update_repository.sh)
     fi
 
