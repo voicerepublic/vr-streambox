@@ -37,7 +37,7 @@ echo $! > ../record.sh.pid
 )
 
 # set the dev box flag
-BRANCH=`(cd $DIR && git rev-parse --abbrev-ref HEAD)`
+BRANCH=`(cd $DIR && test -e .git && git rev-parse --abbrev-ref HEAD)`
 if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
     message "Woot! This is a dev box! Living on the egde..."
     touch /boot/dev_box
