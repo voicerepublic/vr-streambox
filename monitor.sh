@@ -5,10 +5,12 @@ cd ~pi/streambox
 mkdir -p ../recordings
 
 /usr/bin/watch -n 3 \
-  "uptime; \
+  "echo '--------------------------------------------------------------------------------'
+   uptime; \
    test -e /boot/dev_box && echo 'DEV BOX'; \
    cat VERSION; \
    cat ../subtype; \
+   echo; \
    grep Serial /proc/cpuinfo; \
    echo -n 'eth0       '; cat /sys/class/net/eth0/address; \
    echo -n 'wlan0      '; cat /sys/class/net/wlan0/address; \
