@@ -21,7 +21,7 @@ else
 fi
 
 message 'Installing base dependencies...'
-sudo apt-get -y install ruby ruby-dev darkice toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq sox htpdate lsof
+sudo apt-get -y install ruby ruby-dev darkice toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq sox htpdate lsof time
 
 message 'Installing bundler...'
 sudo gem install bundler --force --no-ri --no-rdoc
