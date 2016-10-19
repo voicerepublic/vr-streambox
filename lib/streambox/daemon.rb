@@ -320,7 +320,7 @@ module Streambox
       self.recordings = {}
 
       notifier.watch('../recordings', *events) do |event|
-        logger.debug event.inspect
+        logger.debug event.flags.inspect + ' ' + event.name
 
         name = event.name
         self.recordings[name] ||= {}
