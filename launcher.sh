@@ -29,12 +29,12 @@ sleep 3
 
 $DIR/sync_clock.sh
 
-message 'Start offline recording...'
-(
-cd $DIR
-DEVICE=dsnooped ./record.sh &
-echo $! > ../record.sh.pid
-)
+# message 'Start offline recording...'
+# (
+# cd $DIR
+# DEVICE=dsnooped ./record.sh &
+# echo $! > ../record.sh.pid
+# )
 
 # set the dev box flag
 BRANCH=`(cd $DIR && test -e .git && git rev-parse --abbrev-ref HEAD)`
