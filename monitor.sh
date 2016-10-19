@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [-e /boot/dev_box]; then
+#if [-e /boot/dev_box]; then
 
     cd ~pi/streambox
 
@@ -32,8 +32,8 @@ if [-e /boot/dev_box]; then
 
        ls -lA ../recordings"
 
-else
+#else
 
-    aafire
+#    aafire
 
-fi
+#fi
