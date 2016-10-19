@@ -20,10 +20,10 @@ mkdir -p ../recordings
 
    ps aux | grep launcher | grep -v grep; \
    ps aux | grep ruby | grep -v grep; \
-   ps aux | grep record | grep -v grep; \
+   ps aux | grep record.sh | grep -v grep; \
    ps aux | grep sox | grep -v grep; \
    ps aux | grep darkice | grep -v grep; \
-   ps aux | grep sync | grep -v grep; \
+   ps aux | grep sync.sh | grep -v grep; \
    ps aux | grep aws | grep -v grep; \
 
    df -h; \
