@@ -17,8 +17,15 @@ mkdir -p ../recordings
    vcgencmd measure_temp | sed 's/=/            : /'; \
    echo -n 'record pid      : '; cat ../record.sh.pid; \
    test -e ../darkice.pid && (echo -n 'darkice pid     : '; cat ../darkice.pid); \
+
+   ps aux | grep launcher | grep -v grep; \
+   ps aux | grep ruby | grep -v grep; \
    ps aux | grep record | grep -v grep; \
    ps aux | grep sox | grep -v grep; \
    ps aux | grep darkice | grep -v grep; \
+   ps aux | grep sync | grep -v grep; \
+   ps aux | grep aws | grep -v grep; \
+
    df -h; \
+
    ls -lA ../recordings"
