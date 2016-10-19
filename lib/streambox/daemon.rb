@@ -320,6 +320,8 @@ module Streambox
       self.recordings = {}
 
       notifier.watch('../recordings', *events) do |event|
+        logger.debug event.inspect
+
         name = event.name
         self.recordings[name] ||= {}
 
@@ -403,39 +405,39 @@ module Streambox
       logger.info "[1] Start recording monitor..."
       start_recording_monitor
 
-      logger.info "[2] Knocking..."
+      logger.info "[2] Start observers..."
+      start_observer 'record'
+      start_observer 'sync'
+      start_observer 'darkice'
+
+      logger.info "[3] Knocking..."
       knock!
-      logger.info "[3] Knocking complete."
+      logger.info "[4] Knocking complete."
       logger.debug "Endpoint #{@config.endpoint}"
 
-      logger.info "[4] Start Streamer..."
+      logger.info "[5] Start Streamer..."
       start_streamer
-      logger.info "[5] Streamer started."
+      logger.info "[6] Streamer started."
 
       if dev_box?
-        logger.warn "[6] Dev Box detected! Skipping check for release."
+        logger.warn "[7] Dev Box detected! Skipping check for release."
       else
-        logger.warn "[6] Checking for release..."
+        logger.warn "[7] Checking for release..."
         check_for_release
       end
 
-      logger.info "[7] Start heartbeat..."
+      logger.info "[8] Start heartbeat..."
       start_heartbeat
 
-      logger.info "[8] Registering..."
+      logger.info "[9] Registering..."
       register!
-      logger.info "[9] Registration complete."
+      logger.info "[A] Registration complete."
 
-      logger.info "[A] Start reporting..."
+      logger.info "[B] Start reporting..."
       start_reporting
 
-      logger.info "[B] Start publisher..."
+      logger.info "[C] Start publisher..."
       start_publisher
-
-      logger.info "[C] Start observers..."
-      start_observer 'darkice'
-      start_observer 'record'
-      start_observer 'sync'
 
       logger.info "[D] Start sync loop..."
       start_sync
