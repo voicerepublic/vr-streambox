@@ -63,6 +63,16 @@ echo
 #    rm /boot/dev_box
 #fi
 
+# install the monitor script on tty2
+if [-e /etc/systemd/system/getty.target.wants/getty@tty2.service]; then
+    ln -vs /home/pi/streambox/monitor.service \
+       /etc/systemd/system/default.target.wants
+    mv /etc/systemd/system/getty.target.wants/getty@tty2.service \
+       /etc/systemd/system/getty.target.wants/getty@tty3.service
+    reboot
+fi
+
+
 if [ ! -L ~pi/streambox ]; then
     message "Moving stuff around..."
     mv ~pi/streambox/setup.sh.old ~pi/
