@@ -14,7 +14,9 @@ mkdir -p ../recordings
    echo -n 'wlan0           : '; cat /sys/class/net/wlan0/address; \
    echo -n 'private ip      : '; hostname -I | cut -d ' ' -f 1; \
    cat /proc/meminfo | head -3; \
-   vcgencmd measure_temp; \
+   vcgencmd measure_temp | sed 's/=/            : /'; \
+   echo -n 'record pid      : '; cat ../record.sh.pid; \
+   echo -n 'darkice pid     : '; cat ../darkice.pid; \
    ps aux | grep sox | grep -v grep; \
    ps aux | grep darkice | grep -v grep; \
    df -h; \
