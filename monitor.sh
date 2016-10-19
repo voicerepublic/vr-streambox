@@ -16,7 +16,8 @@ mkdir -p ../recordings
    cat /proc/meminfo | head -3; \
    vcgencmd measure_temp | sed 's/=/            : /'; \
    echo -n 'record pid      : '; cat ../record.sh.pid; \
-   echo -n 'darkice pid     : '; cat ../darkice.pid; \
+   test -e ../darkice.pid && (echo -n 'darkice pid     : '; cat ../darkice.pid); \
+   ps aux | grep record | grep -v grep; \
    ps aux | grep sox | grep -v grep; \
    ps aux | grep darkice | grep -v grep; \
    df -h; \
