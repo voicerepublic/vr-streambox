@@ -15,8 +15,8 @@ mkdir -p ../recordings
    echo -n 'private ip      : '; hostname -I | cut -d ' ' -f 1; \
    cat /proc/meminfo | head -3; \
    vcgencmd measure_temp | sed 's/=/            : /'; \
-   echo -n 'record pid      : '; cat ../record.sh.pid; \
-   test -e ../darkice.pid && (echo -n 'darkice pid     : '; cat ../darkice.pid); \
+   echo -n 'record pid      : '; cat ../record.sh.pid; echo; \
+   test -e ../darkice.pid && (echo -n 'darkice pid     : '; cat ../darkice.pid; echo); \
 
    ps aux | grep launcher | grep -v grep; \
    ps aux | grep ruby | grep -v grep; \

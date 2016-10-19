@@ -388,6 +388,8 @@ module Streambox
     def run
       at_exit { fire_event :restart }
 
+      @config.loglevel = Logger::DEBUG if dev_box?
+
       special_check_for_reboot_required
 
       logger.info "Id %s, IP %s, Version %s" %
