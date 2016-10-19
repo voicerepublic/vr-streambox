@@ -137,8 +137,9 @@ module Streambox
       logger.fatal "Error: Knocking timed out."
       exit
     rescue Faraday::ConnectionFailed
-      logger.fatal "Error: The internet connection seems to be down."
-      exit
+      logger.fatal "Error: The internet connection seems to be down. Waiting 10s then retry..."
+      sleep 10
+      retry
     end
 
     def register!
