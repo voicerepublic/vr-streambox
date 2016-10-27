@@ -13,7 +13,7 @@ sed -i'.bak' '/^.*wlan0$/,/^$/ d' /etc/network/interfaces
 
 #Extract speed info from ethtool. If speed is 10 Mb/s, no cable is connected. If it is 100 Mb/s, there is a cable present.
 SPEED=`ethtool eth0 | grep -i "Speed" | awk '{print $2}' | grep -o '[0-9]*'`
-if [ $SPEED == 100 ]; then
+if [ "$SPEED" -eq 100 ]; then
     echo "Ethernet cable connected. Setting up Wireless Access Point"
 
     if ! grep -q "$DHCPCD" /etc/dhcpcd.conf; then
@@ -75,3 +75,4 @@ ifdown wlan0
 ifup wlan0
 service hostapd restart
 service dnsmasq restart
+systemctl daemon-reload
