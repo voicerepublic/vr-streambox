@@ -22,7 +22,7 @@ if [ "$SPEED" -eq 100 ]; then
 
     cp -f $DIR/interfaces/wlan0_access-point /etc/network/interfaces.d/wlan0
 
-    sed "s/SSID/vr-streamboxx/" $DIR/hostapd.conf.template > /etc/hostapd/hostapd.conf
+    sed -e "s/SSID/vr-streamboxx/" -e "s/PASSWORD/some-password-tbd/" $DIR/hostapd.conf.template > /etc/hostapd/hostapd.conf
     sed -i'' 's:#DAEMON_CONF="":DAEMON_CONF="/etc/hostapd/hostapd.conf":' /etc/default/hostapd
 
     if [ ! -f "/etc/dnsmasq.conf.bak" ]; then
@@ -58,7 +58,7 @@ else
     fi
 
     # remove ip forwarding
-    echo 1 > /proc/sys/net/ipv4/ip_forward
+    echo 0 > /proc/sys/net/ipv4/ip_forward
 
     # delete all iptable rules
     # if persisted, also call
