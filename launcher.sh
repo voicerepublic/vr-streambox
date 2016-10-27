@@ -64,7 +64,7 @@ echo
 #fi
 
 # install the monitor script on tty2
-if [-e /etc/systemd/system/getty.target.wants/getty@tty2.service]; then
+if [ -e /etc/systemd/system/getty.target.wants/getty@tty2.service ]; then
     ln -vs /home/pi/streambox/monitor.service \
        /etc/systemd/system/default.target.wants
     mv /etc/systemd/system/getty.target.wants/getty@tty2.service \
