@@ -1,1 +1,1 @@
-logfile /home/pi/log/streambox.log
+logfile $HOME/log/streambox.log
