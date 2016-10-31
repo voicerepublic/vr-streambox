@@ -4,7 +4,7 @@ After=graphical.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/screen -t "streambox" /home/pi/streambox/launcher.sh
+ExecStart=screen -t "streambox" /home/pi/streambox/launcher.sh
 StandardInput=tty
 StandardOutput=tty
 TTYPath=/dev/tty1
