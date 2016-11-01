@@ -22,7 +22,6 @@ main(){
     else
         setup_wifi_connection
     fi
-    ifup wlan0
     #restart_services
 }
 
@@ -80,6 +79,7 @@ setup_access_point() {
     iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
     iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
 
+    ifup wlan0
     service hostapd start
     service dnsmasq start
 }
@@ -111,6 +111,9 @@ setup_wifi_connection(){
     iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
     iptables -D FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
     iptables -D FORWARD -i wlan0 -o eth0 -j ACCEPT
+
+    ifup wlan0
+    wpa_cli scan
 }
 
 stop_services(){
