@@ -7,7 +7,7 @@ main(){
 
     #DHCPCD="denyinterfaces wlan0"
 
-    SSID_INTERNAL="VR Streaming"
+    SSID_INTERNAL="VR Streaming2"
     PASSWORD_INTERNAL="streamsdocometrue"
 
     SSID_CUSTOM="VR Hotspot"
@@ -15,12 +15,15 @@ main(){
 
     sed -i'.bak' '/^.*wlan0$/,/^$/ d' /etc/network/interfaces
 
-    if interface_connected eth0 https://voicerepublic.com; then
+    stop_services
+
+    if interface_connected $1 https://voicerepublic.com; then
         setup_access_point
     else
         setup_wifi_connection
     fi
-    restart_services
+    ifup wlan0
+    #restart_services
 }
 
 interface_connected() {
@@ -53,7 +56,7 @@ setup_access_point() {
 
     cp -f $DIR/interfaces/wlan0_access-point /etc/network/interfaces.d/wlan0
 
-    sed -e "s/SSID/vr-streamboxx/" -e "s/PASSWORD/some-password-tbd/" \
+    sed -e "s/SSID/$SSID_INTERNAL/" -e "s/PASSWORD/$PASSWORD_INTERNAL/" \
         $DIR/hostapd.conf.template > /etc/hostapd/hostapd.conf
 
     sed -i'' 's:#DAEMON_CONF="":DAEMON_CONF="/etc/hostapd/hostapd.conf":' /etc/default/hostapd
@@ -76,6 +79,9 @@ setup_access_point() {
     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
     iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
     iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
+
+    service hostapd start
+    service dnsmasq start
 }
 
 setup_wifi_connection(){
@@ -108,17 +114,17 @@ setup_wifi_connection(){
 }
 
 stop_services(){
-    service dhcpcd stop
+    service hostapd stop
+    service dnsmasq stop
+    ifdown wlan0
 }
 
 restart_services(){
     # restart all affected services
     systemctl daemon-reload
-    #service dhcpcd restart
-    ifdown wlan0
     ifup wlan0
     service hostapd restart
     service dnsmasq restart
 }
 
-main
+main "$@"
