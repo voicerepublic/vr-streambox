@@ -7,8 +7,11 @@ main(){
 
     #DHCPCD="denyinterfaces wlan0"
 
-    SSID_INTERNAL="VR Streaming2"
+    SSID_INTERNAL="VR Streaming"
     PASSWORD_INTERNAL="streamsdocometrue"
+
+    SSID_AP="VR Streaming2"
+    PASSWORD_AP=$PASSWORD_INTERNAL
 
     SSID_CUSTOM="VR Hotspot"
     PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/0//g)
@@ -55,7 +58,7 @@ setup_access_point() {
 
     cp -f $DIR/interfaces/wlan0_access-point /etc/network/interfaces.d/wlan0
 
-    sed -e "s/SSID/$SSID_INTERNAL/" -e "s/PASSWORD/$PASSWORD_INTERNAL/" \
+    sed -e "s/SSID/$SSID_AP/" -e "s/PASSWORD/$PASSWORD_AP/" \
         $DIR/hostapd.conf.template > /etc/hostapd/hostapd.conf
 
     sed -i'' 's:#DAEMON_CONF="":DAEMON_CONF="/etc/hostapd/hostapd.conf":' /etc/default/hostapd
