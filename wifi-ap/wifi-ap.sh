@@ -29,7 +29,7 @@ interface_connected() {
     OPERSTATE=$(cat /sys/class/net/$INTERFACE/operstate)
     OPTIONS="--interface $INTERFACE --head --silent $URL"
     PATTERN="(2|3)0[0-9] OK"
-    if [ "$OPERSTATE" == "up" ] && curl $OPTIONS | egrep $PATTERN > /dev/null
+    if [ "$OPERSTATE" == "up" ] && curl $OPTIONS | egrep "$PATTERN" > /dev/null
     then
         return 0
     else
