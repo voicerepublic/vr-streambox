@@ -28,7 +28,7 @@ interface_connected() {
     URL=$2
     OPERSTATE=$(cat /sys/class/net/$INTERFACE/operstate)
     OPTIONS="--interface $INTERFACE --head --silent $URL"
-    PATTERN="(2|3)0[0-9] OK"
+    PATTERN="(2|3)0[0-9] (OK|Found)"
     if [ "$OPERSTATE" == "up" ] && curl $OPTIONS | egrep "$PATTERN" > /dev/null
     then
         return 0
