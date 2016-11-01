@@ -1,0 +1,43 @@
+digraph G {
+
+  // basic settings
+
+  fontname = "Bitstream Vera Sans"
+  fontsize = 8
+
+  edge [
+    fontname = "Bitstream Vera Sans"
+    fontsize = 8
+  ]
+
+  node [
+    fontname = "Bitstream Vera Sans"
+    fontsize = 8
+  ]
+
+
+  // normal transitions
+
+  edge [
+    arrowtail = "none"
+    arrowhead = "open"
+  ]
+
+  node [
+    shape = "oval"
+  ]
+
+  "" -> "Disconnected (trying Ethernet)" [label="init"]
+
+  "Disconnected (trying Ethernet)" -> "Connected via Ethernet\nProvides internal Wifi" [label="Ethernet Cable plugged in"]
+  "Disconnected (trying Ethernet)" -> "Disconnected (trying internal Wifi)" [label="fallback"]
+  "Disconnected (trying internal Wifi)" -> "Connected via internal Wifi" [label="Internal Wifi (becomes) available"]
+  "Disconnected (trying internal Wifi)" -> "Disconnected (trying custom Wifi)" [label="fallback"]
+  "Disconnected (trying custom Wifi)" -> "Connected via custom Wifi" [label="Custom Wifi (becomes) available"]
+  "Disconnected (trying custom Wifi)" -> "Disconnected (trying Ethernet)" [label="fallback"]
+
+  "Connected via Ethernet\nProvides internal Wifi" -> "Disconnected (trying Ethernet)" [label="Ethernet Cable unplugged"]
+  "Connected via internal Wifi" -> "Connected via Ethernet\nProvides internal Wifi" [label="Ethernet Cable plugged in"]
+  "Connected via custom Wifi" -> "Connected via Ethernet\nProvides internal Wifi" [label="Ethernet Cable plugged in"]
+
+}
