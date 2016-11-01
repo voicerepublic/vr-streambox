@@ -1,19 +1,39 @@
 #!/bin/sh
 
 
-DIR="$(cd "$(dirname "$0")" && pwd)"
+main(){
 
+    DIR="$(cd "$(dirname "$0")" && pwd)"
 
-DHCPCD="denyinterfaces wlan0"
+    DHCPCD="denyinterfaces wlan0"
 
-SSID="VR Streaming"
-PASSWORD="streamsdocometrue"
+    SSID_INTERNAL="VR Streaming"
+    PASSWORD_INTERNAL="streamsdocometrue"
 
-sed -i'.bak' '/^.*wlan0$/,/^$/ d' /etc/network/interfaces
+    SSID_CUSTOM="VR Hotspot"
+    PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/0//g)
 
-#Extract speed info from ethtool. If speed is 10 Mb/s, no cable is connected. If it is 100 Mb/s, there is a cable present.
-SPEED=`ethtool eth0 | grep -i "Speed" | awk '{print $2}' | grep -o '[0-9]*'`
-if [ "$SPEED" -eq 100 ]; then
+    sed -i'.bak' '/^.*wlan0$/,/^$/ d' /etc/network/interfaces
+
+    if interface_connected eth0 https://voicerepublic.com; then
+        setup_access_point
+    else
+        setup_wifi_connection
+    fi
+    restart_services
+}
+
+interface_connected() {
+    INTERFACE=$1
+    URL=$2
+    OPERSTATE=$(cat /sys/class/net/$INTERFACE/operstate)
+    OPTIONS="--interface $INTERFACE --head --silent $URL"
+    PATTERN="(2|3)0[0-9] OK"
+    return [[ $OPERSTATE == "up" ]] && curl $OPTIONS | egrep $PATTERN > /dev/null
+}
+
+setup_access_point() {
+
     echo "Ethernet cable connected. Setting up Wireless Access Point"
 
     if ! grep -q "$DHCPCD" /etc/dhcpcd.conf; then
@@ -22,7 +42,9 @@ if [ "$SPEED" -eq 100 ]; then
 
     cp -f $DIR/interfaces/wlan0_access-point /etc/network/interfaces.d/wlan0
 
-    sed -e "s/SSID/vr-streamboxx/" -e "s/PASSWORD/some-password-tbd/" $DIR/hostapd.conf.template > /etc/hostapd/hostapd.conf
+    sed -e "s/SSID/vr-streamboxx/" -e "s/PASSWORD/some-password-tbd/" \
+        $DIR/hostapd.conf.template > /etc/hostapd/hostapd.conf
+
     sed -i'' 's:#DAEMON_CONF="":DAEMON_CONF="/etc/hostapd/hostapd.conf":' /etc/default/hostapd
 
     if [ ! -f "/etc/dnsmasq.conf.bak" ]; then
@@ -43,15 +65,19 @@ if [ "$SPEED" -eq 100 ]; then
     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
     iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
     iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
+}
 
-else
+setup_wifi_connection(){
+
     echo "No Ethernet connected. Trying to connect to Wireless Access Point"
 
     sed -i'' "/$DHCPCD/d" /etc/dhcpcd.conf
 
     cp -f $DIR/interfaces/wlan0 /etc/network/interfaces.d/wlan0
 
-    sed -e "s/SSID/$SSID/" -e "s/PASSWORD/$PASSWORD/" $DIR/interfaces/wpa_supplicant.conf.template > /etc/wpa_supplicant/wpa_supplicant.conf
+    sed -e "s/SSID_INTERNAL/$SSID_INTERNAL/" -e "s/PASSWORD_INTERNAL/$PASSWORD_INTERNAL/" \
+        -e "s/SSID_CUSTOM/$SSID_CUSTOM/" -e "s/PASSWORD_CUSTOM/$PASSWORD_CUSTOM/" \
+        $DIR/interfaces/wpa_supplicant.conf.template > /etc/wpa_supplicant/wpa_supplicant.conf
 
     if [ -f "/etc/dnsmasq.conf.bak" ]; then
         mv -f /etc/dnsmasq.conf.bak /etc/dnsmasq.conf
@@ -68,13 +94,16 @@ else
     iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
     iptables -D FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
     iptables -D FORWARD -i wlan0 -o eth0 -j ACCEPT
+}
 
-fi
+restart_services(){
+    # restart all affected services
+    systemctl daemon-reload
+    service dhcpcd restart
+    ifdown wlan0
+    ifup wlan0
+    service hostapd restart
+    service dnsmasq restart
+}
 
-# restart all affected services
-service dhcpcd restart
-ifdown wlan0
-ifup wlan0
-service hostapd restart
-service dnsmasq restart
-systemctl daemon-reload
+main
