@@ -111,4 +111,6 @@ restart_services(){
     service dnsmasq restart
 }
 
-main
+if [ "$1" == "run" ]; then
+    main
+fi
