@@ -1,6 +1,9 @@
 #!/bin/sh
 
 
+#ifplugd -b -f -u 5 -d 5 -r /home/pi/streambox/wifi-ap/wifi-ap.sh
+
+
 main(){
 
     DIR="$(cd "$(dirname "$0")" && pwd)"
