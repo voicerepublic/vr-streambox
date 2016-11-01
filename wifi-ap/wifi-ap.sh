@@ -20,7 +20,7 @@ main(){
 
     stop_services
 
-    if interface_connected $1 https://voicerepublic.com; then
+    if interface_connected eth0 https://voicerepublic.com; then
         setup_access_point
     else
         setup_wifi_connection
