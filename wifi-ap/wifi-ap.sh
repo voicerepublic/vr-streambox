@@ -5,7 +5,7 @@ main(){
 
     DIR="$(cd "$(dirname "$0")" && pwd)"
 
-    DHCPCD="denyinterfaces wlan0"
+    #DHCPCD="denyinterfaces wlan0"
 
     SSID_INTERNAL="VR Streaming"
     PASSWORD_INTERNAL="streamsdocometrue"
@@ -41,9 +41,9 @@ setup_access_point() {
 
     echo "Ethernet cable connected. Setting up Wireless Access Point"
 
-    if ! grep -q "$DHCPCD" /etc/dhcpcd.conf; then
-        echo $DHCPCD >> /etc/dhcpcd.conf
-    fi
+    #if ! grep -q "$DHCPCD" /etc/dhcpcd.conf; then
+    #    echo $DHCPCD >> /etc/dhcpcd.conf
+    #fi
 
     cp -f $DIR/interfaces/wlan0_access-point /etc/network/interfaces.d/wlan0
 
@@ -76,7 +76,7 @@ setup_wifi_connection(){
 
     echo "No Ethernet connected. Trying to connect to Wireless Access Point"
 
-    sed -i'' "/$DHCPCD/d" /etc/dhcpcd.conf
+    #sed -i'' "/$DHCPCD/d" /etc/dhcpcd.conf
 
     cp -f $DIR/interfaces/wlan0 /etc/network/interfaces.d/wlan0
 
@@ -101,10 +101,14 @@ setup_wifi_connection(){
     iptables -D FORWARD -i wlan0 -o eth0 -j ACCEPT
 }
 
+stop_services(){
+    service dhcpcd stop
+}
+
 restart_services(){
     # restart all affected services
     systemctl daemon-reload
-    service dhcpcd restart
+    #service dhcpcd restart
     ifdown wlan0
     ifup wlan0
     service hostapd restart
