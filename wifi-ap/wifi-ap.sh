@@ -29,12 +29,18 @@ interface_connected() {
     OPERSTATE=$(cat /sys/class/net/$INTERFACE/operstate)
     OPTIONS="--interface $INTERFACE --head --silent $URL"
     PATTERN="(2|3)0[0-9] (OK|Found)"
-    if [ "$OPERSTATE" = "up" ] && curl $OPTIONS | egrep "$PATTERN" > /dev/null
+    if [ "$OPERSTATE" = "up" ]
     then
-        return 0
-    else
-        return 1
+        while [ -z "$(ifconfig $INTERFACE | egrep 'inet addr:([0-9]{1,3}\.){3}[0-9]{1,3}')" ]
+        do
+            sleep 1
+        done
+        if curl $OPTIONS | egrep "$PATTERN" > /dev/null
+           then
+               return 0
+        fi
     fi
+    return 1
 }
 
 setup_access_point() {
