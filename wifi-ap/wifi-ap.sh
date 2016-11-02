@@ -13,7 +13,7 @@ main(){
     SSID_INTERNAL="VR Streaming"
     PASSWORD_INTERNAL="streamsdocometrue"
 
-    SSID_AP="VR Streaming2"
+    SSID_AP=$SSID_INTERNAL
     PASSWORD_AP=$PASSWORD_INTERNAL
 
     SSID_CUSTOM="VR Hotspot"
