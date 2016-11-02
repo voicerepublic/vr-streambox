@@ -17,7 +17,7 @@ main(){
     PASSWORD_AP=$PASSWORD_INTERNAL
 
     SSID_CUSTOM="VR Hotspot"
-    PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/0//g)
+    PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/^0*//)
 
     sed -i'.bak' -e '/^.*wlan0$/,/^$/ d' /etc/network/interfaces
 
