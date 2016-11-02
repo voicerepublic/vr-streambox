@@ -19,7 +19,7 @@ main(){
     SSID_CUSTOM="VR Hotspot"
     PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/0//g)
 
-    sed -i'.bak' '/^.*wlan0$/,/^$/ d' /etc/network/interfaces
+    sed -i'.bak' -e '/^.*wlan0$/,/^$/ d' /etc/network/interfaces
 
     stop_services
 
@@ -64,7 +64,7 @@ setup_access_point() {
     sed -e "s/SSID/$SSID_AP/" -e "s/PASSWORD/$PASSWORD_AP/" \
         $DIR/hostapd.conf.template > /etc/hostapd/hostapd.conf
 
-    sed -i'' 's:#DAEMON_CONF="":DAEMON_CONF="/etc/hostapd/hostapd.conf":' /etc/default/hostapd
+    sed -i'' -e 's:#DAEMON_CONF="":DAEMON_CONF="/etc/hostapd/hostapd.conf":' /etc/default/hostapd
 
     if [ ! -f "/etc/dnsmasq.conf.bak" ]; then
         mv /etc/dnsmasq.conf /etc/dnsmasq.conf.bak
