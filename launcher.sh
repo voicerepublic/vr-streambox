@@ -72,9 +72,8 @@ if [ -e /etc/systemd/system/getty.target.wants/getty@tty2.service ]; then
     reboot
 fi
 
-# set up wifi access point if we have ethernet
-#$DIR/wifi-ap/wifi-ap.sh
-
+# start ifplugd to setup wlan / access point depending on ethernet connection
+ifplugd -b -f -u 5 -d 5 -r /home/pi/streambox/wifi-ap/wifi-ap.sh
 
 if [ ! -L ~pi/streambox ]; then
     message "Moving stuff around..."
