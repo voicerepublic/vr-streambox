@@ -73,7 +73,7 @@ if [ -e /etc/systemd/system/getty.target.wants/getty@tty2.service ]; then
 fi
 
 # start ifplugd to setup wlan / access point depending on ethernet connection
-ifplugd -b -f -u 5 -d 5 -r /home/pi/streambox/wifi-ap/wifi-ap.sh
+command -v ifplugd >/dev/null 2>&1 && ifplugd -b -f -u 5 -d 5 -r /home/pi/streambox/wifi-ap/wifi-ap.sh
 
 if [ ! -L ~pi/streambox ]; then
     message "Moving stuff around..."
