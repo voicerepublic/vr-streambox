@@ -28,7 +28,6 @@ main(){
     else
         setup_wifi_connection
     fi
-    #restart_services
 }
 
 interface_connected() {
@@ -126,14 +125,6 @@ stop_services(){
     service hostapd stop
     service dnsmasq stop
     ifdown wlan0
-}
-
-restart_services(){
-    # restart all affected services
-    systemctl daemon-reload
-    ifup wlan0
-    service hostapd restart
-    service dnsmasq restart
 }
 
 main "$@"
