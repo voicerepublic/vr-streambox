@@ -1,0 +1,6 @@
+allow-hotplug wlan0
+iface wlan0 inet static
+    address 172.24.1.1
+    netmask 255.255.255.0
+    network 172.24.1.0
+    broadcast 172.24.1.255

@@ -72,7 +72,6 @@ if [ -e /etc/systemd/system/getty.target.wants/getty@tty2.service ]; then
     reboot
 fi
 
-
 if [ ! -L ~pi/streambox ]; then
     message "Moving stuff around..."
     mv ~pi/streambox/setup.sh.old ~pi/
@@ -81,6 +80,9 @@ if [ ! -L ~pi/streambox ]; then
     message "Rebooting after moving repo..."
     reboot
 fi
+
+# start ifplugd to setup wlan / access point depending on ethernet connection
+command -v ifplugd >/dev/null 2>&1 && ifplugd -b -f -u 5 -d 5 -r /home/pi/streambox/wifi-ap/wifi-ap.sh
 
 message "Entering restart loop..."
 

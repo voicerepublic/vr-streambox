@@ -1,0 +1,13 @@
+country=DE
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+
+network={
+    ssid="SSID_INTERNAL"
+    psk="PASSWORD_INTERNAL"
+}
+
+network={
+    ssid="SSID_CUSTOM"
+    psk="PASSWORD_CUSTOM"
+}
