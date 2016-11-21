@@ -443,7 +443,7 @@ module Streambox
       logger.info "[C] Start publisher..."
       start_publisher
 
-      logger.info "[D] Start sync loop..."
+      #logger.info "[D] Start sync loop..."
       #start_sync
 
       if @config.state == 'pairing'
