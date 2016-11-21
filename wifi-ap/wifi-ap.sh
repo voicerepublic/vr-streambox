@@ -31,20 +31,23 @@ main(){
 }
 
 interface_connected() {
-    INTERFACE=$1
-    URL=$2
-    OPERSTATE=$(cat /sys/class/net/$INTERFACE/operstate)
-    OPTIONS="--interface $INTERFACE --head --silent $URL"
-    PATTERN="(2|3)0[0-9] (OK|Found)"
-    if [ "$OPERSTATE" = "up" ]
+    if [ -e /sys/class/net/$INTERFACE/operstate ]
     then
-        while [ -z "$(ifconfig $INTERFACE | egrep 'inet addr:([0-9]{1,3}\.){3}[0-9]{1,3}')" ]
-        do
-            sleep 1
-        done
-        if curl $OPTIONS | egrep "$PATTERN" > /dev/null
-           then
-               return 0
+        INTERFACE=$1
+        URL=$2
+        OPERSTATE=$(cat /sys/class/net/$INTERFACE/operstate)
+        OPTIONS="--interface $INTERFACE --head --silent $URL"
+        PATTERN="(2|3)0[0-9] (OK|Found)"
+        if [ "$OPERSTATE" = "up" ]
+        then
+            while [ -z "$(ifconfig $INTERFACE | egrep 'inet addr:([0-9]{1,3}\.){3}[0-9]{1,3}')" ]
+            do
+                sleep 1
+            done
+            if curl $OPTIONS | egrep "$PATTERN" > /dev/null
+            then
+                return 0
+            fi
         fi
     fi
     return 1
