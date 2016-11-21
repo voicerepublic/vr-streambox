@@ -67,7 +67,6 @@ module Streambox
                                reportinterval: 60,
                                restart_stream_delay: 2
       @reporter = Reporter.new
-      slack('test')
     end
 
     def identifier
