@@ -411,7 +411,7 @@ module Streambox
 
       logger.info "[2] Start observers..."
       start_observer 'record'
-      start_observer 'sync'
+      #start_observer 'sync'
       start_observer 'darkice'
 
       logger.info "[3] Knocking..."
@@ -444,7 +444,7 @@ module Streambox
       start_publisher
 
       logger.info "[D] Start sync loop..."
-      start_sync
+      #start_sync
 
       if @config.state == 'pairing'
         display_pairing_instructions
