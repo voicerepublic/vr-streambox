@@ -6,6 +6,7 @@ require 'uri'
 require 'fileutils'
 require 'erb'
 require 'pp'
+require 'net/http'
 
 require 'faraday'
 require 'rb-inotify'
@@ -66,6 +67,7 @@ module Streambox
                                reportinterval: 60,
                                restart_stream_delay: 2
       @reporter = Reporter.new
+      slack('test')
     end
 
     def identifier
@@ -545,6 +547,7 @@ module Streambox
         IDENTIFIER: identifier,
         REGION: region
       }
+
       vars = vars.map { |v| v * '=' } * ' ' # ¯\_(ツ)_/¯
       "%s ./sync.sh" % vars
     end
@@ -579,6 +582,9 @@ module Streambox
     def install_release(from, to)
       system "./install_release.sh"
 
+      id_link = slack_link(identifier, SLACK_LINK + identifier)
+      slack('Upgraded Streamboxx %s from v%s to v%s.' % [id_link, from, to])
+
       if reboot_required?(from, to)
         logger.warn 'Rebooting...'
         system 'reboot'
@@ -594,6 +600,30 @@ module Streambox
       return true if from == 27
 
       false
+    end
+
+    SLACK_HOOK = 'https://hooks.slack.com/services/'+
+                 'T02CS5YFX/B0NL4U5B9/uG5IExBuAnRjC0H56z2R1WXG'
+
+    SLACK_LINK = 'https://voicerepublic.com:444/admin/devices/'
+
+    def slack_link(text, url)
+      '<%s|%s>' % [url, text]
+    end
+
+    def slack(msg)
+      payload = {
+        channel: '#streamboxx',
+        username: 'streamboxx',
+        icon_emoji: ':sparkles:',
+        text: msg
+      }
+      uri = URI(SLACK_HOOK)
+      https = Net::HTTP.new(uri.host, uri.port)
+      https.use_ssl = true
+      request = Net::HTTP::Post.new(uri.path)
+      request.body = JSON.unparse(payload)
+      https.request(request)
     end
 
   end
