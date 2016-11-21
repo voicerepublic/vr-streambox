@@ -23,11 +23,15 @@ module Streambox
     end
 
     def mac_address_ethernet
-      File.read('/sys/class/net/eth0/address').chomp
+      file = '/sys/class/net/eth0/address'
+      return '(no device eth0)' unless File.exist?(file)
+      File.read(file).chomp
     end
 
     def mac_address_wifi
-      File.read('/sys/class/net/wlan0/address').chomp
+      file = '/sys/class/net/wlan0/address'
+      return '(no device wlan0)' unless File.exist?(file)
+      File.read(file).chomp
     end
 
     # TODO make it a nice hash
