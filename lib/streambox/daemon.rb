@@ -465,6 +465,7 @@ module Streambox
       logger.info "Starting stream..."
       config = message['icecast'].merge(device: sound_device)
       write_config!(config)
+      @streamer.stop
       @streamer.run
       # HACK this makes the pairing code play loop stop
       @config.state = 'running'
