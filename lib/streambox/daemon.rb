@@ -222,7 +222,7 @@ module Streambox
       t0 = Time.now
       response = put(device_url)
       @dt = Time.now - t0
-      logger.debug 'Heartbeat responded in %s' % @dt
+      logger.debug 'Heartbeat responded in %.3fs' % @dt
       @network = response.status == 200
       if @prev_network != @network
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
@@ -431,12 +431,12 @@ module Streambox
         check_for_release
       end
 
-      logger.info "[8] Start heartbeat..."
-      start_heartbeat
-
-      logger.info "[9] Registering..."
+      logger.info "[8] Registering..."
       register!
-      logger.info "[A] Registration complete."
+      logger.info "[9] Registration complete."
+
+      logger.info "[A] Start heartbeat..."
+      start_heartbeat
 
       logger.info "[B] Start reporting..."
       start_reporting
