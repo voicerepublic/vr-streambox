@@ -114,6 +114,8 @@ module Streambox
       if data['venue']
         state = data['venue']['state'].to_sym
         name = data['venue']['name']
+        logger.debug '[STATE] local: %s, remote: %s' % [@state.to_s.upcase,
+                                                        state.to_s.upcase]
         unless @state == state
           logger.debug '[STATE] %-30s -> %-20s' % [name, state.to_s.upcase]
           @state = state
