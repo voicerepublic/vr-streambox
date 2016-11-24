@@ -86,7 +86,7 @@ module Streambox
 
     def kill
       return if @pid.nil?
-      logger.debug "Killing pid #{@pid}"
+      logger.debug "------------------------------ Killing pid #{@pid} ------------------------------"
       File.unlink(@pidfile)
       _pid = @pid
       @pid = nil
