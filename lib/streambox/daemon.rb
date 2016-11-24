@@ -16,6 +16,7 @@ require "streambox/version"
 require "streambox/reporter"
 require "streambox/resilient_process"
 require "streambox/banner"
+require "streambox/darkice"
 
 # Test if an Icecast Server is Running on the given target
 # curl -D - http://192.168.178.21:8000/ | grep Icecast
@@ -126,7 +127,8 @@ module Streambox
         when :awaiting_stream, :disconnected
           handle_start_stream(data['venue'])
         when :disconnect_required
-          @streamer.stop!
+          delete_config_file!
+          # @streamer.stop!
         end
       end
 
@@ -380,11 +382,12 @@ module Streambox
     end
 
     def start_streamer
-      @streamer = ResilientProcess.new(stream_cmd,
-                                       'darkice',
-                                       @config.check_stream_interval,
-                                       @config.restart_stream_delay,
-                                       logger)
+      Thread.new { Darkice.new.run }
+      # @streamer = ResilientProcess.new(stream_cmd,
+      #                                  'darkice',
+      #                                  @config.check_stream_interval,
+      #                                  @config.restart_stream_delay,
+      #                                  logger)
     end
 
     def special_check_for_reboot_required
@@ -468,8 +471,8 @@ module Streambox
       logger.info "Starting stream..."
       config = message['icecast'].merge(device: sound_device)
       write_config!(config)
-      @streamer.stop!
-      @streamer.run
+      #@streamer.stop!
+      #@streamer.run
       # HACK this makes the pairing code play loop stop
       @config.state = 'running'
       fire_event :stream_started
@@ -520,6 +523,10 @@ module Streambox
 
     def write_config!(config)
       File.open(config_path, 'w') { |f| f.write(render_config(config)) }
+    end
+
+    def delete_config_file!(config)
+      File.unlink(config_path)
     end
 
     def render_config(config)
