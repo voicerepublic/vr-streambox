@@ -36,6 +36,8 @@ module Streambox
       if @pid
         logger.debug "[PID] Detected #{@pid} for #{name}. Resume running..."
         run
+      else
+        logger.debug "[PID] No pid for #{name}"
       end
     end
 
