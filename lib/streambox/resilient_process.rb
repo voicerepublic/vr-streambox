@@ -43,6 +43,7 @@ module Streambox
 
     def start!
       logger.debug "[RESILIENT] ================================================== START!, running: #{running}"
+      p @threads
       return if running
 
       self.running = true
@@ -57,7 +58,8 @@ module Streambox
         logger.debug "[RESILIENT] Found none for #{name}."
       end
 
-      @thread = Thread.new do
+      @threads ||= []
+      @threads <<  Thread.new do
         @thread_counter += 1
         logger.debug "[RESILIENT] Start watching #{name}."
         start_new unless exists?
@@ -76,16 +78,12 @@ module Streambox
 
     def stop!
       logger.debug "[RESILIENT] ================================================== STOP!"
-      if @thread.nil?
-        kill_all!
+      @threads.last.kill
+      if running
+        kill!
       else
-        @thread.kill
-        if running
-          kill!
-        else
-          logger.debug "[RESILIENT] Stop #{name} but not running. Attempt to kill all..."
-          kill_all!
-        end
+        logger.debug "[RESILIENT] Stop #{name} but not running. Attempt to kill all..."
+        kill_all!
       end
       self.running = false
     end
