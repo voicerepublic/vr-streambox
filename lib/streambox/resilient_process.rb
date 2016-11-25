@@ -76,9 +76,11 @@ module Streambox
     def stop!
       logger.debug "[RESILIENT] ================================================== STOP!"
       if watchdog and watchdog.alive?
-        logger.debug "[RESILIENT] Killing watchdog and darkice..."
+        logger.debug "[RESILIENT] Killing watchdog..."
         watchdog.kill
+        logger.debug "[RESILIENT] Killing process #{@pid}..."
         kill!
+        logger.debug "[RESILIENT] Killed it."
       else
         logger.debug "[RESILIENT] Stop #{name} but no watchdog. Attempt to kill all..."
         kill_all!
@@ -92,7 +94,10 @@ module Streambox
     end
 
     def kill!
-      return if @pid.nil?
+      if @pid.nil?
+        logger.debug "[RESILIENT] Kill what? The pid is nil!"
+        return
+      end
       logger.debug "[RESILIENT] Killing pid #{@pid} and REMOVING PIDFILE!"
       File.unlink(@pidfile)
       _pid = @pid
