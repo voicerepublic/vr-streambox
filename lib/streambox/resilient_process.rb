@@ -42,9 +42,14 @@ module Streambox
     end
 
     def start!
+      logger.debug "[RESILIENT] ================================================== START!"
       return if running
 
       self.running = true
+
+      @start_counter ||= 0
+      @start_counter += 1
+      @thread_counter ||= 0
 
       if @pid
         logger.debug "[RESILIENT] Found #{@pid} for #{name}."
@@ -53,9 +58,12 @@ module Streambox
       end
 
       Thread.new do
+        @thread_counter += 1
         logger.debug "[RESILIENT] Start watching #{name}."
         start_new unless exists?
         while running
+          logger.debug "[RESILIENT] ================================================== start: %s, thread: %s" %
+                       [@start_counter, @thread_counter]
           start_new(delay) unless exists?
           #logger.debug "Waiting for pid #{@pid} for #{name}"
           wait
