@@ -76,13 +76,16 @@ module Streambox
 
     def stop!
       logger.debug "[RESILIENT] ================================================== STOP!"
-      return if @thread.nil?
-      @thread.kill
-      if running
-        kill!
-      else
-        logger.debug "[RESILIENT] Stop #{name} but not running. Attempt to kill all..."
+      if @thread.nil?
         kill_all!
+      else
+        @thread.kill
+        if running
+          kill!
+        else
+          logger.debug "[RESILIENT] Stop #{name} but not running. Attempt to kill all..."
+          kill_all!
+        end
       end
       self.running = false
     end
