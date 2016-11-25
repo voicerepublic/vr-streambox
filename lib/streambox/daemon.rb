@@ -315,7 +315,7 @@ module Streambox
                                        'record.sh',
                                        @config.check_record_interval,
                                        0,
-                                       logger).run
+                                       logger).start!
     end
 
     def start_recording_monitor
@@ -469,7 +469,7 @@ module Streambox
       config = message['icecast'].merge(device: sound_device)
       write_config!(config)
       @streamer.stop!
-      @streamer.run
+      @streamer.start!
       # HACK this makes the pairing code play loop stop
       @config.state = 'running'
       fire_event :stream_started

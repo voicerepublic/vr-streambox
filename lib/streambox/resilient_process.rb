@@ -18,7 +18,7 @@ module Streambox
     attr_accessor :running
 
     def initialize(cmd, name, interval, delay, logger)
-      logger.debug "[PROCESS] Init #{name}"
+      logger.debug "[RESILIENT] Init #{name}"
 
       self.cmd = cmd
       self.name = name
@@ -28,33 +28,33 @@ module Streambox
 
       @pidfile = "../#{name}.pid"
       @pidilfe = File.expand_path(@pidfile, Dir.pwd)
-      logger.debug "[PID] File: #{@pidilfe}"
+      logger.debug "[RESILIENT] File: #{@pidilfe}"
 
       @pid = File.read(@pidfile).to_i if File.exist?(@pidfile)
       @pid = nil unless exists?
 
       if @pid
-        logger.debug "[PID] Detected #{@pid} for #{name}. Resume running..."
-        run
+        logger.debug "[RESILIENT] Detected #{@pid} for #{name}. Resume running..."
+        start!
       else
-        logger.debug "[PID] No pid for #{name}"
+        logger.debug "[RESILIENT] No running process for #{name}, waiting for start."
       end
     end
 
-    def run
+    def start!
       self.running = true
 
       if @pid
-        logger.debug "[PID] Found #{@pid} for #{name}."
+        logger.debug "[RESILIENT] Found #{@pid} for #{name}."
       else
-        logger.debug "[PID] Found none for #{name}."
+        logger.debug "[RESILIENT] Found none for #{name}."
       end
 
       Thread.new do
-        logger.debug "[PID] Start watching #{name}."
-        start unless exists?
+        logger.debug "[RESILIENT] Start watching #{name}."
+        start_new unless exists?
         while running
-          start(delay) unless exists?
+          start_new(delay) unless exists?
           #logger.debug "Waiting for pid #{@pid} for #{name}"
           wait
         end
@@ -65,48 +65,47 @@ module Streambox
     end
 
     def stop!
-      unless running
-        logger.debug "[PROCESS] Stop #{name} but not running. Attempt to kill all..."
+      if running
+        kill!
+      else
+        logger.debug "[RESILIENT] Stop #{name} but not running. Attempt to kill all..."
         kill_all!
       end
-      self.running = false
-      kill
-    end
-
-    def restart!
-      kill
-    end
-
-    def kill_all!
-      self.running = false
-      system "killall #{name}"
     end
 
     private
 
-    def kill
+    def kill_all!
+      system "killall #{name}"
+      self.running = false
+    end
+
+    def kill!
       return if @pid.nil?
-      logger.debug "------------------------------ Killing pid #{@pid} ------------------------------"
+      logger.debug "[RESILIENT] Killing pid #{@pid} and REMOVING PIDFILE!"
       File.unlink(@pidfile)
       _pid = @pid
       @pid = nil
       cmd = "kill -HUP -#{_pid}"
       logger.debug "Exec: #{cmd}"
       system(cmd)
+      self.running = false
     end
 
-    def start(delay=0)
+    def start_new(delay=0)
       sleep delay
-      #logger.debug "Run: #{cmd}"
+      logger.debug "[RESILIENT] spawn: #{cmd}"
       @pid = Process.spawn(cmd, pgroup: true)
       File.open(@pidfile, 'w') { |f| f.print(@pid) }
-      logger.debug "[PID] #{name} #{@pid}"
+      logger.debug "[RESILIENT] New pid for #{name} #{@pid}"
     end
 
     def exists?
       return false if @pid.nil?
       path = "/proc/#{@pid}"
-      File.directory?(path)
+      result = File.directory?(path)
+      logger.debug "[RESILIENT] Stale pid #{@pid}?" unless result
+      result
     end
 
     def wait
