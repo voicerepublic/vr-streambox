@@ -42,6 +42,8 @@ module Streambox
     end
 
     def start!
+      return if running
+
       self.running = true
 
       if @pid
