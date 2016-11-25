@@ -33,14 +33,14 @@ module Streambox
       @pid = File.read(@pidfile).to_i if File.exist?(@pidfile)
       @pid = nil unless exists?
 
+      self.threads = []
+
       if @pid
         logger.debug "[RESILIENT] Detected #{@pid} for #{name}. Resume running..."
         start!
       else
         logger.debug "[RESILIENT] No running process for #{name}, waiting for start."
       end
-
-      self.threads = []
     end
 
     def start!
