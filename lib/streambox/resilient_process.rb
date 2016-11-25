@@ -15,7 +15,7 @@ module Streambox
 
     attr_accessor :cmd, :name, :interval, :delay, :logger
 
-    attr_accessor :running, :run_thread, :threads
+    attr_accessor :watchdog
 
     def initialize(cmd, name, interval, delay, logger)
       logger.debug "[RESILIENT] Init #{name}"
@@ -33,8 +33,6 @@ module Streambox
       @pid = File.read(@pidfile).to_i if File.exist?(@pidfile)
       @pid = nil unless exists?
 
-      self.threads = []
-
       if @pid
         logger.debug "[RESILIENT] Detected #{@pid} for #{name}. Resume running..."
         start!
@@ -44,11 +42,9 @@ module Streambox
     end
 
     def start!
-      logger.debug "[RESILIENT] ================================================== START!, running: #{running}"
-      p @threads
-      return if running
-
-      self.running = true
+      logger.debug "[RESILIENT] ================================================== START!, watchdog: #{watchdog}"
+      # guard against multiple runs in paralell
+      return if watchdog and watchdog.alive?
 
       @start_counter ||= 0
       @start_counter += 1
@@ -60,7 +56,7 @@ module Streambox
         logger.debug "[RESILIENT] Found none for #{name}."
       end
 
-      self.threads << Thread.new do
+      self.watchdog = Thread.new do
         @thread_counter += 1
         logger.debug "[RESILIENT] Start watching #{name}."
         start_new unless exists?
@@ -79,14 +75,13 @@ module Streambox
 
     def stop!
       logger.debug "[RESILIENT] ================================================== STOP!"
-      threads.last and threads.last.kill
-      if running
+      if watchdog and watchdog.alive?
+        watchdog.kill
         kill!
       else
-        logger.debug "[RESILIENT] Stop #{name} but not running. Attempt to kill all..."
+        logger.debug "[RESILIENT] Stop #{name} but no watchdog. Attempt to kill all..."
         kill_all!
       end
-      self.running = false
     end
 
     private
