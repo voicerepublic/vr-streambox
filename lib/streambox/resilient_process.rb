@@ -59,6 +59,8 @@ module Streambox
         logger.debug "[RESILIENT] start!: Found none for #{name}."
       end
 
+      # FIXME IT HANGS HERE SOMETIMES
+      logger.debug "[RESILIENT] start!: Setup new watchdog..."
       self.watchdog = Thread.new do
         @thread_counter += 1
         logger.debug "[RESILIENT] start!: Start watching #{name}."
