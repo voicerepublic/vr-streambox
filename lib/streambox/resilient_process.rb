@@ -79,7 +79,7 @@ module Streambox
 
     def stop!
       logger.debug "[RESILIENT] ================================================== STOP!"
-      threads.last.kill
+      threads.last and threads.last.kill
       if running
         kill!
       else
