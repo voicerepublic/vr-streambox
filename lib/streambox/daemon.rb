@@ -519,7 +519,10 @@ module Streambox
     private
 
     def write_config!(config)
-      File.open(config_path, 'w') { |f| f.write(render_config(config)) }
+      File.open(config_path, 'w') do |f|
+        f.write(render_config(config))
+        f.flush
+      end
     end
 
     def render_config(config)
