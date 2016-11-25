@@ -60,7 +60,7 @@ module Streambox
         logger.debug "[RESILIENT] Found none for #{name}."
       end
 
-      threads << Thread.new do
+      self.threads << Thread.new do
         @thread_counter += 1
         logger.debug "[RESILIENT] Start watching #{name}."
         start_new unless exists?
