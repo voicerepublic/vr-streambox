@@ -39,6 +39,8 @@ module Streambox
       else
         logger.debug "[RESILIENT] No running process for #{name}, waiting for start."
       end
+
+      @threads = []
     end
 
     def start!
@@ -58,7 +60,6 @@ module Streambox
         logger.debug "[RESILIENT] Found none for #{name}."
       end
 
-      @threads ||= []
       @threads <<  Thread.new do
         @thread_counter += 1
         logger.debug "[RESILIENT] Start watching #{name}."
