@@ -57,20 +57,18 @@ module Streambox
         logger.debug "[RESILIENT] Found none for #{name}."
       end
 
-      Thread.new do
+      @thread = Thread.new do
         @thread_counter += 1
         logger.debug "[RESILIENT] Start watching #{name}."
         start_new unless exists?
-        self.run_thread = true
-        while run_thread
+        while true
           logger.debug "[RESILIENT] ================================================== start: %s, thread: %s" %
                        [@start_counter, @thread_counter]
           start_new(delay) unless exists?
           #logger.debug "Waiting for pid #{@pid} for #{name}"
           wait
         end
-        logger.debug "[RESILIENT] Process for #{name} is dead now."
-        self.running = false
+        #logger.debug "[RESILIENT] Process for #{name} is dead now."
       end
 
       self
@@ -78,13 +76,14 @@ module Streambox
 
     def stop!
       logger.debug "[RESILIENT] ================================================== STOP!"
-      self.run_thread = false
+      @thread.kill
       if running
         kill!
       else
         logger.debug "[RESILIENT] Stop #{name} but not running. Attempt to kill all..."
         kill_all!
       end
+      self.running = false
     end
 
     private
