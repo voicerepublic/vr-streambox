@@ -468,6 +468,7 @@ module Streambox
       logger.info "Starting stream..."
       config = message['icecast'].merge(device: sound_device)
       write_config!(config)
+      sleep 0.1 # HACK wait to make sure config file is flushed
       @streamer.stop!
       @streamer.start!
       # HACK this makes the pairing code play loop stop
@@ -519,6 +520,9 @@ module Streambox
     private
 
     def write_config!(config)
+      # no need to write if its the same
+      return if File.read(config_path) == config
+
       File.open(config_path, 'w') do |f|
         f.write(render_config(config))
         f.flush
