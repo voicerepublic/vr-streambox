@@ -44,7 +44,10 @@ module Streambox
     def start!
       logger.debug "[RESILIENT] start!: ================================================== START!, watchdog: #{watchdog}"
       # guard against multiple runs in paralell
-      return if watchdog and watchdog.alive?
+      if watchdog and watchdog.alive?
+        logger.debug "[RESILIENT] start!: Abort start, found a watchdog running."
+        return
+      end
 
       @start_counter ||= 0
       @start_counter += 1
@@ -78,12 +81,18 @@ module Streambox
 
     def stop!
       logger.debug "[RESILIENT] stop!: ================================================== STOP!"
-      if watchdog and watchdog.alive? and @pid
+      if watchdog and watchdog.alive?
         logger.debug "[RESILIENT] stop!: Killing watchdog..."
         watchdog.kill
-        logger.debug "[RESILIENT] stop!: Killing process #{@pid}..."
-        kill!
-        logger.debug "[RESILIENT] stop!: Killed it."
+        logger.debug "[RESILIENT] stop!: Killed the watchdog."
+        if @pid
+          logger.debug "[RESILIENT] stop!: Killing process #{@pid}..."
+          kill!
+          logger.debug "[RESILIENT] stop!: Killed it."
+        else
+          logger.debug "[RESILIENT] stop!: Stop #{name} but no pid. Attempt to kill all..."
+          kill_all!
+        end
       else
         logger.debug "[RESILIENT] stop!: Stop #{name} but no watchdog. Attempt to kill all..."
         kill_all!
