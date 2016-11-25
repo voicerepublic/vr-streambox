@@ -65,7 +65,7 @@ module Streambox
                                check_stream_interval: 1,
                                heartbeat_interval: 10,
                                reportinterval: 60,
-                               restart_stream_delay: 2
+                               restart_stream_delay: 5
       @reporter = Reporter.new
     end
 
