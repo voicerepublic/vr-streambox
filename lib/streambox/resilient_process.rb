@@ -60,9 +60,11 @@ module Streambox
         @thread_counter += 1
         logger.debug "[RESILIENT] Start watching #{name}."
         start_new unless exists?
+        @cycle_counter = 0
         while true
-          logger.debug "[RESILIENT] ================================================== start: %s, thread: %s" %
-                       [@start_counter, @thread_counter]
+          @cycle_counter += 1
+          logger.debug "[RESILIENT] ================================================== start: %s, thread: %s, cycle: %s" %
+                       [@start_counter, @thread_counter, @cycle_counter]
           start_new(delay) unless exists?
           #logger.debug "Waiting for pid #{@pid} for #{name}"
           wait
