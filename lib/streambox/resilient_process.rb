@@ -58,7 +58,7 @@ module Streambox
           #logger.debug "Waiting for pid #{@pid} for #{name}"
           wait
         end
-        logger.debug "ResilientProcess for #{name} is dead now."
+        logger.debug "[RESILIENT] Process for #{name} is dead now."
       end
 
       self
@@ -71,13 +71,13 @@ module Streambox
         logger.debug "[RESILIENT] Stop #{name} but not running. Attempt to kill all..."
         kill_all!
       end
+      self.running = false
     end
 
     private
 
     def kill_all!
       system "killall #{name}"
-      self.running = false
     end
 
     def kill!
@@ -87,9 +87,8 @@ module Streambox
       _pid = @pid
       @pid = nil
       cmd = "kill -HUP -#{_pid}"
-      logger.debug "Exec: #{cmd}"
+      logger.debug "[RESILIENT] Exec: #{cmd}"
       system(cmd)
-      self.running = false
     end
 
     def start_new(delay=0)
@@ -108,11 +107,12 @@ module Streambox
       result
     end
 
+    # sometimes dies here with `no implicit conversion from nil to integer`
     def wait
       # this will work if it is a child process
       Process.wait(@pid)
     rescue Errno::ECHILD
-      logger.debug "Not a child watching via procfs..."
+      logger.debug "[RESILIENT] Not a child watching via procfs..."
       # otherwise we'll just check the procfs
       while exists?
         sleep interval
