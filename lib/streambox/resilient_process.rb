@@ -76,6 +76,7 @@ module Streambox
     def stop!
       logger.debug "[RESILIENT] ================================================== STOP!"
       if watchdog and watchdog.alive?
+        logger.debug "[RESILIENT] Killing watchdog and darkice..."
         watchdog.kill
         kill!
       else
