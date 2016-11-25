@@ -86,7 +86,7 @@ module Streambox
     end
 
     def apply_config(data)
-      #pp data
+      pp data
 
       data.each do |key, value|
         @config.send("#{key}=", value)
@@ -114,8 +114,8 @@ module Streambox
       if data['venue']
         state = data['venue']['state'].to_sym
         name = data['venue']['name']
-        #logger.debug '[STATE] local: %s, remote: %s' % [@state.to_s.upcase,
-        #                                                state.to_s.upcase]
+        logger.debug '[STATE] local: %s, remote: %s' % [@state.to_s.upcase,
+                                                        state.to_s.upcase]
         unless @state == state
           logger.debug '[STATE] %-30s -> %-20s' % [name, state.to_s.upcase]
           @state = state
