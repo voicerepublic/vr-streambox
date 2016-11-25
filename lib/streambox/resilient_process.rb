@@ -42,7 +42,7 @@ module Streambox
     end
 
     def start!
-      logger.debug "[RESILIENT] ================================================== START!"
+      logger.debug "[RESILIENT] ================================================== START!, running: #{running}"
       return if running
 
       self.running = true
@@ -77,6 +77,7 @@ module Streambox
     end
 
     def stop!
+      logger.debug "[RESILIENT] ================================================== STOP!"
       self.run_thread = false
       if running
         kill!
