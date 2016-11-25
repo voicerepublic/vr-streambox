@@ -15,7 +15,7 @@ module Streambox
 
     attr_accessor :cmd, :name, :interval, :delay, :logger
 
-    attr_accessor :running
+    attr_accessor :running, :run_thread
 
     def initialize(cmd, name, interval, delay, logger)
       logger.debug "[RESILIENT] Init #{name}"
@@ -61,7 +61,8 @@ module Streambox
         @thread_counter += 1
         logger.debug "[RESILIENT] Start watching #{name}."
         start_new unless exists?
-        while running
+        self.run_thread = true
+        while run_thread
           logger.debug "[RESILIENT] ================================================== start: %s, thread: %s" %
                        [@start_counter, @thread_counter]
           start_new(delay) unless exists?
@@ -69,19 +70,20 @@ module Streambox
           wait
         end
         logger.debug "[RESILIENT] Process for #{name} is dead now."
+        self.running = false
       end
 
       self
     end
 
     def stop!
+      self.run_thread = false
       if running
         kill!
       else
         logger.debug "[RESILIENT] Stop #{name} but not running. Attempt to kill all..."
         kill_all!
       end
-      self.running = false
     end
 
     private
