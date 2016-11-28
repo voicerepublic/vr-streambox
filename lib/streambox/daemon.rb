@@ -86,7 +86,7 @@ module Streambox
     end
 
     def apply_config(data)
-      pp data
+      #pp data
 
       data.each do |key, value|
         @config.send("#{key}=", value)
