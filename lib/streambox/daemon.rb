@@ -521,7 +521,7 @@ module Streambox
 
     def write_config!(config)
       # no need to write if its the same
-      return if File.read(config_path) == config
+      return if File.exist?(config_path) && (File.read(config_path) == config)
 
       File.open(config_path, 'w') do |f|
         f.write(render_config(config))
