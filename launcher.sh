@@ -117,6 +117,7 @@ do
     sleep 5
 
     # slack
+    VERSION=`cat $DIR/VERSION`
     TEXT="$NAME <$URL|$SERIAL> with v$VERSION on $PRIVATE_IP restarting..."
     JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
     curl -X POST -H 'Content-type: application/json' --data "$JSON" \

@@ -65,7 +65,7 @@ module Streambox
                                check_stream_interval: 1,
                                heartbeat_interval: 10,
                                reportinterval: 60,
-                               restart_stream_delay: 2
+                               restart_stream_delay: 6
       @reporter = Reporter.new
     end
 
@@ -114,6 +114,8 @@ module Streambox
       if data['venue']
         state = data['venue']['state'].to_sym
         name = data['venue']['name']
+        logger.debug '[STATE] local: %s, remote: %s' % [@state.to_s.upcase,
+                                                        state.to_s.upcase]
         unless @state == state
           logger.debug '[STATE] %-30s -> %-20s' % [name, state.to_s.upcase]
           @state = state
@@ -222,6 +224,7 @@ module Streambox
       t0 = Time.now
       response = put(device_url)
       @dt = Time.now - t0
+      #logger.debug 'Heartbeat responded in %.3fs' % @dt
       @network = response.status == 200
       if @prev_network != @network
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
@@ -312,7 +315,7 @@ module Streambox
                                        'record.sh',
                                        @config.check_record_interval,
                                        0,
-                                       logger).run
+                                       logger).start!
     end
 
     def start_recording_monitor
@@ -430,12 +433,12 @@ module Streambox
         check_for_release
       end
 
-      logger.info "[8] Start heartbeat..."
-      start_heartbeat
-
-      logger.info "[9] Registering..."
+      logger.info "[8] Registering..."
       register!
-      logger.info "[A] Registration complete."
+      logger.info "[9] Registration complete."
+
+      logger.info "[A] Start heartbeat..."
+      start_heartbeat
 
       logger.info "[B] Start reporting..."
       start_reporting
@@ -465,7 +468,9 @@ module Streambox
       logger.info "Starting stream..."
       config = message['icecast'].merge(device: sound_device)
       write_config!(config)
-      @streamer.run
+      sleep 0.1 # HACK wait to make sure config file is flushed
+      @streamer.stop!
+      @streamer.start!
       # HACK this makes the pairing code play loop stop
       @config.state = 'running'
       fire_event :stream_started
@@ -515,7 +520,13 @@ module Streambox
     private
 
     def write_config!(config)
-      File.open(config_path, 'w') { |f| f.write(render_config(config)) }
+      # no need to write if its the same
+      return if File.exist?(config_path) && (File.read(config_path) == config)
+
+      File.open(config_path, 'w') do |f|
+        f.write(render_config(config))
+        f.flush
+      end
     end
 
     def render_config(config)
