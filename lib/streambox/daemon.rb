@@ -253,6 +253,8 @@ module Streambox
           end
 
           if line.match(/sox WARN alsa: No such device/)
+            id_link = slack_link(identifier, SLACK_LINK + identifier)
+            slack('Clean shutdown of Streamboxx %s.' % id_link)
             recorder.stop!
             puts
             system 'toilet -f mono12 "Shutdown"'
