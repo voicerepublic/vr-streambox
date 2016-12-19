@@ -36,9 +36,9 @@
        echo -n 'private ip      : '; hostname -I | cut -d ' ' -f 1; \
        echo -n '/etc/resolv.conf: '; cat /etc/resolv.conf | tail -n +2; \
        echo -n 'dnsmasq resolv.c: '; cat /var/run/dnsmasq/resolv.conf | tail -n +2; \
-       ifconfig eth0; \
-       ifconfig wlan0; \
-       iwconfig wlan0; \
+       ifconfig eth0 | head -3; \
+       ifconfig wlan0 | head -3; \
+       iwconfig wlan0 | head -3; \
        service dnsmasq status"
 
 #else
