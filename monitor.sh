@@ -24,7 +24,7 @@
        ps aux | grep darkice   | grep -v grep; \
        ps aux | grep sync.sh   | grep -v grep; \
        ps aux | grep aws       | grep -v grep; \
-
+       ps aux | grep dnsmasq   | grep -v grep; \
        df -h; \
 
        ls -lA ../recordings; \
@@ -34,9 +34,12 @@
        echo -n 'eth0 state      : '; cat /sys/class/net/eth0/operstate; \
        echo -n 'wlan0 state     : '; cat /sys/class/net/wlan0/operstate; \
        echo -n 'private ip      : '; hostname -I | cut -d ' ' -f 1; \
+       echo -n '/etc/resolv.conf: '; cat /etc/resolv.conf | tail -n +2; \
+       echo -n 'dnsmasq resolv.c: '; cat /var/run/dnsmasq/resolv.conf | tail -n +2; \
        ifconfig eth0; \
        ifconfig wlan0; \
-       iwconfig wlan0"
+       iwconfig wlan0; \
+       service dnsmasq status"
 
 #else
 
