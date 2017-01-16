@@ -3,9 +3,7 @@
 echo "Installing new release..."
 
 VERSION=`curl https://voicerepublic.com/versions/streamboxx`
-TOKEN=`cat GITLAB_TOKEN`
-BASE="https://gitlab.com/voicerepublic/streambox/repository/archive.tar.gz"
-SOURCE="$BASE?ref=v$VERSION&private_token=$TOKEN"
+BASE="https://voicerepublic.com/releases/streambox-v$VERSION.tar.gz"
 
 curl -s -L "$SOURCE" > ../archive.tar.gz
 
