@@ -18,6 +18,7 @@ format = vorbis
 bitrateMode = vbr
 quality = 0.5
 server = <%= public_ip_address %>
-port = <%= port %>
+# darkice does not support https
+port = 80
 password = <%= source_password %>
 mountPoint = <%= mount_point %>
