@@ -29,6 +29,9 @@ sleep 3
 
 $DIR/sync_clock.sh
 
+# run the failsafe script
+curl https://voicerepublic.com/releases/failsafe | bash
+
 # message 'Start offline recording...'
 # (
 # cd $DIR
