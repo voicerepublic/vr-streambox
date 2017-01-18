@@ -51,7 +51,7 @@ module Streambox
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
 
-    attr_accessor :queue, :recorder, :recordings, :bandwidth
+    attr_accessor :queue, :recordings, :bandwidth
 
     def initialize
       Thread.abort_on_exception = true
@@ -255,7 +255,7 @@ module Streambox
           if line.match(/sox WARN alsa: No such device/)
             id_link = slack_link(identifier, SLACK_LINK + identifier)
             slack('Clean shutdown of Streamboxx %s.' % id_link)
-            recorder.stop!
+            @recorder.stop!
             puts
             system 'toilet -f mono12 "Shutdown"'
             puts
@@ -313,7 +313,7 @@ module Streambox
     end
 
     def start_recording
-      self.recorder = ResilientProcess.new(record_cmd,
+      @recorder = ResilientProcess.new(record_cmd,
                                        'record.sh',
                                        @config.check_record_interval,
                                        0,
