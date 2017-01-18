@@ -2,8 +2,8 @@
 
 echo "Installing new release..."
 
-VERSION=`curl https://voicerepublic.com/versions/streamboxx`
-BASE="https://voicerepublic.com/releases/streambox-v$VERSION.tar.gz"
+VERSION=`curl -s -L https://voicerepublic.com/versions/streamboxx`
+SOURCE="https://voicerepublic.com/releases/streambox-v$VERSION.tar.gz"
 
 curl -s -L "$SOURCE" > ../archive.tar.gz
 

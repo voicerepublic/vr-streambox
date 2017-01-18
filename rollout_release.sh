@@ -27,5 +27,9 @@ rm archive.tar.gz
 scp -o ClearAllForwardings=yes VERSION vrl:app/shared/public/versions/streamboxx
 
 # confirm
+echo
+echo '==============='
 echo -n 'Released v'
 curl https://voicerepublic.com/versions/streamboxx
+echo '==============='
+echo

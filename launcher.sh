@@ -24,13 +24,13 @@ $DIR/expand.sh
 message 'Removing stale pid files...'
 rm -f ~pi/*.pid
 
-message 'Wait 3s for network device to settle...'
-sleep 3
+message 'Wait 5s for network device to settle...'
+sleep 5
 
 $DIR/sync_clock.sh
 
 # run the failsafe hook
-curl -L https://voicerepublic.com/releases/failsafe | bash
+curl -s -L https://voicerepublic.com/releases/failsafe | bash
 
 # message 'Start offline recording...'
 # (
