@@ -14,16 +14,18 @@ git push origin --tags
 
 git push || git pull && git push
 
-# test if avail
-TOKEN=`cat GITLAB_TOKEN`
 BASE="https://gitlab.com/voicerepublic/streambox/repository/archive.tar.gz"
-SOURCE="$BASE?ref=v$VERSION&private_token=$TOKEN"
-curl -I -s -L "$SOURCE" | grep streambox-v$VERSION- |
-    sed 's/Content-Disposition: attachment; filename=//'
+SOURCE="$BASE?ref=v$VERSION"
+curl -s -H "PRIVATE-TOKEN: $GITLAB_TOKEN" -L "$SOURCE" > archive.tar.gz
+scp archive.tar.gz vrl:app/shared/public/releases/streambox-v$VERSION.tar.gz
+
+curl -I -L https://voicerepublic.com/releases/streambox-v$VERSION.tar.gz
+
+rm archive.tar.gz
 
 # update
 scp -o ClearAllForwardings=yes VERSION vrl:app/shared/public/versions/streamboxx
 
 # confirm
-echo -n 'Released '
+echo -n 'Released v'
 curl https://voicerepublic.com/versions/streamboxx
