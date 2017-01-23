@@ -6,11 +6,10 @@ require 'uri'
 require 'fileutils'
 require 'erb'
 require 'pp'
+require 'net/http'
 
 require 'faraday'
-require 'eventmachine'
-require 'faye'
-require 'faye/authentication'
+require 'rb-inotify'
 
 require "fifo"
 require "streambox/version"
@@ -48,23 +47,11 @@ module Streambox
     end
   end
 
-  class FayeIO < Struct.new(:client, :identifier)
-
-    def write(*args)
-      client.publish("/device/log/#{identifier}", log: args.first.chomp)
-    end
-
-    def close
-      client.publish("/device/log/#{identifier}", log: 'closed.')
-    end
-
-  end
-
   class Daemon
 
     ENDPOINT = 'https://voicerepublic.com/api/devices'
 
-    attr_accessor :client, :subscription, :queue
+    attr_accessor :queue, :recordings, :bandwidth
 
     def initialize
       Thread.abort_on_exception = true
@@ -78,7 +65,7 @@ module Streambox
                                check_stream_interval: 1,
                                heartbeat_interval: 10,
                                reportinterval: 60,
-                               restart_stream_delay: 2
+                               restart_stream_delay: 6
       @reporter = Reporter.new
     end
 
@@ -117,7 +104,6 @@ module Streambox
       #       "mount_point"=>"live",
       #       "port"=>8000}}}
 
-
       version = data['version']
       #logger.debug "[VERSION] #{version} #{@reporter.version}"
       if version and version > @reporter.version
@@ -128,6 +114,8 @@ module Streambox
       if data['venue']
         state = data['venue']['state'].to_sym
         name = data['venue']['name']
+        logger.debug '[STATE] local: %s, remote: %s' % [@state.to_s.upcase,
+                                                        state.to_s.upcase]
         unless @state == state
           logger.debug '[STATE] %-30s -> %-20s' % [name, state.to_s.upcase]
           @state = state
@@ -137,11 +125,8 @@ module Streambox
         case state
         when :awaiting_stream, :disconnected
           handle_start_stream(data['venue'])
-        when :offline, :available, :provisioning
-          handle_stop_stream if @streamer
         when :disconnect_required
-          new_streamer!.run unless @streamer
-          handle_stop_stream
+          @streamer.stop!
         end
       end
 
@@ -155,8 +140,9 @@ module Streambox
       logger.fatal "Error: Knocking timed out."
       exit
     rescue Faraday::ConnectionFailed
-      logger.fatal "Error: The internet connection seems to be down."
-      exit
+      logger.fatal "Error: The internet connection seems to be down. Retry in 10s..."
+      sleep 10
+      retry
     end
 
     def register!
@@ -211,7 +197,7 @@ module Streambox
       Thread.new do
         loop do
           until queue.empty?
-            message = queue.first.last
+            message = queue.first
             logger.debug "[EVENT] #{message.inspect}"
             put(device_url, message)
             self.queue.shift
@@ -235,7 +221,10 @@ module Streambox
     end
 
     def heartbeat
+      t0 = Time.now
       response = put(device_url)
+      @dt = Time.now - t0
+      #logger.debug 'Heartbeat responded in %.3fs' % @dt
       @network = response.status == 200
       if @prev_network != @network
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
@@ -245,6 +234,8 @@ module Streambox
       apply_config(json)
     rescue Faraday::TimeoutError
       logger.error "Error: Heartbeat timed out."
+    rescue JSON::ParserError
+      logger.error "Error: Heartbeat could not parse JSON."
     end
 
     def start_observer(name)
@@ -256,6 +247,31 @@ module Streambox
         loop do
           line = fifo.gets
           logger.debug "[#{name.upcase}] #{line.chomp}"
+
+          if line.match(/mountpoint occupied, or maximum sources reached/)
+            logger.debug "Two resilitent process for darkice running?"
+          end
+
+          if line.match(/sox WARN alsa: No such device/)
+            id_link = slack_link(identifier, SLACK_LINK + identifier)
+            slack('Clean shutdown of Streamboxx %s.' % id_link)
+            @recorder.stop!
+            puts
+            system 'toilet -f mono12 "Shutdown"'
+            puts
+            puts "Shutdown after sync..."
+            sync
+            system 'shutdown -h now'
+          end
+
+          if line.match(/RequestTimeTooSkewed/)
+            system './sync_clock.sh'
+            sync # extra sync after clock is fixed
+          end
+
+          if line.match(/Darkice: TcpSocket.cpp:251: connect error \[111\]/)
+            # handle lots of defunct processes
+          end
         end
       end
     end
@@ -270,7 +286,14 @@ module Streambox
     end
 
     def report!
-      response = put(device_url+'/report', @reporter.report)
+      more = {
+        heartbeat_response_time: @dt,
+        recordings: recordings,
+        bandwidth: bandwidth,
+        now: Time.now
+      }
+      report = more.merge(@reporter.report)
+      response = put(device_url+'/report', report)
       @network = response.status == 200
       if @prev_network != @network
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
@@ -290,35 +313,81 @@ module Streambox
     end
 
     def start_recording
-      ResilientProcess.new(record_cmd,
-                           'record.sh',
-                           @config.check_record_interval,
-                           0,
-                           logger).run
+      @recorder = ResilientProcess.new(record_cmd,
+                                       'record.sh',
+                                       @config.check_record_interval,
+                                       0,
+                                       logger).start!
+    end
+
+    def start_recording_monitor
+      notifier = INotify::Notifier.new
+      events = [:create, :delete, :close_write, :modify]
+      self.recordings = {}
+
+      notifier.watch('../recordings', *events) do |event|
+
+        unless event.flags == [:modify]
+          logger.debug event.flags.inspect + ' ' + event.name
+        end
+
+        name = event.name
+        self.recordings[name] ||= {}
+
+        case event.flags
+        when [:modify]
+          self.recordings[name][:first_updated] ||= Time.now
+          self.recordings[name][:last_updated] = Time.now
+          self.recordings[name][:size] = File.size(event.absolute_name)
+        when [:close_write, :close]
+          self.recordings[name][:closed] ||= Time.now
+        when [:create]
+          self.recordings[name][:created] = Time.now
+        when [:delete]
+          self.recordings[name][:deleted] = Time.now
+        end
+
+        # puts recordings.to_yaml
+      end
+
+      Thread.new do
+        notifier.run
+      end
+    end
+
+    def sync
+      total = 0
+      Dir.glob('../recordings/*.ogg').each do |path|
+        total += File.size(path)
+      end
+
+      logger.info 'Start syncing %.2fkb...' % (total/1024)
+
+      t0 = Time.now
+      system(sync_cmd)
+      dt = Time.now - t0
+      self.bandwidth = total / dt # in bytes per second
+      logger.info 'Syncing completed in %.2fs at %.2fkbps. Next sync in %ss.' %
+                  [dt, bandwidth/1024, @config.sync_interval]
+
     end
 
     def start_sync
       Thread.new do
         loop do
-          logger.info 'Start syncing...'
-          t0 = Time.now
-          system(sync_cmd)
-          logger.info 'Syncing completed in %.2fs. Next sync in %ss.' %
-                      [Time.now - t0, @config.sync_interval]
+          sync
           sleep @config.sync_interval
         end
       end
     end
 
-    def new_streamer!
-      logger.debug "Start new ResilientProcess"
+    def start_streamer
       @streamer = ResilientProcess.new(stream_cmd,
                                        'darkice',
                                        @config.check_stream_interval,
                                        @config.restart_stream_delay,
                                        logger)
     end
-
 
     def special_check_for_reboot_required
       unless File.symlink?('/home/pi/streambox')
@@ -330,6 +399,8 @@ module Streambox
     def run
       at_exit { fire_event :restart }
 
+      @config.loglevel = Logger::DEBUG if dev_box?
+
       special_check_for_reboot_required
 
       logger.info "Id %s, IP %s, Version %s" %
@@ -340,37 +411,44 @@ module Streambox
       logger.info "[0] Start recording..."
       start_recording
 
-      logger.info "[1] Knocking..."
+      logger.info "[1] Start recording monitor..."
+      start_recording_monitor
+
+      logger.info "[2] Start observers..."
+      start_observer 'record'
+      start_observer 'sync'
+      start_observer 'darkice'
+
+      logger.info "[3] Knocking..."
       knock!
-      logger.info "[2] Knocking complete."
+      logger.info "[4] Knocking complete."
       logger.debug "Endpoint #{@config.endpoint}"
 
+      logger.info "[5] Start Streamer..."
+      start_streamer
+      logger.info "[6] Streamer started."
+
       if dev_box?
-        logger.warn "[3] Dev Box detected! Skipping check for release."
+        logger.warn "[7] Dev Box detected! Skipping check for release."
       else
-        logger.warn "[3] Checking for release..."
+        logger.warn "[7] Checking for release..."
         check_for_release
       end
 
-      logger.info "[4] Start heartbeat..."
+      logger.info "[8] Registering..."
+      register!
+      logger.info "[9] Registration complete."
+
+      logger.info "[A] Start heartbeat..."
       start_heartbeat
 
-      logger.info "[5] Registering..."
-      register!
-      logger.info "[6] Registration complete."
-
-      logger.info "[7] Start reporting..."
+      logger.info "[B] Start reporting..."
       start_reporting
 
-      logger.info "[8] Start publisher..."
+      logger.info "[C] Start publisher..."
       start_publisher
 
-      logger.info "[9] Start observers..."
-      start_observer 'darkice'
-      start_observer 'record'
-      start_observer 'sync'
-
-      logger.info "[A] Start sync loop..."
+      logger.info "[D] Start sync loop..."
       start_sync
 
       if @config.state == 'pairing'
@@ -380,58 +458,6 @@ module Streambox
         Banner.new
       end
 
-      if File.exist?('../darkice.pid')
-        new_streamer!.run
-        #fire_event :found_streaming
-      end
-
-      # logger.info "Entering EM loop..."
-      # EM.run {
-      #   self.client = Faye::Client.new(@config.faye_url)
-      #   ext = Faye::Authentication::ClientExtension.new(@config.faye_secret)
-      #   client.add_extension(ext)
-      #
-      #   multi_io.add(FayeIO.new(client, identifier)) if @config.loglevel == 0
-      #
-      #   logger.debug "[FAYE] Subscribing to channel '#{channel}'..."
-      #
-      #   self.subscription = client.subscribe(channel) { |message| dispatch(message) }
-      #
-      #   subscription.callback do
-      #     logger.debug "[FAYE] Subscribe succeeded."
-      #   end
-      #
-      #   subscription.errback do |error|
-      #     logger.warn "Failed to subscribe with #{error.inspect}."
-      #   end
-      #
-      #   client.bind 'transport:down' do
-      #     logger.warn "Connection DOWN. Expecting reconnect..."
-      #     @awaiting_connection = Time.now
-      #     Thread.new do
-      #       while @awaiting_connection
-      #         delta = Time.now - @awaiting_connection
-      #         if delta > 60
-      #           logger.warn "Connection DOWN for over 60 seconds now. Restarting..."
-      #           exit
-      #         else
-      #           logger.debug "[FAYE] Connection DOWN for %.0f seconds now." % delta
-      #         end
-      #         sleep 1
-      #       end
-      #     end
-      #   end
-      #
-      #   client.bind 'transport:up' do
-      #     unless @awaiting_connection.nil?
-      #       delta = Time.now - @awaiting_connection
-      #       logger.warn "Connection UP. Was down for %.2f seconds." % delta
-      #       @awaiting_connection = nil
-      #     end
-      #   end
-      #
-      #   publish event: 'print', print: 'Device ready.'
-      # }
       loop do
         sleep 5
       end
@@ -439,93 +465,29 @@ module Streambox
       logger.warn "Exiting."
     end
 
-    # TODO maybe rewrite handle_ methods to not use arguments
-    def dispatch(message={})
-      logger.debug "[FAYE] Received #{message.inspect}"
-      method = "handle_#{message['event']}"
-      return send(method, message) if respond_to?(method)
-      publish event: 'error', error: "Unknown message: #{message.inspect}"
-    end
-
     # { event: 'start_streaming', icecast: { ... } }
     def handle_start_stream(message={})
       logger.info "Starting stream..."
       config = message['icecast'].merge(device: sound_device)
       write_config!(config)
-      @streamer and @streamer.stop!
-      new_streamer!
-      @streamer.run
+      sleep 0.1 # HACK wait to make sure config file is flushed
+      @streamer.stop!
+      @streamer.start!
       # HACK this makes the pairing code play loop stop
       @config.state = 'running'
       fire_event :stream_started
     end
 
-    # { event: 'stop_streaming' }
-    def handle_stop_stream(message={})
-      logger.info "Stopping stream..."
-      @streamer && @streamer.stop!
-      @streamer = nil
-      fire_event :stream_stopped
-    end
-
-    # { event: 'eval', eval: '41+1' }
-    def handle_eval(message={})
-      code = message['eval']
-      logger.debug "[FAYE] Eval: #{code}"
-      output = eval(code)
-    rescue => e
-      output = 'Error: ' + e.message
-    ensure
-      publish event: 'print', print: output.inspect
-    end
-
-    # TODO exit, shutdown, and reboot should stop streaming first
-    def handle_exit(message={})
-      logger.info "Exiting..."
-      exit
-    end
-
-    def handle_shutdown(message={})
-      logger.info "Shutting down..."
-      fire_event :shutdown
-      %x[ sudo shutdown -h now ]
-    end
-
-    def handle_reboot(message={})
-      logger.info "Rebooting..."
-      fire_event :restart
-      %x[ sudo reboot ]
-    end
-
-    def handle_print(message={})
-      logger.debug "[FAYE] Print: #{message['print']}"
-    end
-
-    # obsolete
-    def handle_heartbeat(message={})
-      # ignore
-    end
-
-    # obsolete
-    def handle_report(message={})
-      logger.debug "Report: #{message.inspect}"
-    end
-
-    def handle_error(message={})
-      logger.warn message.error
-    end
-
-    def handle_handshake(message={})
-      publish event: 'print', print: 'Connection established.'
-    end
-
-    def channel
-      "/device/#{identifier}"
-    end
-
-    def publish(msg={})
-      client.publish(channel, msg)
-    end
+    # # { event: 'eval', eval: '41+1' }
+    # def handle_eval(message={})
+    #   code = message['eval']
+    #   logger.debug "Eval: #{code}"
+    #   output = eval(code)
+    # rescue => e
+    #   output = 'Error: ' + e.message
+    # ensure
+    #   publish event: 'print', print: output.inspect
+    # end
 
     def multi_io
       @multi_io ||= MultiIO.new(STDOUT)
@@ -560,7 +522,13 @@ module Streambox
     private
 
     def write_config!(config)
-      File.open(config_path, 'w') { |f| f.write(render_config(config)) }
+      # no need to write if its the same
+      return if File.exist?(config_path) && (File.read(config_path) == config)
+
+      File.open(config_path, 'w') do |f|
+        f.write(render_config(config))
+        f.flush
+      end
     end
 
     def render_config(config)
@@ -591,6 +559,7 @@ module Streambox
         IDENTIFIER: identifier,
         REGION: region
       }
+
       vars = vars.map { |v| v * '=' } * ' ' # ¯\_(ツ)_/¯
       "%s ./sync.sh" % vars
     end
@@ -600,12 +569,7 @@ module Streambox
     end
 
     def fire_event(event)
-      self.queue << ['/event/devices', {event: event, identifier: identifier}]
-
-      #uri = URI.parse(@config.endpoint + '/' + identifier)
-      #faraday.basic_auth(uri.user, uri.password)
-      #response = faraday.post(@config.endpoint, device: { event: event })
-      #logger.warn "Firing event failed.\n" + response.body if response.status != 200
+      self.queue << { event: event, identifier: identifier }
     end
 
     def dev_box?
@@ -630,6 +594,9 @@ module Streambox
     def install_release(from, to)
       system "./install_release.sh"
 
+      id_link = slack_link(identifier, SLACK_LINK + identifier)
+      slack('Upgraded Streamboxx %s from v%s to v%s.' % [id_link, from, to])
+
       if reboot_required?(from, to)
         logger.warn 'Rebooting...'
         system 'reboot'
@@ -642,7 +609,33 @@ module Streambox
 
     # this only works for releases
     def reboot_required?(from, to)
+      return true if from == 27
+
       false
+    end
+
+    SLACK_HOOK = 'https://hooks.slack.com/services/'+
+                 'T02CS5YFX/B0NL4U5B9/uG5IExBuAnRjC0H56z2R1WXG'
+
+    SLACK_LINK = 'https://voicerepublic.com:444/admin/devices/'
+
+    def slack_link(text, url)
+      '<%s|%s>' % [url, text]
+    end
+
+    def slack(msg)
+      payload = {
+        channel: '#streamboxx',
+        username: 'streamboxx',
+        icon_emoji: ':sparkles:',
+        text: msg
+      }
+      uri = URI(SLACK_HOOK)
+      https = Net::HTTP.new(uri.host, uri.port)
+      https.use_ssl = true
+      request = Net::HTTP::Post.new(uri.path)
+      request.body = JSON.unparse(payload)
+      https.request(request)
     end
 
   end

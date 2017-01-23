@@ -1,0 +1,10 @@
+[Unit]
+Description=streambox monitor on tty2
+After=graphical.target
+
+[Service]
+Type=simple
+ExecStart=/home/pi/streambox/monitor.sh
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty2

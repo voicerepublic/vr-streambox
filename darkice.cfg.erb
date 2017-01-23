@@ -15,9 +15,10 @@ channel = 1
 
 [icecast2-0]
 format = vorbis
-bitrateMode = cbr
-bitrate = 48
+bitrateMode = vbr
+quality = 0.5
 server = <%= public_ip_address %>
-port = <%= port %>
+# darkice does not support https
+port = 80
 password = <%= source_password %>
 mountPoint = <%= mount_point %>
