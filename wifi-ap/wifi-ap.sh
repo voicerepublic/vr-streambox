@@ -19,14 +19,14 @@ main(){
     SSID_CUSTOM="VR Hotspot"
     PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/^0*//)
 
-    sed -i'.bak' -e '/^.*wlan0$/,/^$/ d' /etc/network/interfaces
+    cp interfaces/interfaces /etc/network/interfaces
 
     stop_services
 
-    if interface_connected eth0 https://voicerepublic.com; then
-        setup_access_point
+    if $(interface_connected.sh eth0 https://voicerepublic.com); then
+        ./setup_access_point.sh
     else
-        setup_wifi_connection
+        ./setup_wifi_connection.sh
     fi
 }
 
@@ -57,8 +57,6 @@ setup_access_point() {
     #if ! grep -q "$DHCPCD" /etc/dhcpcd.conf; then
     #    echo $DHCPCD >> /etc/dhcpcd.conf
     #fi
-
-    cp -f $DIR/interfaces/wlan0_access-point /etc/network/interfaces.d/wlan0
 
     sed -e "s/SSID/$SSID_AP/" -e "s/PASSWORD/$PASSWORD_AP/" \
         $DIR/hostapd.conf.template > /etc/hostapd/hostapd.conf
@@ -95,7 +93,7 @@ setup_wifi_connection(){
 
     #sed -i'' "/$DHCPCD/d" /etc/dhcpcd.conf
 
-    cp -f $DIR/interfaces/wlan0 /etc/network/interfaces.d/wlan0
+    sed -i'' -e 's:DAEMON_CONF="/etc/hostapd/hostapd.conf":#DAEMON_CONF="":' /etc/default/hostapd
 
     sed -e "s/SSID_INTERNAL/$SSID_INTERNAL/" -e "s/PASSWORD_INTERNAL/$PASSWORD_INTERNAL/" \
         -e "s/SSID_CUSTOM/$SSID_CUSTOM/" -e "s/PASSWORD_CUSTOM/$PASSWORD_CUSTOM/" \
