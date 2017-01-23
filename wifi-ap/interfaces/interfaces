@@ -1,5 +1,3 @@
-source-directory /etc/network/interfaces.d
-
 auto lo
 iface lo inet loopback
 
