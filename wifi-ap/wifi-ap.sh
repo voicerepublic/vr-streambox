@@ -19,7 +19,7 @@ main(){
     SSID_CUSTOM="VR Hotspot"
     PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/^0*//)
 
-    cp interfaces/interfaces /etc/network/interfaces
+    cp $DIR/interfaces/interfaces /etc/network/interfaces
 
     stop_services
 
