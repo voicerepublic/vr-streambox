@@ -82,7 +82,7 @@ setup_access_point() {
     iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
     iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
 
-    ifup wlan0
+    ifup wlan0=ap
     service hostapd start
     service dnsmasq start
 }
@@ -122,7 +122,7 @@ setup_wifi_connection(){
 stop_services(){
     service hostapd stop
     service dnsmasq stop
-    ifdown wlan0
+    ifdown wlan0=ap
 }
 
 main "$@"
