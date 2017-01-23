@@ -23,10 +23,10 @@ main(){
 
     stop_services
 
-    if $(interface_connected.sh eth0 https://voicerepublic.com); then
-        ./setup_access_point.sh
+    if interface_connected eth0 https://voicerepublic.com; then
+        setup_access_point
     else
-        ./setup_wifi_connection.sh
+        setup_wifi_connection
     fi
 }
 
