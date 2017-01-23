@@ -19,7 +19,7 @@ main(){
     SSID_CUSTOM="VR Hotspot"
     PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/^0*//)
 
-    sed -i'.bak' -e '/^.*wlan0$/,/^$/ d' /etc/network/interfaces
+    cp interfaces/interfaces /etc/network/interfaces
 
     stop_services
 
@@ -58,8 +58,6 @@ setup_access_point() {
     #    echo $DHCPCD >> /etc/dhcpcd.conf
     #fi
 
-    cp -f $DIR/interfaces/wlan0_access-point /etc/network/interfaces.d/wlan0
-
     sed -e "s/SSID/$SSID_AP/" -e "s/PASSWORD/$PASSWORD_AP/" \
         $DIR/hostapd.conf.template > /etc/hostapd/hostapd.conf
 
@@ -84,7 +82,7 @@ setup_access_point() {
     iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
     iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
 
-    ifup wlan0
+    ifup wlan0=ap
     service hostapd start
     service dnsmasq start
 }
@@ -95,7 +93,7 @@ setup_wifi_connection(){
 
     #sed -i'' "/$DHCPCD/d" /etc/dhcpcd.conf
 
-    cp -f $DIR/interfaces/wlan0 /etc/network/interfaces.d/wlan0
+    sed -i'' -e 's:DAEMON_CONF="/etc/hostapd/hostapd.conf":#DAEMON_CONF="":' /etc/default/hostapd
 
     sed -e "s/SSID_INTERNAL/$SSID_INTERNAL/" -e "s/PASSWORD_INTERNAL/$PASSWORD_INTERNAL/" \
         -e "s/SSID_CUSTOM/$SSID_CUSTOM/" -e "s/PASSWORD_CUSTOM/$PASSWORD_CUSTOM/" \
@@ -124,7 +122,7 @@ setup_wifi_connection(){
 stop_services(){
     service hostapd stop
     service dnsmasq stop
-    ifdown wlan0
+    ifdown wlan0=ap
 }
 
 main "$@"
