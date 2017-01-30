@@ -25,6 +25,10 @@ main(){
         ln -sf $DIR/z_streambox-ifupdown.sh "$IFUPDOWN_BASE/$directory/zstreambox"
     done
 
+    if [ "$1" == "init" ]; then
+        exit 0
+    fi
+
     ifdown wlan0
 
     if interface_connected eth0 https://voicerepublic.com; then
