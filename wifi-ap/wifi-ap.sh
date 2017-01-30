@@ -17,6 +17,8 @@ PASSWORD_AP=$PASSWORD_INTERNAL
 SSID_CUSTOM="VR Hotspot"
 PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/^0*//)
 
+VR_URL="https://voicerepublic.com"
+
 main(){
 
     cp $DIR/interfaces /etc/network/interfaces
@@ -26,12 +28,18 @@ main(){
     done
 
     if [ "$1" = "init" ]; then
+        if ! interface_connected eth0 $VR_URL; then
+            if ! interface_connected wlan0 $VR_URL; then
+                ifdown wlan0
+                ifup wlan0
+            fi
+        fi
         exit 0
     fi
 
     ifdown wlan0
 
-    if interface_connected eth0 https://voicerepublic.com; then
+    if interface_connected eth0 $VR_URL; then
         setup_access_point
     else
         setup_wifi_connection
