@@ -3,25 +3,29 @@
 
 #ifplugd -b -f -u 5 -d 5 -r /home/pi/streambox/wifi-ap/wifi-ap.sh
 
+DIR="$(cd "$(dirname "$0")" && pwd)"
+
+IFUPDOWN_BASE="/etc/network"
+IFUPDOWN_DIRS="if-up.d if-down.d if-post-down.d if-post-up.d if-pre-up.d if-pre-down.d"
+
+SSID_INTERNAL="VR Streaming"
+PASSWORD_INTERNAL="streamsdocometrue"
+
+SSID_AP=$SSID_INTERNAL
+PASSWORD_AP=$PASSWORD_INTERNAL
+
+SSID_CUSTOM="VR Hotspot"
+PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/^0*//)
 
 main(){
 
-    DIR="$(cd "$(dirname "$0")" && pwd)"
+    cp $DIR/interfaces /etc/network/interfaces
+    for directory in $IFUPDOWN_DIRS; do
+        mkdir -p "$IFUPDOWN_BASE/$directory"
+        ln -sf $DIR/z_streambox-ifupdown.sh "$IFUPDOWN_BASE/$directory/zstreambox"
+    done
 
-    #DHCPCD="denyinterfaces wlan0"
-
-    SSID_INTERNAL="VR Streaming"
-    PASSWORD_INTERNAL="streamsdocometrue"
-
-    SSID_AP=$SSID_INTERNAL
-    PASSWORD_AP=$PASSWORD_INTERNAL
-
-    SSID_CUSTOM="VR Hotspot"
-    PASSWORD_CUSTOM=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed s/^0*//)
-
-    cp interfaces/interfaces /etc/network/interfaces
-
-    stop_services
+    ifdown wlan0
 
     if interface_connected eth0 https://voicerepublic.com; then
         setup_access_point
@@ -54,14 +58,10 @@ setup_access_point() {
 
     echo "Ethernet cable connected. Setting up Wireless Access Point"
 
-    #if ! grep -q "$DHCPCD" /etc/dhcpcd.conf; then
-    #    echo $DHCPCD >> /etc/dhcpcd.conf
-    #fi
-
     sed -e "s/SSID/$SSID_AP/" -e "s/PASSWORD/$PASSWORD_AP/" \
         $DIR/hostapd.conf.template > /etc/hostapd/hostapd.conf
 
-    sed -i'' -e 's:#DAEMON_CONF="":DAEMON_CONF="/etc/hostapd/hostapd.conf":' /etc/default/hostapd
+    #sed -i'' -e 's:#DAEMON_CONF="":DAEMON_CONF="/etc/hostapd/hostapd.conf":' /etc/default/hostapd
 
     if [ ! -f "/etc/dnsmasq.conf.bak" ]; then
         mv /etc/dnsmasq.conf /etc/dnsmasq.conf.bak
@@ -83,21 +83,17 @@ setup_access_point() {
     iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
 
     ifup wlan0=ap
-    service hostapd start
-    service dnsmasq start
 }
 
 setup_wifi_connection(){
 
     echo "No Ethernet connected. Trying to connect to Wireless Access Point"
 
-    #sed -i'' "/$DHCPCD/d" /etc/dhcpcd.conf
-
-    sed -i'' -e 's:DAEMON_CONF="/etc/hostapd/hostapd.conf":#DAEMON_CONF="":' /etc/default/hostapd
+    #sed -i'' -e 's:DAEMON_CONF="/etc/hostapd/hostapd.conf":#DAEMON_CONF="":' /etc/default/hostapd
 
     sed -e "s/SSID_INTERNAL/$SSID_INTERNAL/" -e "s/PASSWORD_INTERNAL/$PASSWORD_INTERNAL/" \
         -e "s/SSID_CUSTOM/$SSID_CUSTOM/" -e "s/PASSWORD_CUSTOM/$PASSWORD_CUSTOM/" \
-        $DIR/interfaces/wpa_supplicant.conf.template > /etc/wpa_supplicant/wpa_supplicant.conf
+        $DIR/wpa_supplicant.conf.template > /etc/wpa_supplicant/wpa_supplicant.conf
 
     if [ -f "/etc/dnsmasq.conf.bak" ]; then
         mv -f /etc/dnsmasq.conf.bak /etc/dnsmasq.conf
@@ -109,20 +105,17 @@ setup_wifi_connection(){
     # delete all iptable rules
     # if persisted, also call
     # rm /etc/iptables.ipv4.nat
-    # sed -i'' '/iptables-restore/d'
+    # sed -i'' '/iptables-restore/d' /etc/rc.local
 
-    iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
-    iptables -D FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-    iptables -D FORWARD -i wlan0 -o eth0 -j ACCEPT
+    iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE >/dev/null 2>&1
+    iptables -D FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT >/dev/null 2>&1
+    iptables -D FORWARD -i wlan0 -o eth0 -j ACCEPT >/dev/null 2>&1
 
     ifup wlan0
-    wpa_cli scan
 }
 
 stop_services(){
-    service hostapd stop
-    service dnsmasq stop
-    ifdown wlan0=ap
+    ifdown wlan0
 }
 
 main "$@"
