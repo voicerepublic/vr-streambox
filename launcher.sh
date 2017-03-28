@@ -88,6 +88,9 @@ fi
 #/home/pi/streambox/wifi-ap/wifi-ap.sh
 #command -v ifplugd >/dev/null 2>&1 && ifplugd -b -f -u 5 -d 5 -r /home/pi/streambox/wifi-ap/wifi-ap.sh
 
+# start inotifywait demon to log recording file creation times
+$DIR/watch_recordings.sh
+
 message "Entering restart loop..."
 
 while :
