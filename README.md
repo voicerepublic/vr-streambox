@@ -282,14 +282,17 @@ sudo nethogs
 
 1. Box starts in pre-liquidsoap, ruby starts & detects a new release
 1. Installs liquidsoap release & reboots
-1. Box boots & the launcher installs the liquidsoap.service & reboots
-1. Box boots
-1. Constantly restarts liquidsoap.service, because liquidsoap is not yet installed
+1. Box boots into liquidsoap setup
+1. The launcher installs & activates the liquidsoap.service which fails because it is not build yet
+1. The launcher enables liquidsoap.service so it will be run on next boot
+1. The launcher places minimal.liq in place of the actual liq script.
 1. launcher runs start
 1. starts runs setup
 1. setup runs install_liquidsoap (this will take a while, check tty1)
-1. Box constantly restarts liquidsoap.service, because ~pi/streamboxx.liq is missing
-1. ruby starts, writes a default ~pi/streamboxx.liq & waits for icecast details
-1. liquidsoap.service starts successfully, records (check tty3)
+1. While building/installing liquisoap the box constantly restarts liquidsoap.service
+1. When the build finishes, systemd succeeds in starting liquidsoap with minimal.liq
+1. Liquidsoap is recording (if there is a audio input with enough volume)
+1. At this point you can see liquidsoap running on tty3
+1. Ruby starts & waits for icecast details
 1. ruby receives new details, updates ~pi/streamboxx.liq
-1. liquidsoap restarts itself, starts streaming
+1. liquidsoap restarts itself & starts streaming
