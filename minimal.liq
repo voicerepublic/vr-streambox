@@ -19,7 +19,7 @@ enhanced = strip_blank(stream, max_blank=10.)
 
 # ------------------------------ OUTPUT
 
-out(enhanced) # local monitoring
+output.alsa(fallible=true, enhanced) # local monitoring
 
 output.file(
   %vorbis,

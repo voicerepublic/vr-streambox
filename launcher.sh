@@ -78,16 +78,24 @@ fi
 # put minimal liq script in place for offline recording
 if [ ! -e /home/pi/streamboxx.liq ]; then
     cp /home/pi/streambox/minimal.liq /home/pi/streamboxx.liq
+    chown pi: /home/pi/streamboxx.liq
 fi
 
 # install liquidsoap on tty3
 if [ -e /etc/systemd/system/getty.target.wants/getty@tty3.service ]; then
-    ln -vs /home/pi/streambox/liquidsoap.service \
-       /etc/systemd/system/default.target.wants
+    # hard link it, systemd doesn't like symlinks
+    ln -v /home/pi/streambox/liquidsoap.service \
+       /etc/systemd/system/liquidsoap.service
     mv /etc/systemd/system/getty.target.wants/getty@tty3.service \
        /etc/systemd/system/getty.target.wants/getty@tty4.service
+    systemctl disable getty@tty3
+    systemctl enable liquidsoap
+    chown -R pi: /home/pi/recordings
     reboot
 fi
+
+# some doc on systemd
+# http://askubuntu.com/questions/676007
 
 # migrate from repo to releases
 if [ ! -L ~pi/streambox ]; then

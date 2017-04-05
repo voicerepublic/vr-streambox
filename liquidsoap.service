@@ -1,10 +1,13 @@
 [Unit]
-Description=liquidsoap on tty3
-After=graphical.target
+Description=Liquidsoap on tty3
+Requires=sound.target
+After=sound.target
 
 [Service]
+PermissionsStartOnly=true
 Type=simple
 User=pi
+Group=pi
 WorkingDirectory=/home/pi
 ExecStart=/usr/local/bin/liquidsoap -v streamboxx.liq
 StandardInput=tty
