@@ -1,0 +1,13 @@
+[Unit]
+Description=liquidsoap on tty3
+After=graphical.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/liquidsoap /home/pi/streamboxx.liq
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty3
+Restart=always
+RestartSec=3
+User=pi
