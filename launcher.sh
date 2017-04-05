@@ -92,6 +92,8 @@ fi
 diff -N /etc/systemd/system/liquidsoap.service \
      /home/pi/streambox/liquidsoap.service 2>&1 >/dev/null
 if [ $? -ne 0 ]; then
+    cp -v /home/pi/streambox/liquidsoap.service \
+       /etc/systemd/system/liquidsoap.service
     systemctl restart liquidsoap
     systemctl enable liquidsoap
 fi
