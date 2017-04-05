@@ -75,6 +75,11 @@ if [ -e /etc/systemd/system/getty.target.wants/getty@tty2.service ]; then
     reboot
 fi
 
+# put minimal liq script in place for offline recording
+if [ ! -e /home/pi/streamboxx.liq ]; then
+    cp /home/pi/streambox/minimal.liq /home/pi/streamboxx.liq
+fi
+
 # install liquidsoap on tty3
 if [ -e /etc/systemd/system/getty.target.wants/getty@tty3.service ]; then
     ln -vs /home/pi/streambox/liquidsoap.service \
@@ -82,11 +87,6 @@ if [ -e /etc/systemd/system/getty.target.wants/getty@tty3.service ]; then
     mv /etc/systemd/system/getty.target.wants/getty@tty3.service \
        /etc/systemd/system/getty.target.wants/getty@tty4.service
     reboot
-fi
-
-# put minimal liq script in place for offline recording
-if [ ! -e /home/pi/streamboxx.liq ]; then
-    cp /home/pi/streambox/minimal.liq /home/pi/streamboxx.liq
 fi
 
 # migrate from repo to releases

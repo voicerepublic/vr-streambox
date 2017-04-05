@@ -59,13 +59,10 @@ module Streambox
       # these are just defaults
       @config = OpenStruct.new endpoint: ENDPOINT,
                                loglevel: Logger::INFO,
-                               device: 'plughw:1,0', # or 'hw:1,0' or 'dsnooped'
+                               device: 'hw:1,0', # or 'plughw:1,0' or 'dsnooped'
                                sync_interval: 60 * 10, # 10 minutes
-                               check_record_interval: 1,
-                               check_stream_interval: 1,
-                               heartbeat_interval: 10,
-                               reportinterval: 60,
-                               restart_stream_delay: 6
+                               heartbeat_interval: 10, # 10 seconds
+                               report_interval: 60 # 1 minute
       @reporter = Reporter.new
     end
 
@@ -126,7 +123,7 @@ module Streambox
         when :awaiting_stream, :disconnected
           reconfigure(data['venue'])
         when :disconnect_required
-          @streamer.stop!
+          reconfigure(data['venue'])
         end
       end
 
@@ -372,14 +369,6 @@ module Streambox
           sleep @config.sync_interval
         end
       end
-    end
-
-    def start_streamer
-      @streamer = ResilientProcess.new(stream_cmd,
-                                       'liquidsoap',
-                                       @config.check_stream_interval,
-                                       @config.restart_stream_delay,
-                                       logger)
     end
 
     def special_check_for_reboot_required

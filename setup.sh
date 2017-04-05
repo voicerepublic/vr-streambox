@@ -21,7 +21,7 @@ else
 fi
 
 message 'Installing base dependencies...'
-sudo apt-get -y install ruby ruby-dev toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq sox htpdate lsof time ifplugd liquidsoap liquidsoap-plugin-alsa
+sudo apt-get -y install ruby ruby-dev toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq sox htpdate lsof time ifplugd
 
 message 'Installing bundler...'
 sudo gem install bundler --force --no-ri --no-rdoc
@@ -37,8 +37,6 @@ sudo pip install awscli
 message 'Running bundler (installing main dependencies)...'
 (cd $DIR && bundle install)
 
-
-usermod -aG audio pi
-
+su -c './install_liquidsoap.sh' pi
 
 message 'Setup done.'
