@@ -81,18 +81,22 @@ if [ ! -e /home/pi/streamboxx.liq ]; then
     chown pi: /home/pi/streamboxx.liq
 fi
 
-# install liquidsoap on tty3
+# get rid of getty on tty3
 if [ -e /etc/systemd/system/getty.target.wants/getty@tty3.service ]; then
-    # hard link it, systemd doesn't like symlinks
-    ln -v /home/pi/streambox/liquidsoap.service \
-       /etc/systemd/system/liquidsoap.service
     mv /etc/systemd/system/getty.target.wants/getty@tty3.service \
        /etc/systemd/system/getty.target.wants/getty@tty4.service
     systemctl disable getty@tty3
-    systemctl enable liquidsoap
-    chown -R pi: /home/pi/recordings
-    reboot
 fi
+
+# update systemd liquidsoap
+diff -N /etc/systemd/system/liquidsoap.service \
+     /home/pi/streambox/liquidsoap.service 2>&1 >/dev/null
+if [ $? -ne 0 ]; then
+    systemctl restart liquidsoap
+    systemctl enable liquidsoap
+fi
+
+chown -R pi: /home/pi/recordings
 
 # some doc on systemd
 # http://askubuntu.com/questions/676007
