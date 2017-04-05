@@ -1,5 +1,5 @@
 [Unit]
-Description=Liquidsoap on tty3
+Description=Liquidsoap
 Requires=sound.target
 After=sound.target
 
@@ -10,9 +10,9 @@ User=pi
 Group=pi
 WorkingDirectory=/home/pi
 ExecStart=/usr/local/bin/liquidsoap -v streamboxx.liq
-StandardInput=tty
-StandardOutput=tty
-TTYPath=/dev/tty3
+#StandardInput=tty
+#StandardOutput=tty
+#TTYPath=/dev/tty3
 Restart=always
 RestartSec=3
 
