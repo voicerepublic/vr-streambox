@@ -59,7 +59,7 @@ module Streambox
       # these are just defaults
       @config = OpenStruct.new endpoint: ENDPOINT,
                                loglevel: Logger::INFO,
-                               device: 'hw:1,0', # or 'plughw:1,0' or 'dsnooped'
+                               device: 'plughw:1,0', # or 'plughw:1,0' or 'dsnooped'
                                sync_interval: 60 * 10, # 10 minutes
                                heartbeat_interval: 10, # 10 seconds
                                report_interval: 60 # 1 minute
