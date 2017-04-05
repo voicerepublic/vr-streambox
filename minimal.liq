@@ -5,7 +5,7 @@ set("log.file.path", "./liquidsoap.log")
 
 # ------------------------------ SETTINGS
 
-alsa_device = "hw:1,0" # assumption
+alsa_device = "plughw:1,0" # assumption
 
 stream = input.alsa(device=alsa_device)
 
