@@ -24,9 +24,12 @@
     if [ $? -eq 0 ]; then
         # find the file which is currently being written to and delete all others
         ACTIVE_PATH=`lsof -c sox | grep recordings | tr -s ' ' | cut -d ' ' -f 9`
-        # FIXME this fails when there is no active recording
-        ACTIVE_FILE=`basename $ACTIVE_PATH`
-        ls -1 | grep -v $ACTIVE_FILE | xargs -I {} rm -- {}
+        if [ -n "$ACTIVE_PATH" ]; then
+            ACTIVE_FILE=`basename $ACTIVE_PATH`
+            ls -1 | grep -v $ACTIVE_FILE | xargs -I {} rm -- {}
+        else
+            ls -1 | xargs -I {} rm -- {}
+        fi
         echo "Cleanup after sync complete." >>../streambox/sync.log
     else
         echo "Sync failed, skipping cleanup." >>../streambox/sync.log
