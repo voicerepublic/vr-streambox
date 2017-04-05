@@ -23,7 +23,7 @@
 
     if [ $? -eq 0 ]; then
         # find the file which is currently being written to and delete all others
-        ACTIVE_PATH=`lsof -c sox | grep recordings | tr -s ' ' | cut -d ' ' -f 9`
+        ACTIVE_PATH=`lsof -c liquidsoap -F n | grep recordings | sed 's/^n//'`
         if [ -n "$ACTIVE_PATH" ]; then
             ACTIVE_FILE=`basename $ACTIVE_PATH`
             ls -1 | grep -v $ACTIVE_FILE | xargs -I {} rm -- {}
