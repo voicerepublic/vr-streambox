@@ -364,3 +364,10 @@ sudo nethogs
 ## References
 
 * https://www.raspberrypi.org/documentation/configuration/config-txt.md
+
+
+## Notes
+
+```
+alsactl
+```
