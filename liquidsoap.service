@@ -4,10 +4,14 @@ After=graphical.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/liquidsoap /home/pi/streamboxx.liq
+User=pi
+WorkingDirectory=/home/pi
+ExecStart=/usr/local/bin/liquidsoap -v streamboxx.liq
 StandardInput=tty
 StandardOutput=tty
 TTYPath=/dev/tty3
 Restart=always
 RestartSec=3
-User=pi
+
+[Install]
+WantedBy=multi-user.target
