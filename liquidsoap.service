@@ -1,7 +1,7 @@
 [Unit]
 Description=Liquidsoap
-Requires=sound.target
-After=sound.target
+#Requires=sound.target
+#After=sound.target
 
 [Service]
 PermissionsStartOnly=true
