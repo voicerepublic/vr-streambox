@@ -1,6 +1,6 @@
 [Unit]
 Description=Liquidsoap@tty3
-After=graphical.target
+#After=graphical.target
 
 [Service]
 Type=simple
