@@ -59,7 +59,7 @@ module Streambox
       # these are just defaults
       @config = OpenStruct.new endpoint: ENDPOINT,
                                loglevel: Logger::INFO,
-                               device: 'dsnooped',
+                               device: 'plughw:1,0', # or 'hw:1,0' or 'dsnooped'
                                sync_interval: 60 * 10, # 10 minutes
                                check_record_interval: 1,
                                check_stream_interval: 1,
@@ -154,6 +154,7 @@ module Streambox
         logger.warn "Exiting..."
         exit
       end
+      # TODO callback_url needs to be part of payload
       apply_config(JSON.parse(response.body))
 
     rescue Faraday::TimeoutError
@@ -383,7 +384,7 @@ module Streambox
 
     def start_streamer
       @streamer = ResilientProcess.new(stream_cmd,
-                                       'darkice',
+                                       'liquidsoap',
                                        @config.check_stream_interval,
                                        @config.restart_stream_delay,
                                        logger)
@@ -417,7 +418,7 @@ module Streambox
       logger.info "[2] Start observers..."
       start_observer 'record'
       start_observer 'sync'
-      start_observer 'darkice'
+      start_observer 'liquidsoap'
 
       logger.info "[3] Knocking..."
       knock!
@@ -539,11 +540,11 @@ module Streambox
     end
 
     def config_template
-      File.read(File.expand_path(File.join(%w(.. .. .. darkice.cfg.erb)), __FILE__))
+      File.read(File.expand_path(File.join(%w(.. .. .. settings.liq.erb)), __FILE__))
     end
 
     def stream_cmd
-      "darkice -c #{config_path} 2>&1 > darkice.log"
+      "su -c 'liquidsoap settings.liq steamboxx.liq' pi"
     end
 
     def record_cmd
@@ -565,7 +566,7 @@ module Streambox
     end
 
     def config_path
-      'darkice.cfg'
+      'settings.liq'
     end
 
     def fire_event(event)
