@@ -63,7 +63,7 @@ end
 
 interlude = single("./streambox/loop1.wav")
 #stream = input.alsa(bufferize=false, device='hw:1,0')
-stream = input.alsa(device=alsa_device)
+stream = input.alsa(device=alsa_device, clock_safe=false)
 
 # ------------------------------ PROCESSING
 
