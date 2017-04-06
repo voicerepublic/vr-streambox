@@ -76,7 +76,7 @@ stream = fallback(track_sensitive=false, [enhanced, interlude])
 
 # ------------------------------ OUTPUT
 
-out(enhanced) # local monitoring
+output.alsa(enhanced) # local monitoring
 
 output.file(
   %vorbis,
