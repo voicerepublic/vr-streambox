@@ -90,7 +90,7 @@ output.file(
 )
 
 if icecast_host != '' then
-  output.icecast(
+  ignore(output.icecast(
     %vorbis(channels=1), # mono
     host=icecast_host,
     port=icecast_port,
@@ -103,7 +103,7 @@ if icecast_host != '' then
     on_start=icecast_start,
     on_stop=icecast_stop,
     mean(stream) # mono
-  )
+  ))
 end
 
 # ------------------------------ LIQUIDSOAP RELOAD
