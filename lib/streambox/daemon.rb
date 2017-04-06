@@ -209,15 +209,6 @@ module Streambox
       [@config.endpoint, identifier] * '/'
     end
 
-    def sound_device
-      if %x[arecord -L | grep #{@config.device}].empty?
-        logger.fatal "--- DEVICE #{@config.device} NOT FOUND, FALLBACK TO default ---"
-        'default'
-      else
-        @config.device
-      end
-    end
-
     def heartbeat
       t0 = Time.now
       response = put(device_url)
@@ -445,8 +436,8 @@ module Streambox
     def reconfigure(message={})
       logger.info "Starting stream..."
       settings = (message['icecast'] || {})
-      settings = settings.merge({device: sound_device,
-                             callback_url: callback_url})
+      settings = settings.merge({device: @config.device,
+                                 callback_url: callback_url})
       write_config!(settings)
       # HACK this makes the pairing code play loop stop
       @config.state = 'running'
