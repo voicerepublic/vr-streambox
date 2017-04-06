@@ -39,4 +39,7 @@ message 'Running bundler (installing main dependencies)...'
 
 su -c './install_liquidsoap.sh' pi
 
+# use analog out for alsa
+amixer cset numid=3 1
+
 message 'Setup done.'
