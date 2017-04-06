@@ -76,10 +76,8 @@ if [ -e /etc/systemd/system/getty.target.wants/getty@tty2.service ]; then
 fi
 
 # put minimal liq script in place for offline recording
-if [ ! -e /home/pi/streamboxx.liq ]; then
-    cp /home/pi/streambox/minimal.liq /home/pi/streamboxx.liq
-    chown pi: /home/pi/streamboxx.liq
-fi
+cp /home/pi/streambox/minimal.liq /home/pi/streamboxx.liq
+chown pi: /home/pi/streamboxx.liq
 
 # get rid of getty on tty3
 if [ -e /etc/systemd/system/getty.target.wants/getty@tty3.service ]; then
