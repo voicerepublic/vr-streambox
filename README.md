@@ -280,19 +280,25 @@ sudo nethogs
 
 ### Upgrade from pre-liquidsoap
 
-1. Box starts in pre-liquidsoap, ruby starts & detects a new release
-1. Installs liquidsoap release & reboots
-1. Box boots into liquidsoap setup
-1. The launcher installs & activates the liquidsoap.service which fails because it is not build yet
-1. The launcher enables liquidsoap.service so it will be run on next boot
-1. The launcher places minimal.liq in place of the actual liq script.
-1. launcher runs start
-1. starts runs setup
-1. setup runs install_liquidsoap (this will take a while, check tty1)
-1. While building/installing liquisoap the box constantly restarts liquidsoap.service
-1. When the build finishes, systemd succeeds in starting liquidsoap with minimal.liq
-1. Liquidsoap is recording (if there is a audio input with enough volume)
-1. At this point you can see liquidsoap running on tty3
-1. Ruby starts & waits for icecast details
-1. ruby receives new details, updates ~pi/streamboxx.liq
-1. liquidsoap restarts itself & starts streaming
+1. (prod only) box starts in pre-liquidsoap, ruby starts & detects a new release
+1. (prod only) box installs the new (liquidsoap-)release
+1. (prod only) box reboots (reboot if from-version < 40)
+1. (dev only) git pull, switch to branch liguidsoap & reboot
+1. box boots into new (liquidsoap-)release
+1. the launcher installs & starts the `liquidsoap.service`
+1. the service attempts to start liquidsoap, which fails because it isn't installed yet
+1. the `launcher.sh` enables `liquidsoap.service` so it will be run on next boot
+1. the `launcher.sh` places `minimal.liq` in place of `~pi/streamboxx.liq`
+1. `launcher.sh` runs `start.sh`
+1. `start.sh` runs `setup.sh`
+1. `setup.sh` runs `install_liquidsoap.sh` (this will take a while, check tty1)
+1. while installing/building liquidsoap the service keeps on restarting liquidsoap
+1. when the build finishes, systemd succeeds in starting liquidsoap (with `minimal.liq`)
+1. at this point you can see liquidsoap running on tty3
+1. liquidsoap is recording (if there is a audio input with enough volume, check tty1)
+1. at this point you can here audio via the raspi headphone jack
+1. ruby starts & waits for icecast details
+1. at this point you need to set up a talk and select the streambox as source
+1. ruby receives new details, updates `~pi/streamboxx.liq`
+1. liquidsoap restarts itself (monitoring `~pi/streamboxx.liq`) & starts streaming
+1. liquidsoap will also try to post events to a new endpoint which is currently only availabe in dev, this might yield some error messages
