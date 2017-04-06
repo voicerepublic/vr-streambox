@@ -1,0 +1,18 @@
+[Unit]
+Description=Liquidsoap@tty3
+#After=graphical.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi
+ExecStart=/usr/local/bin/liquidsoap -v streamboxx.liq
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty3
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

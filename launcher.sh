@@ -75,6 +75,35 @@ if [ -e /etc/systemd/system/getty.target.wants/getty@tty2.service ]; then
     reboot
 fi
 
+# put minimal liq script in place for offline recording
+if [ ! -e /home/pi/streamboxx.liq ]; then
+    cp /home/pi/streambox/minimal.liq /home/pi/streamboxx.liq
+    chown pi: /home/pi/streamboxx.liq
+fi
+
+# get rid of getty on tty3
+if [ -e /etc/systemd/system/getty.target.wants/getty@tty3.service ]; then
+    mv /etc/systemd/system/getty.target.wants/getty@tty3.service \
+       /etc/systemd/system/getty.target.wants/getty@tty4.service
+    systemctl disable getty@tty3
+fi
+
+# update systemd liquidsoap
+diff -N /etc/systemd/system/liquidsoap.service \
+     /home/pi/streambox/liquidsoap.service 2>&1 >/dev/null
+if [ $? -ne 0 ]; then
+    cp -v /home/pi/streambox/liquidsoap.service \
+       /etc/systemd/system/liquidsoap.service
+    systemctl restart liquidsoap
+    systemctl enable liquidsoap
+fi
+
+chown -R pi: /home/pi/recordings
+
+# some doc on systemd
+# http://askubuntu.com/questions/676007
+
+# migrate from repo to releases
 if [ ! -L ~pi/streambox ]; then
     message "Moving stuff around..."
     mv ~pi/streambox/setup.sh.old ~pi/

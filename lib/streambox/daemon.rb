@@ -59,13 +59,10 @@ module Streambox
       # these are just defaults
       @config = OpenStruct.new endpoint: ENDPOINT,
                                loglevel: Logger::INFO,
-                               device: 'dsnooped',
+                               device: 'plughw:1,0', # or 'plughw:1,0' or 'dsnooped'
                                sync_interval: 60 * 10, # 10 minutes
-                               check_record_interval: 1,
-                               check_stream_interval: 1,
-                               heartbeat_interval: 10,
-                               reportinterval: 60,
-                               restart_stream_delay: 6
+                               heartbeat_interval: 10, # 10 seconds
+                               report_interval: 60 # 1 minute
       @reporter = Reporter.new
     end
 
@@ -124,9 +121,9 @@ module Streambox
         # in certain states we have to react
         case state
         when :awaiting_stream, :disconnected
-          handle_start_stream(data['venue'])
+          reconfigure(data['venue'])
         when :disconnect_required
-          @streamer.stop!
+          reconfigure(data['venue'])
         end
       end
 
@@ -154,6 +151,7 @@ module Streambox
         logger.warn "Exiting..."
         exit
       end
+      # TODO callback_url needs to be part of payload
       apply_config(JSON.parse(response.body))
 
     rescue Faraday::TimeoutError
@@ -209,15 +207,6 @@ module Streambox
 
     def device_url
       [@config.endpoint, identifier] * '/'
-    end
-
-    def sound_device
-      if %x[arecord -L | grep #{@config.device}].empty?
-        logger.fatal "--- DEVICE #{@config.device} NOT FOUND, FALLBACK TO default ---"
-        'default'
-      else
-        @config.device
-      end
     end
 
     def heartbeat
@@ -312,14 +301,6 @@ module Streambox
       end
     end
 
-    def start_recording
-      @recorder = ResilientProcess.new(record_cmd,
-                                       'record.sh',
-                                       @config.check_record_interval,
-                                       0,
-                                       logger).start!
-    end
-
     def start_recording_monitor
       notifier = INotify::Notifier.new
       events = [:create, :delete, :close_write, :modify]
@@ -381,14 +362,6 @@ module Streambox
       end
     end
 
-    def start_streamer
-      @streamer = ResilientProcess.new(stream_cmd,
-                                       'darkice',
-                                       @config.check_stream_interval,
-                                       @config.restart_stream_delay,
-                                       logger)
-    end
-
     def special_check_for_reboot_required
       unless File.symlink?('/home/pi/streambox')
         logger.warn "Reboot required!"
@@ -408,25 +381,13 @@ module Streambox
                    @reporter.private_ip_address,
                    @reporter.version]
 
-      logger.info "[0] Start recording..."
-      start_recording
-
-      logger.info "[1] Start recording monitor..."
-      start_recording_monitor
-
       logger.info "[2] Start observers..."
-      start_observer 'record'
       start_observer 'sync'
-      start_observer 'darkice'
 
       logger.info "[3] Knocking..."
       knock!
       logger.info "[4] Knocking complete."
       logger.debug "Endpoint #{@config.endpoint}"
-
-      logger.info "[5] Start Streamer..."
-      start_streamer
-      logger.info "[6] Streamer started."
 
       if dev_box?
         logger.warn "[7] Dev Box detected! Skipping check for release."
@@ -441,6 +402,8 @@ module Streambox
 
       logger.info "[A] Start heartbeat..."
       start_heartbeat
+
+      start_recording_monitor
 
       logger.info "[B] Start reporting..."
       start_reporting
@@ -465,17 +428,19 @@ module Streambox
       logger.warn "Exiting."
     end
 
+    def callback_url
+      [@config.endpoint.sub('api/devices', 'streamboxx'), identifier] * '/'
+    end
+
     # { event: 'start_streaming', icecast: { ... } }
-    def handle_start_stream(message={})
+    def reconfigure(message={})
       logger.info "Starting stream..."
-      config = message['icecast'].merge(device: sound_device)
-      write_config!(config)
-      sleep 0.1 # HACK wait to make sure config file is flushed
-      @streamer.stop!
-      @streamer.start!
+      settings = (message['icecast'] || {})
+      settings = settings.merge({device: @config.device,
+                                 callback_url: callback_url})
+      write_config!(settings)
       # HACK this makes the pairing code play loop stop
       @config.state = 'running'
-      fire_event :stream_started
     end
 
     # # { event: 'eval', eval: '41+1' }
@@ -521,6 +486,7 @@ module Streambox
 
     private
 
+    # this will trigger liquidsoap to restart itself
     def write_config!(config)
       # no need to write if its the same
       return if File.exist?(config_path) && (File.read(config_path) == config)
@@ -539,15 +505,7 @@ module Streambox
     end
 
     def config_template
-      File.read(File.expand_path(File.join(%w(.. .. .. darkice.cfg.erb)), __FILE__))
-    end
-
-    def stream_cmd
-      "darkice -c #{config_path} 2>&1 > darkice.log"
-    end
-
-    def record_cmd
-      "DEVICE=%s ./record.sh" % sound_device
+      File.read(File.expand_path(File.join(%w(.. .. .. streamboxx.liq.erb)), __FILE__))
     end
 
     def sync_cmd
@@ -565,7 +523,7 @@ module Streambox
     end
 
     def config_path
-      'darkice.cfg'
+      '../streamboxx.liq'
     end
 
     def fire_event(event)
@@ -609,7 +567,7 @@ module Streambox
 
     # this only works for releases
     def reboot_required?(from, to)
-      return true if from == 27
+      return true if from < 40
 
       false
     end

@@ -58,8 +58,6 @@ with payload (example)
   public_ip_address: "1.2.3.4",
   report_interval: 30,
   heartbeat_interval: 5,
-  faye_url: "https://voicerepublic.com:9292/faye",
-  faye_secret: "12345678987654321",
   pairing_token: "1234"
 }
 ```
@@ -69,100 +67,24 @@ with payload (example)
 * `public_ip_address` the visible public ip (gateway) of the device
 * `report_interval` number of seconds between reports
 * `heartbeat_interval` number of seconds between heartbeats
-* `faye_url` the url to the faye server
-* `faye_secret` the faye secret
 * `pairing_token` a token to identify the device during pairing (coming soon)
 
-NOTE: Faye setup is subject to change, for security reasons.
+#### Publish Heartbeat
 
-### Phase 2: Start & Stop Stream (via Faye)
+**PUT /:identifier**
 
-#### Subscription
+With no payload.
 
-Using the faye details acquired upon registering, the device has to
-subscribe to the following channel:
-
-    /device/:identifier
-
-Most messages follow the following pattern (but some don't):
-
-* the key `event` describes the type of message
-* the key named after the value of `event` holds further details
-* events (as used in the streambox)
-  * `start_stream` - starts the stream, details in key `icecast`
-  * `stop_stream` - stops the stream
-  * `restart_stream` - stops and starts with previous parameters
-  * `eval` - evals the code provided in `eval`
-  * `exit` - exits the ruby process (will be restarted)
-  * `shutdown` - shuts the box down
-  * `reboot` - reboots the box
-  * `print` - print (only in loglevel debug)
-  * `heartbeat` (deprecated)
-  * `report` (deprecated)
-  * `error` - ?
-  * `handshake` - ?
-
-`start_stream` `icecast` example:
-
-```
-{
-  event: "start_stream",
-  icecast: {
-    public_ip_address: "1.2.3.4",
-    source_password: "kahsdkjs",
-    mount_point: "1732673-1298736821-19283792-1263",
-    port: 80
-  }
-}
-```
-
-#### Publish Heartbeat (required)
-
-The box publishes a heartbeat to channel
-
-    /heartbeat
-
-with payload (example)
-
-```
-{
-  identifier: "00000000000087434573245",
-  interval: 5
-}
-```
-
-with pauses of n seconds in between heartbeats, where n is given by
+With pauses of n seconds in between heartbeats, where n is given by
 `heartbeat_interval` during registering.
 
 #### Publish Report (optional)
 
-The box publishes reports to channel
+**PUT /:identifier/report**
 
-    /report
+With payload arbitrary payload.
 
-with payload (example)
-
-```
-{
-  identifier: "000000000082734873468732",
-  interval: 30,
-  report: {
-    <report details>
-  }
-}
-```
-
-with pauses of n seconds, where n is given by `report_interval` during registering.
-
-* report details depend on the device, but the output of a box can
-  comfortably be observed in the back office.
-* should/could include:
-  * load
-  * temperature
-  * usb devices
-  * audio sources
-  * bandwidth
-  * ... (more ideas in the icebox of pivotal tracker)
+With pauses of n seconds, where n is given by `report_interval` during registering.
 
 
 ## Dependencies
@@ -290,19 +212,6 @@ If the previous step didn't cause a reboot, reboot!
 
 ## Helpful commands
 
-### Remote control
-
-Send commands to box from rails console, e.g.
-
-    device = '/device/000000008ff66473'
-    Faye.publish_to device, event: 'eval', eval: '21*2'
-    Faye.publish_to device, event: 'exit'
-    Faye.publish_to device, event: 'reboot'
-    Faye.publish_to device, event: 'shutdown'
-    Faye.publish_to device, event: 'start_stream', icecast: {...}
-    Faye.publish_to device, event: 'stop_stream'
-
-
 ### Force Restart (kill running ruby processes)
 
     sudo killall ruby
@@ -366,8 +275,29 @@ sudo nethogs
 * https://www.raspberrypi.org/documentation/configuration/config-txt.md
 
 
-## Notes
+## Thought experiements
 
-```
-alsactl
-```
+### Upgrade from pre-liquidsoap
+
+1. (prod only) box starts in pre-liquidsoap, ruby starts & detects a new release
+1. (prod only) box installs the new (liquidsoap-)release
+1. (prod only) box reboots (reboot if from-version < 40)
+1. (dev only) git pull, switch to branch liguidsoap & reboot
+1. box boots into new (liquidsoap-)release
+1. the launcher installs & starts the `liquidsoap.service`
+1. the service attempts to start liquidsoap, which fails because it isn't installed yet
+1. the `launcher.sh` enables `liquidsoap.service` so it will be run on next boot
+1. the `launcher.sh` places `minimal.liq` in place of `~pi/streamboxx.liq`
+1. `launcher.sh` runs `start.sh`
+1. `start.sh` runs `setup.sh`
+1. `setup.sh` runs `install_liquidsoap.sh` (this will take a while, check tty1)
+1. while installing/building liquidsoap the service keeps on restarting liquidsoap
+1. when the build finishes, systemd succeeds in starting liquidsoap (with `minimal.liq`)
+1. at this point you can see liquidsoap running on tty3
+1. liquidsoap is recording (if there is a audio input with enough volume, check tty1)
+1. at this point you can here audio via the raspi headphone jack
+1. ruby starts & waits for icecast details
+1. at this point you need to set up a talk and select the streambox as source
+1. ruby receives new details, updates `~pi/streamboxx.liq`
+1. liquidsoap restarts itself (monitoring `~pi/streamboxx.liq`) & starts streaming
+1. liquidsoap will also try to post events to a new endpoint which is currently only availabe in dev, this might yield some error messages
