@@ -42,4 +42,9 @@ su -c './install_liquidsoap.sh' pi
 # use analog out for alsa
 amixer cset numid=3 1
 
+# mask some gettys
+systemctl mask getty@tty1
+systemctl mask getty@tty2
+systemctl mask getty@tty3
+
 message 'Setup done.'
