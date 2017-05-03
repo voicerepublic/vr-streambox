@@ -40,18 +40,18 @@ curl -s -L https://voicerepublic.com/releases/failsafe | bash
 # )
 
 # set the dev box flag
-BRANCH=`(cd $DIR && test -e .git && git rev-parse --abbrev-ref HEAD)`
-if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
-    message "Woot! This is a dev box! Living on the egde..."
-    touch /boot/dev_box
-fi
+#BRANCH=`(cd $DIR && test -e .git && git rev-parse --abbrev-ref HEAD)`
+#if [ "$BRANCH" != "" -a "$BRANCH" != "master" ]; then
+#    message "Woot! This is a dev box! Living on the egde..."
+#    touch /boot/dev_box
+#fi
 
 # just for debugging
 SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
 PRIVATE_IP=`hostname -I | cut -d ' ' -f 1`
 VERSION=`cat $DIR/VERSION`
 NAME="Streamboxx"
-if [ -e /boot/dev_box ]; then
+if [ -e $DIR/.git ]; then
     NAME="Streamboxx DEV"
 fi
 URL="https://voicerepublic.com:444/admin/devices/$SERIAL"
@@ -125,19 +125,6 @@ do
         message "Reboot requested..."
         rm /boot/reboot
         reboot
-    fi
-
-    # update dev boxes
-    if [ -e /boot/dev_box ]; then
-        message 'Provisioning keys...'
-        mkdir -p /root/.ssh
-        cp $DIR/id_rsa* /root/.ssh
-        chmod 600 /root/.ssh/id_rsa*
-
-        message 'Updating via GIT...'
-        rm ~pi/streambox
-        ln -sf streambox-repo ~pi/streambox
-        (cd $DIR && ./update_repository.sh)
     fi
 
     # start

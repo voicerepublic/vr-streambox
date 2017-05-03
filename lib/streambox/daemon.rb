@@ -372,7 +372,7 @@ module Streambox
     def run
       at_exit { fire_event :restart }
 
-      @config.loglevel = Logger::DEBUG if dev_box?
+      #@config.loglevel = Logger::DEBUG if dev_box?
 
       special_check_for_reboot_required
 
@@ -389,12 +389,8 @@ module Streambox
       logger.info "[4] Knocking complete."
       logger.debug "Endpoint #{@config.endpoint}"
 
-      if dev_box?
-        logger.warn "[7] Dev Box detected! Skipping check for release."
-      else
-        logger.warn "[7] Checking for release..."
-        check_for_release
-      end
+      logger.warn "[7] Checking for release..."
+      check_for_release
 
       logger.info "[8] Registering..."
       register!
@@ -531,21 +527,47 @@ module Streambox
     end
 
     def dev_box?
-       File.exist?('/boot/dev_box')
+      !expected_release.match(/^\d+$/)
     end
 
-    def check_for_release
+    def current_release
+      @reporter.version
+    end
+
+    def expected_release
+      expected = @config.release
+      expected = nil if expected && expected.empty?
+      expected || recent_release
+    end
+
+    def recent_release
       response = faraday.get 'https://voicerepublic.com/versions/streamboxx'
-      version = response.body.to_i
+      response.body.to_i
+    end
 
-      logger.debug 'Installed release %s, announced release %s.' %
-                   [@reporter.version, version]
-
-      if version > @reporter.version
-        logger.info 'Newer release available. Updating...'
-        install_release(@reporter.version, version)
+    # if EXPECTED == nil
+    #   then lookup whats the most recent and set it as EXPECTED
+    # if EXPECTED does not match the release pattern /^\d+$/
+    #   then switch to repo and use EXPECTED as branch
+    # if EXPECTED == CURRENT do nothing
+    # if EXPECTED != CURRENT install EXPECTED
+    def check_for_release
+      if dev_box?
+        # switch to repo & expected branch
+        system "./switch_to_repo.sh #{expected_release}"
+        logger.warn 'Exit for restart...'
+        exit
       else
-        logger.info 'Already up-to-date.'
+        logger.debug 'Current release %s, expected release %s.' %
+                     [current_release, expected_release]
+
+        # disallows downgrades
+        if expected_release > current_release
+          logger.info 'Installing expected release. Updating...'
+          install_release(current_release, expected_release)
+        else
+          logger.info 'Already up-to-date.'
+        end
       end
     end
 
