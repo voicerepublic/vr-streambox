@@ -542,7 +542,7 @@ module Streambox
 
     def recent_release
       response = faraday.get 'https://voicerepublic.com/versions/streamboxx'
-      response.body.to_i
+      response.body
     end
 
     def current_branch
@@ -570,7 +570,7 @@ module Streambox
                      [current_release, expected_release]
 
         # disallows downgrades
-        if expected_release > current_release
+        if expected_release.to_i > current_release
           logger.info 'Installing expected release. Updating...'
           install_release(current_release, expected_release)
         else
