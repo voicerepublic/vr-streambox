@@ -560,8 +560,9 @@ module Streambox
         if current_branch != expected_release
           # switch to repo & expected branch
           system "./switch_to_repo.sh #{expected_release}"
-          logger.warn 'Exit for restart...'
-          exit
+          logger.warn 'Reboot...'
+          system 'reboot'
+          return
         else
           logger.info "Already on branch #{expected_release}. All good."
         end
