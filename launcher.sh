@@ -127,6 +127,16 @@ do
         reboot
     fi
 
+    # update dev box
+    if [ -e $DIR/.git ]; then
+        message 'Provisioning keys...'
+        mkdir -p /root/.ssh
+        cp $DIR/id_rsa* /root/.ssh
+        chmod 600 /root/.ssh/id_rsa*
+        message 'Updating via GIT...'
+        (cd $DIR && ./update_repository.sh)
+    fi
+
     # start
     (cd $DIR && ./start.sh)
 
