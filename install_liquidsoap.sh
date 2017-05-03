@@ -9,7 +9,7 @@ opam init --yes
 # speed up by placing precompiled opam folder
 ( cd ..
   wget http://voicerepublic.com/releases/opam.tar.gz
-  tar xfvz opam.tar.gz
+  tar xfz opam.tar.gz --totals
   rm opam.tar.gz )
 
 opam install --yes taglib mad lame vorbis cry alsa liquidsoap
@@ -20,6 +20,6 @@ opam install --yes taglib mad lame vorbis cry alsa liquidsoap
 # CHECK this might need a reboot
 sudo usermod -aG audio pi
 
-sudo ln -s /home/pi/.opam/system/bin/liquidsoap /usr/local/bin/liquidsoap
+sudo ln -sf /home/pi/.opam/system/bin/liquidsoap /usr/local/bin/liquidsoap
 
 echo 'Installation of liquidsoap complete.'

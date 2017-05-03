@@ -545,6 +545,10 @@ module Streambox
       response.body.to_i
     end
 
+    def current_branch
+      %x[test -e .git && git rev-parse --abbrev-ref HEAD].chomp
+    end
+
     # if EXPECTED == nil
     #   then lookup whats the most recent and set it as EXPECTED
     # if EXPECTED does not match the release pattern /^\d+$/
@@ -553,10 +557,14 @@ module Streambox
     # if EXPECTED != CURRENT install EXPECTED
     def check_for_release
       if dev_box?
-        # switch to repo & expected branch
-        system "./switch_to_repo.sh #{expected_release}"
-        logger.warn 'Exit for restart...'
-        exit
+        if current_branch != expected_release
+          # switch to repo & expected branch
+          system "./switch_to_repo.sh #{expected_release}"
+          logger.warn 'Exit for restart...'
+          exit
+        else
+          logger.info "Already on branch #{expected_release}. All good."
+        end
       else
         logger.debug 'Current release %s, expected release %s.' %
                      [current_release, expected_release]
