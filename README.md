@@ -301,3 +301,32 @@ sudo nethogs
 1. ruby receives new details, updates `~pi/streamboxx.liq`
 1. liquidsoap restarts itself (monitoring `~pi/streamboxx.liq`) & starts streaming
 1. liquidsoap will also try to post events to a new endpoint which is currently only availabe in dev, this might yield some error messages
+
+
+## Glossary
+
+* DSD - Direct Stream Digital
+* DoP - DSD over PCM
+* PCM - Pulse-code modulation
+* PWM - Pulse Width Modulation
+* CPLD - complex programmable logic device
+* DAC - Digital Analog Converter
+* ADC - Analog Digital Converter
+* I2S - Inter-IC Sound
+* SPDIF -
+* ASoC - ALSA System on Chip
+* DAI
+
+## Upgrade RasPI
+
+As root (time to grab a coffee, this will take a while)
+
+```
+apt-get update
+apt-get dist-upgrade
+apt-get install raspberrypi-kernel-headers
+```
+
+## References
+
+* https://www.alsa-project.org/main/index.php/ASoC
