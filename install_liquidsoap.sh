@@ -6,6 +6,8 @@ sudo apt-get install -y \
 
 opam init --yes
 
+pwd
+
 # speed up by placing precompiled opam folder
 wget http://voicerepublic.com/releases/opam.tar.gz
 tar xfvz opam.tar.gz
