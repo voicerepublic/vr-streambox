@@ -22,7 +22,7 @@ else
 fi
 
 message 'Installing base dependencies...'
-sudo apt-get -y --force-yes install ruby ruby-dev toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq sox htpdate lsof time ifplugd jq screen
+sudo apt-get -y --force-yes -o Dpkg::Options::=--force-confnew install ruby ruby-dev toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq sox htpdate lsof time ifplugd jq screen
 
 
 message 'Installing bundler...'
