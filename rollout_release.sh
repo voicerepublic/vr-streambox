@@ -2,6 +2,8 @@
 
 set -e
 
+# TODO exit if GITLAB_TOKEN is not set
+
 VERSION=$((`cat VERSION`+1))
 
 echo $VERSION > VERSION
