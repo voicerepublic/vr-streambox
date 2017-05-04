@@ -573,7 +573,7 @@ module Streambox
         # disallows downgrades
         if expected_release.to_i > current_release
           logger.info 'Installing expected release. Updating...'
-          install_release(current_release, expected_release)
+          install_release(current_release, expected_release.to_i)
         else
           logger.info 'Already up-to-date.'
         end
