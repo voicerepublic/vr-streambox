@@ -364,3 +364,9 @@ sudo nethogs
 ## References
 
 * https://www.raspberrypi.org/documentation/configuration/config-txt.md
+
+## Cross Compile A Kernel for RasPI
+
+```
+git clone https://github.com/raspberrypi/tools
+```

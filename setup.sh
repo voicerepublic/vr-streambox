@@ -16,7 +16,8 @@ if [ $? -eq 0 ]; then
     message 'All good!'
 else
     message 'Update failed, attempt to fix...'
-    sudo dpkg --configure -a
+    sudo su -c "DEBIAN_FRONTEND=noninteractive dpkg --configure -a"
+    # retry
     sudo apt-get update
 fi
 
