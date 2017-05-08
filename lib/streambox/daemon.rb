@@ -387,7 +387,8 @@ module Streambox
       logger.info "[3] Knocking..."
       knock!
       logger.info "[4] Knocking complete."
-      logger.debug "Endpoint #{@config.endpoint}"
+      logger.debug "Release:  #{@config.relese}"
+      logger.debug "Endpoint: #{@config.endpoint}"
 
       logger.warn "[7] Checking for release..."
       check_for_release
