@@ -305,17 +305,19 @@ sudo nethogs
 
 ## Glossary
 
-* DSD - Direct Stream Digital
-* DoP - DSD over PCM
-* PCM - Pulse-code modulation
-* PWM - Pulse Width Modulation
-* CPLD - complex programmable logic device
-* DAC - Digital Analog Converter
-* ADC - Analog Digital Converter
-* I2S - Inter-IC Sound
-* SPDIF -
-* ASoC - ALSA System on Chip
-* DAI
+* DSD   - Direct Stream Digital
+* DoP   - DSD over PCM
+* PCM   - Pulse-code modulation
+* PWM   - Pulse Width Modulation
+* CPLD  - complex programmable logic device
+* DAC   - Digital Analog Converter
+* ADC   - Analog Digital Converter
+* I2S   - Inter-IC Sound
+* SPDIF - Sony/Philips Digital Interface Format
+* ASoC  - ALSA System on Chip
+* DAI   - Direct Audio Input
+* SPI   - Serial Peripheral Interface bus
+* I2C   - Inter-Integrated Circuit
 
 ## Upgrade RasPI
 
@@ -323,8 +325,18 @@ As root (time to grab a coffee, this will take a while)
 
 ```
 apt-get update
-apt-get dist-upgrade
-apt-get install raspberrypi-kernel-headers
+apt-get -y dist-upgrade
+apt-get -y install raspberrypi-kernel-headers
+apt-get -y install linux-image-rpi-rpfv linux-headers-rpi-rpfv
+cd /lib/modules/`uname -r`/build
+make menuconfig
+```
+Follow the instructions to enable modules
+
+* https://wiki.analog.com/resources/tools-software/linux-drivers/sound/ssm2602
+
+```
+make modules
 ```
 
 ## References
