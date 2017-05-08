@@ -559,6 +559,7 @@ module Streambox
       if dev_box?
         if current_branch != expected_release
           # switch to repo & expected branch
+          logger.warn "Switching to repo..."
           system "./switch_to_repo.sh #{expected_release}"
           logger.warn 'Reboot...'
           system 'reboot'
