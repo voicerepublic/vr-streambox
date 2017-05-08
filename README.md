@@ -270,6 +270,7 @@ nethogs -V
 sudo nethogs
 ```
 
+
 ## References
 
 * https://www.raspberrypi.org/documentation/configuration/config-txt.md
@@ -342,3 +343,10 @@ make modules
 ## References
 
 * https://www.alsa-project.org/main/index.php/ASoC
+
+
+## Cross Compile A Kernel for RasPI
+
+```
+git clone https://github.com/raspberrypi/tools
+```

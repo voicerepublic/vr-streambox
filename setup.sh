@@ -16,12 +16,13 @@ if [ $? -eq 0 ]; then
     message 'All good!'
 else
     message 'Update failed, attempt to fix...'
-    sudo dpkg --configure -a
+    sudo dpkg --configure -a --force-confnew
+    # retry
     sudo apt-get update
 fi
 
 message 'Installing base dependencies...'
-sudo apt-get -y --force-yes install ruby ruby-dev toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq sox htpdate lsof time ifplugd jq screen
+sudo apt-get -y --force-yes -o Dpkg::Options::=--force-confnew install ruby ruby-dev toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq sox htpdate lsof time ifplugd jq screen
 
 
 message 'Installing bundler...'

@@ -567,13 +567,13 @@ module Streambox
           logger.info "Already on branch #{expected_release}. All good."
         end
       else
-        logger.debug 'Current release %s, expected release %s.' %
-                     [current_release, expected_release]
+        logger.info 'Current release %s, expected release %s.' %
+                    [current_release, expected_release.to_i]
 
         # disallows downgrades
         if expected_release.to_i > current_release
           logger.info 'Installing expected release. Updating...'
-          install_release(current_release, expected_release)
+          install_release(current_release, expected_release.to_i)
         else
           logger.info 'Already up-to-date.'
         end
@@ -581,10 +581,13 @@ module Streambox
     end
 
     def install_release(from, to)
-      system "./install_release.sh"
+      logger.info 'Upgrading from %s to %s...' %
+                  [current_release, expected_release.to_i]
+
+      system "./install_release.sh #{expected_release.to_i}"
 
       id_link = slack_link(identifier, SLACK_LINK + identifier)
-      slack('Upgraded Streamboxx %s from v%s to v%s.' % [id_link, from, to])
+      slack('Upgrading Streamboxx %s from v%s to v%s...' % [id_link, from, to])
 
       if reboot_required?(from, to)
         logger.warn 'Rebooting...'
