@@ -4,10 +4,12 @@ sudo apt-get install -y --force-yes \
      opam m4 libtag1-dev libogg-dev libvorbis-dev \
      libmad0-dev libmp3lame-dev libpcre3-dev libasound2-dev pv
 
+if [ ! -d ../.opam ]; then
+
 # speed up by placing precompiled opam folder
 ( cd ..
   echo
-  echo "Fetching pre built opam..."
+  echo "Fetching prebuilt opam..."
   echo
   wget http://voicerepublic.com/releases/opam.tar.gz
   echo "Unpacking opam..."
@@ -16,6 +18,8 @@ sudo apt-get install -y --force-yes \
   echo
   pv opam.tar.gz | tar xz
   rm opam.tar.gz )
+
+fi
 
 opam init --yes
 opam install --yes taglib mad lame vorbis cry alsa liquidsoap

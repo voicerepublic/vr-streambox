@@ -319,6 +319,7 @@ sudo nethogs
 * DAI   - Direct Audio Input
 * SPI   - Serial Peripheral Interface bus
 * I2C   - Inter-Integrated Circuit
+* DPAM  - Dynamic Audio Power Management (ALSA)
 
 ## Upgrade RasPI
 
