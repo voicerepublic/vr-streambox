@@ -1,13 +1,15 @@
 #!/bin/sh
 
-echo "Installing new release..."
+#VERSION=`curl -s -L https://voicerepublic.com/versions/streamboxx`
+VERSION=$1
 
-VERSION=`curl -s -L https://voicerepublic.com/versions/streamboxx`
+echo "Installing release $VERSION..."
+
 SOURCE="https://voicerepublic.com/releases/streambox-v$VERSION.tar.gz"
 
 curl -s -L "$SOURCE" > ../archive.tar.gz
 
-(cd ..; tar xfz archive.tar.gz)
+(cd ..; tar xfz archive.tar.gz; rm archive.tar.gz)
 
 RECENT=`ls -dArt ../streambox-v* | tail -n 1`
 

@@ -39,7 +39,8 @@
        ifconfig eth0 | head -3; \
        ifconfig wlan0 | head -3; \
        iwconfig wlan0 | head -3; \
-       service dnsmasq status"
+       service dnsmasq status; \
+       service liquidsoap status"
 
 #else
 

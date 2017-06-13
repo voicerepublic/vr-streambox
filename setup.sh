@@ -16,12 +16,14 @@ if [ $? -eq 0 ]; then
     message 'All good!'
 else
     message 'Update failed, attempt to fix...'
-    sudo dpkg --configure -a
+    sudo dpkg --configure -a --force-confnew
+    # retry
     sudo apt-get update
 fi
 
 message 'Installing base dependencies...'
-sudo apt-get -y install ruby ruby-dev darkice toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq sox htpdate lsof time ifplugd
+sudo apt-get -y --force-yes -o Dpkg::Options::=--force-confnew install ruby ruby-dev toilet libssl-dev python-pip vorbis-tools hostapd dnsmasq sox htpdate lsof time ifplugd jq screen
+
 
 message 'Installing bundler...'
 sudo gem install bundler --force --no-ri --no-rdoc
@@ -37,5 +39,14 @@ sudo pip install awscli
 message 'Running bundler (installing main dependencies)...'
 (cd $DIR && bundle install)
 
+su -c './install_liquidsoap.sh' pi
+
+# use analog out for alsa
+amixer cset numid=3 1
+
+# mask some gettys
+systemctl mask getty@tty1
+systemctl mask getty@tty2
+systemctl mask getty@tty3
 
 message 'Setup done.'

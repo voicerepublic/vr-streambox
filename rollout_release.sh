@@ -2,6 +2,8 @@
 
 set -e
 
+# TODO exit if GITLAB_TOKEN is not set
+
 VERSION=$((`cat VERSION`+1))
 
 echo $VERSION > VERSION
@@ -35,7 +37,7 @@ echo '==============='
 echo
 
 TEXT="Streamboxx Release v$VERSION is now LIVE."
-JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":star2:","username":"streambox"}'
+JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":star2:","username":"streamboxx"}'
 curl -X POST -H 'Content-type: application/json' --data "$JSON" \
      https://hooks.slack.com/services/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
 echo
