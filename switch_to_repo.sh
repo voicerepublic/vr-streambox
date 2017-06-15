@@ -17,6 +17,7 @@ ln -sf streambox-repo ~pi/streambox
 echo "Updating repository, switching to branch $BRANCH..."
 (cd $DIR
  git fetch origin $BRANCH
+ git checkout -t origin/$BRANCH || git checkout $BRANCH
  git reset --hard origin/$BRANCH
  sync
  echo "Complete.")
