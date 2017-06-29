@@ -271,6 +271,10 @@ sudo nethogs
 ```
 
 
+`sudo streambox/switch_to_repo.sh fix/wifi-ap`
+
+
+
 ## References
 
 * https://www.raspberrypi.org/documentation/configuration/config-txt.md
@@ -319,6 +323,7 @@ sudo nethogs
 * DAI   - Direct Audio Input
 * SPI   - Serial Peripheral Interface bus
 * I2C   - Inter-Integrated Circuit
+* DPAM  - Dynamic Audio Power Management (ALSA)
 
 ## Upgrade RasPI
 

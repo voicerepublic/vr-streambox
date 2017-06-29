@@ -111,9 +111,9 @@ if [ ! -L ~pi/streambox ]; then
     reboot
 fi
 
+$DIR/wifi-ap/wifi-ap.sh init
 # start ifplugd to setup wlan / access point depending on ethernet connection
-#/home/pi/streambox/wifi-ap/wifi-ap.sh
-#command -v ifplugd >/dev/null 2>&1 && ifplugd -b -f -u 5 -d 5 -r /home/pi/streambox/wifi-ap/wifi-ap.sh
+command -v ifplugd >/dev/null 2>&1 && ifplugd -b -f -u 5 -d 5 -r $DIR/wifi-ap/wifi-ap.sh
 
 message "Entering restart loop..."
 
