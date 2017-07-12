@@ -258,7 +258,7 @@ module Streambox
           value = data.inject{ |sum, el| sum + el }.to_f / data.size
           amp = ((value / 0xffff) * 24).to_i.abs
           pat = '1' * amp + '0' * (24 - amp)
-          logger.debug [data, value, amp, pat] * ' '
+          # logger.debug [data, value, amp, pat] * ' '
           ledbar.set(:green, pat)
           ledbar.update!
           sleep 0.025
