@@ -228,7 +228,7 @@ module Streambox
       logger.error "Error: Heartbeat could not parse JSON."
     end
 
-    CHUNK_SIZE = 32
+    CHUNK_SIZE = 2
 
     def start_pcm_drain
       Thread.new do
@@ -255,10 +255,12 @@ module Streambox
         loop do
           # amp = (amp + 1) % 25
           data = $pcm.unpack("s#{CHUNK_SIZE/2}")
-          value = data.inject{ |sum, el| sum + el.abs }.to_f / data.size
-          amp = ((value / (0xffff / 2)) * 24).to_i
+          # value = data.inject{ |sum, el| sum + el.abs }.to_f / data.size
+          value = data.first.abs
+          factor = value / (0xffff / 2)
+          amp = (factor * 24).to_i
           pat = '1' * amp + '0' * (24 - amp)
-          logger.debug [data, value, amp, pat] * ' '
+          logger.debug [amp, value, factor, data] * ' '
           ledbar.set(:green, pat)
           ledbar.update!
           sleep 1.0 / 24
