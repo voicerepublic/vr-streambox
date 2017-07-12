@@ -249,6 +249,7 @@ module Streambox
         ledbar = Bicolor24.new(0x70)
         ledbar.init!
         amp = 0
+        sleep 0.025 while self.pcm.nil?
         loop do
           # amp = (amp + 1) % 25
           data = self.pcm.unpack('S')
