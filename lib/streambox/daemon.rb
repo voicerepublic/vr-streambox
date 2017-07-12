@@ -228,7 +228,7 @@ module Streambox
       logger.error "Error: Heartbeat could not parse JSON."
     end
 
-    CHUNK_SIZE = 4
+    CHUNK_SIZE = 2
 
     def start_pcm_drain
       Thread.new do
