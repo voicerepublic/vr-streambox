@@ -255,8 +255,8 @@ module Streambox
         loop do
           # amp = (amp + 1) % 25
           data = $pcm.unpack("s#{CHUNK_SIZE/2}")
-          value = data.inject{ |sum, el| sum + el }.to_f / data.size
-          amp = ((value / (0xffff / 2)) * 24).to_i.abs
+          value = data.inject{ |sum, el| sum + el.abs }.to_f / data.size
+          amp = ((value / (0xffff / 2)) * 24).to_i
           pat = '1' * amp + '0' * (24 - amp)
           logger.debug [data, value, amp, pat] * ' '
           ledbar.set(:green, pat)
