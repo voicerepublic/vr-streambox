@@ -228,7 +228,7 @@ module Streambox
     end
 
     def start_pcm_drain
-      Tread.new do
+      Thread.new do
         # the r+ means we don't block
         input = open("my_pipe", "r+")
         loop do
