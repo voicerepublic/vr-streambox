@@ -257,7 +257,7 @@ module Streambox
           data = $pcm.unpack("s#{CHUNK_SIZE/2}")
           # value = data.inject{ |sum, el| sum + el.abs }.to_f / data.size
           value = data.first.abs
-          factor = value / (0xffff / 2)
+          factor = value.to_f / (0xffff / 2)
           amp = (factor * 24).to_i
           pat = '1' * amp + '0' * (24 - amp)
           logger.debug [amp, value, factor, data] * ' '
