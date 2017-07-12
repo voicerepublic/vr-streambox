@@ -254,9 +254,9 @@ module Streambox
         logger.debug "Enter visualizer loop..."
         loop do
           # amp = (amp + 1) % 25
-          data = $pcm.unpack('S16')
+          data = $pcm.unpack('s16')
           value = data.inject{ |sum, el| sum + el }.to_f / data.size
-          amp = ((value / 0xffff) * 24).to_i.abs
+          amp = ((value / (0xffff / 2)) * 24).to_i.abs
           pat = '1' * amp + '0' * (24 - amp)
           # logger.debug [data, value, amp, pat] * ' '
           ledbar.set(:green, pat)
