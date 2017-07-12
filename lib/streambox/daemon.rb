@@ -235,7 +235,7 @@ module Streambox
         input = open(fifo, "r+")
         loop do
           # will block if there's nothing in the pipe
-          input.read(32, $pcm)
+          $pcm = input.read(32)
           # .unpack('S') # 2 byte = 16 bit
           #amp = ((data / 0xffff) * 24).to_i
         end
@@ -247,10 +247,13 @@ module Streambox
         ledbar = Bicolor24.new(0x70)
         ledbar.init!
         amp = 0
-        sleep 0.025 while $pcm.nil?
+        while $pcm.nil?
+          logger.debug "Waiting for pcm data..."
+          sleep 1
+        end
         logger.debug "Enter visualizer loop..."
         loop do
-          #amp = (amp + 1) % 25
+          # amp = (amp + 1) % 25
           data = $pcm.unpack('S16')
           value = data.inject{ |sum, el| sum + el }.to_f / data.size
           amp = ((value / 0xffff) * 24).to_i.abs
