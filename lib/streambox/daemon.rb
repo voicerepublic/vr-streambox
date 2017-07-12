@@ -230,7 +230,7 @@ module Streambox
     def start_pcm_drain
       Thread.new do
         # the r+ means we don't block
-        fifo = './pcm'
+        fifo = '../pcm'
         input = open(fifo, "r+")
         loop do
           # will block if there's nothing in the pipe
