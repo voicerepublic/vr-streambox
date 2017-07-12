@@ -16,6 +16,7 @@ require "streambox/version"
 require "streambox/reporter"
 require "streambox/resilient_process"
 require "streambox/banner"
+require "streambox/leds.rb"
 
 # Test if an Icecast Server is Running on the given target
 # curl -D - http://192.168.178.21:8000/ | grep Icecast
@@ -229,12 +230,18 @@ module Streambox
 
     def start_pcm_drain
       Thread.new do
+        ledbar = Bicolor24.new(0x70)
+        ledbar.init!
         # the r+ means we don't block
         fifo = '../pcm'
         input = open(fifo, "r+")
         loop do
           # will block if there's nothing in the pipe
           data = input.read(2).unpack('n') # 2 byte = 16 bit
+          amp = ((data / 0xffff) * 24).to_i
+          pat = '1' * amp + '0' * (23 - amp)
+          ledbar.set(:green, pat)
+          ledbar.update!
         end
       end
     end
