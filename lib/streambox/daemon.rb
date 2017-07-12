@@ -252,10 +252,10 @@ module Streambox
         sleep 0.025 while self.pcm.nil?
         loop do
           # amp = (amp + 1) % 25
-          data = self.pcm.unpack('S')
-          value = data.inject{ |sum, el| sum + el }.to_f / data.size
-          amp = ((value / 0xffff) * 24).to_i.abs
-          pat = '1' * amp + '0' * (24 - amp)
+          p data = self.pcm.unpack('S')
+          p value = data.inject{ |sum, el| sum + el }.to_f / data.size
+          p amp = ((value / 0xffff) * 24).to_i.abs
+          p pat = '1' * amp + '0' * (24 - amp)
           ledbar.set(:green, pat)
           ledbar.update!
           sleep 0.025
