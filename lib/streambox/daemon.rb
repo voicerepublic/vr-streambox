@@ -235,10 +235,12 @@ module Streambox
         # the r+ means we don't block
         fifo = '../pcm'
         input = open(fifo, "r+")
+        amp = 0
         loop do
           # will block if there's nothing in the pipe
           data = input.read(2).unpack('n').first # 2 byte = 16 bit
-          amp = ((data / 0xffff) * 24).to_i
+          #amp = ((data / 0xffff) * 24).to_i
+          amp = (amp + 1) % 24
           pat = '1' * amp + '0' * (23 - amp)
           ledbar.set(:green, pat)
           ledbar.update!
