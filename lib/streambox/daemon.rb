@@ -234,7 +234,7 @@ module Streambox
         input = open(fifo, "r+")
         loop do
           # will block if there's nothing in the pipe
-          puts input.read(2).unpack('n') # 2 byte = 16 bit
+          data = input.read(2).unpack('n') # 2 byte = 16 bit
         end
       end
     end
