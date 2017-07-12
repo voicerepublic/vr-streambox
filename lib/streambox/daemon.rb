@@ -228,6 +228,8 @@ module Streambox
       logger.error "Error: Heartbeat could not parse JSON."
     end
 
+    attr_accessor :pcm
+
     def start_pcm_drain
       Thread.new do
         # the r+ means we don't block
@@ -235,7 +237,8 @@ module Streambox
         input = open(fifo, "r+")
         loop do
           # will block if there's nothing in the pipe
-          data = input.read(2).unpack('n').first # 2 byte = 16 bit
+          input.read(32, self.pcm)
+          # .unpack('S') # 2 byte = 16 bit
           #amp = ((data / 0xffff) * 24).to_i
         end
       end
@@ -247,11 +250,14 @@ module Streambox
         ledbar.init!
         amp = 0
         loop do
-          amp = (amp + 1) % 24
+          # amp = (amp + 1) % 25
+          data = self.pcm.unpack('S')
+          value = data.inject{ |sum, el| sum + el }.to_f / data.size
+          amp = ((value / 0xffff) * 24).to_i.abs
           pat = '1' * amp + '0' * (24 - amp)
           ledbar.set(:green, pat)
           ledbar.update!
-          sleep 0.05
+          sleep 0.025
         end
       end
 
