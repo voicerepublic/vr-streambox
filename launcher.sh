@@ -98,6 +98,11 @@ fi
 
 chown -R pi: /home/pi/recordings
 
+# create named pipe for pcm
+if [ ! -e /home/pi/pcm ]; then
+    mkfifo /home/pi/pcm
+fi
+
 # some doc on systemd
 # http://askubuntu.com/questions/676007
 
