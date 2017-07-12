@@ -230,22 +230,31 @@ module Streambox
 
     def start_pcm_drain
       Thread.new do
-        ledbar = Bicolor24.new(0x70)
-        ledbar.init!
         # the r+ means we don't block
         fifo = '../pcm'
         input = open(fifo, "r+")
-        amp = 0
         loop do
           # will block if there's nothing in the pipe
           data = input.read(2).unpack('n').first # 2 byte = 16 bit
           #amp = ((data / 0xffff) * 24).to_i
-          amp = (amp + 1) % 24
-          pat = '1' * amp + '0' * (23 - amp)
-          ledbar.set(:green, pat)
-          ledbar.update!
         end
       end
+    end
+
+    def start_visualizer
+      Thread.new do
+        ledbar = Bicolor24.new(0x70)
+        ledbar.init!
+        amp = 0
+        loop do
+          amp = (amp + 1) % 24
+          pat = '1' * amp + '0' * (24 - amp)
+          ledbar.set(:green, pat)
+          ledbar.update!
+          sleep 0.05
+        end
+      end
+
     end
 
     def start_observer(name)
@@ -403,6 +412,7 @@ module Streambox
                    @reporter.version]
 
       start_pcm_drain
+      start_visualizer
 
       logger.info "[2] Start observers..."
       start_observer 'sync'
