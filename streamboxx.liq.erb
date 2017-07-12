@@ -89,12 +89,12 @@ output.file(
   enhanced
 )
 
-#output.file(
-#  %wav(channels=1,header=false),
-#  "./pcm",
-#  fallible=true,
-#  mean(enhanced)
-#)
+output.file(
+  %wav(channels=1,header=false),
+  "./pcm",
+  fallible=true,
+  mean(enhanced)
+)
 
 if icecast_host != '' then
   ignore(output.icecast(

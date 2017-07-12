@@ -227,6 +227,17 @@ module Streambox
       logger.error "Error: Heartbeat could not parse JSON."
     end
 
+    def start_pcm_drain
+      Tread.new do
+        # the r+ means we don't block
+        input = open("my_pipe", "r+")
+        loop do
+          # will block if there's nothing in the pipe
+          puts input.read(2).unpack('n') # 2 byte = 16 bit
+        end
+      end
+    end
+
     def start_observer(name)
       file = name + '.log'
       File.unlink(file) if File.exist?(file) and File.ftype(file) != 'fifo'
@@ -381,6 +392,8 @@ module Streambox
                    @reporter.private_ip_address,
                    @reporter.version]
 
+      start_pcm_drain
+
       logger.info "[2] Start observers..."
       start_observer 'sync'
 
@@ -487,6 +500,8 @@ module Streambox
     def write_config!(config)
       # no need to write if its the same
       return if File.exist?(config_path) && (File.read(config_path) == config)
+
+      logger.info "Installed updated config."
 
       File.open(config_path, 'w') do |f|
         f.write(render_config(config))
