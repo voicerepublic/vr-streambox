@@ -235,7 +235,7 @@ module Streambox
         input = open(fifo, "r+")
         loop do
           # will block if there's nothing in the pipe
-          $pcm = input.read(32)
+          $pcm = input.read(256)
           # .unpack('S') # 2 byte = 16 bit
           #amp = ((data / 0xffff) * 24).to_i
         end
@@ -254,14 +254,14 @@ module Streambox
         logger.debug "Enter visualizer loop..."
         loop do
           # amp = (amp + 1) % 25
-          data = $pcm.unpack('s16')
+          data = $pcm.unpack('s128')
           value = data.inject{ |sum, el| sum + el }.to_f / data.size
           amp = ((value / (0xffff / 2)) * 24).to_i.abs
           pat = '1' * amp + '0' * (24 - amp)
           # logger.debug [data, value, amp, pat] * ' '
           ledbar.set(:green, pat)
           ledbar.update!
-          sleep 0.025
+          sleep 1.0 / 24
         end
       end
 
