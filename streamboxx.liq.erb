@@ -89,12 +89,13 @@ output.file(
   enhanced
 )
 
-output.file(
-  %wav(channels=1,header=false),
-  "./pcm",
-  fallible=true,
-  mean(enhanced)
-)
+# Caution, this blocks the stream if nothing drains the fifo
+# output.file(
+#   %wav(channels=1,header=false),
+#   "./pcm",
+#   fallible=true,
+#   mean(enhanced)
+# )
 
 if icecast_host != '' then
   ignore(output.icecast(

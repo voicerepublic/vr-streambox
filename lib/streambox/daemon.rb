@@ -422,8 +422,8 @@ module Streambox
                    @reporter.private_ip_address,
                    @reporter.version]
 
-      start_pcm_drain
-      start_visualizer
+      #start_pcm_drain
+      #start_visualizer
 
       logger.info "[2] Start observers..."
       start_observer 'sync'
