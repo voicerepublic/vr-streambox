@@ -89,12 +89,12 @@ output.file(
   enhanced
 )
 
-output.file(
-  %wav(channels=1,header=false),
-  "./pcm",
-  fallible=true,
-  mean(enhanced)
-)
+#output.file(
+#  %wav(channels=1,header=false),
+#  "./pcm",
+#  fallible=true,
+#  mean(enhanced)
+#)
 
 if icecast_host != '' then
   ignore(output.icecast(
@@ -124,6 +124,7 @@ main_file = argv(0)
 
 def restart_if_valid()
   if test_process("liquidsoap -c #{main_file}") then
+    log("File #{main_file} changed. Restarting...")
     restart()
   else
     log("Error parsing #{main_file}")
