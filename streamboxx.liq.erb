@@ -89,11 +89,11 @@ output.file(
   enhanced
 )
 
-output.wave(
-  %wave(channels=1,header=false),
+output.file(
+  %wav(channels=1,header=false),
   "./pcm",
   fallible=true,
-  enhanced
+  mean(enhanced)
 )
 
 if icecast_host != '' then
