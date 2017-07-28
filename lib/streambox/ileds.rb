@@ -2,11 +2,9 @@ class Ileds
 
   def initialize(config)
     @config = config
-    @config.each do |led, pins|
-      pins.each do |pin|
-        cmd = "gpio mode #{pin} out"
-        system cmd
-      end
+    @config.each do |pin, _key|
+      off(pin)
+      init(pin)
     end
   end
 
@@ -23,6 +21,11 @@ class Ileds
   end
 
   private
+
+  def init(p1n)
+    cmd = "gpio mode #{pin} out"
+    system cmd
+  end
 
   def pin(led)
     @config.invert[key]
