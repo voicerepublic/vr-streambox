@@ -2,8 +2,8 @@ class Ileds
 
   def initialize(config)
     @config = config
-    @config.each do |p1n, _key|
-      off(p1n)
+    @config.each do |p1n, key|
+      off(key)
       init(p1n)
     end
   end

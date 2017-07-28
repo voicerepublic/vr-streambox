@@ -415,9 +415,9 @@ module Streambox
       logger.info 'Start syncing %.2fkb...' % (total/1024)
 
       t0 = Time.now
-      @leds.on(:uploading, :red)
-      system(sync_cmd)
-      @leds.off(:uploading, :red)
+      @leds.on(:uploading_red) do
+        system(sync_cmd)
+      end
       dt = Time.now - t0
       self.bandwidth = total / dt # in bytes per second
       logger.info 'Syncing completed in %.2fs at %.2fkbps. Next sync in %ss.' %
