@@ -21,6 +21,7 @@ message "Initial launch..."
 
 $DIR/expand.sh
 
+# TODO check: do we need this anymore?
 message 'Removing stale pid files...'
 rm -f ~pi/*.pid
 
@@ -120,41 +121,37 @@ $DIR/wifi-ap/wifi-ap.sh init
 # start ifplugd to setup wlan / access point depending on ethernet connection
 command -v ifplugd >/dev/null 2>&1 && ifplugd -b -f -u 5 -d 5 -r $DIR/wifi-ap/wifi-ap.sh
 
-message "Entering restart loop..."
+message "Entering former restart loop..."
 
-while :
-do
+# this is just a safety net
+if [ -e /boot/reboot ]; then
+    message "Reboot requested..."
+    rm /boot/reboot
+    reboot
+fi
 
-    # this is just a safety net
-    if [ -e /boot/reboot ]; then
-        message "Reboot requested..."
-        rm /boot/reboot
-        reboot
-    fi
+# update dev box
+if [ -e $DIR/.git ]; then
+    message 'Provisioning keys...'
+    mkdir -p /root/.ssh
+    cp $DIR/id_rsa* /root/.ssh
+    chmod 600 /root/.ssh/id_rsa*
+    message 'Updating via GIT...'
+    (cd $DIR && ./update_repository.sh)
+fi
 
-    # update dev box
-    if [ -e $DIR/.git ]; then
-        message 'Provisioning keys...'
-        mkdir -p /root/.ssh
-        cp $DIR/id_rsa* /root/.ssh
-        chmod 600 /root/.ssh/id_rsa*
-        message 'Updating via GIT...'
-        (cd $DIR && ./update_repository.sh)
-    fi
+# start
+(cd $DIR && ./start.sh)
 
-    # start
-    (cd $DIR && ./start.sh)
+message 'Exited. Sleeping for 5s...'
 
-    # stall
-    message 'Exited. Restarting in 5s...'
-    sleep 5
+# slack
+VERSION=`cat $DIR/VERSION`
+TEXT="$NAME <$URL|$SERIAL> with v$VERSION on $PRIVATE_IP quit. Expecting restart..."
+JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
+curl -X POST -H 'Content-type: application/json' --data "$JSON" \
+     https://hooks.slack.com/services/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
+echo
 
-    # slack
-    VERSION=`cat $DIR/VERSION`
-    TEXT="$NAME <$URL|$SERIAL> with v$VERSION on $PRIVATE_IP restarting..."
-    JSON='{"channel":"#streamboxx","text":"'$TEXT'","icon_emoji":":satellite:","username":"streamboxx"}'
-    curl -X POST -H 'Content-type: application/json' --data "$JSON" \
-         https://hooks.slack.com/services/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
-    echo
-
-done
+# stall
+sleep 5

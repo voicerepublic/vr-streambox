@@ -8,3 +8,5 @@ ExecStart=/home/pi/streambox/launcher.sh
 StandardInput=tty
 StandardOutput=tty
 TTYPath=/dev/tty1
+Restart=always
+RestartSec=1
