@@ -16,7 +16,8 @@ require "streambox/version"
 require "streambox/reporter"
 require "streambox/resilient_process"
 require "streambox/banner"
-require "streambox/leds.rb"
+require "streambox/leds"
+require "streambox/ileds"
 
 # Test if an Icecast Server is Running on the given target
 # curl -D - http://192.168.178.21:8000/ | grep Icecast
@@ -65,6 +66,7 @@ module Streambox
                                heartbeat_interval: 10, # 10 seconds
                                report_interval: 60 # 1 minute
       @reporter = Reporter.new
+      @leds = Ileds.new
     end
 
     def identifier
@@ -152,6 +154,7 @@ module Streambox
         logger.warn "Exiting..."
         exit
       end
+      @leds.on(:connected, :green)
       # TODO callback_url needs to be part of payload
       apply_config(JSON.parse(response.body))
 
