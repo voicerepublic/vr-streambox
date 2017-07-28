@@ -81,7 +81,7 @@ module Streambox
                                heartbeat_interval: 10, # 10 seconds
                                report_interval: 60 # 1 minute
       @reporter = Reporter.new
-      @leds = Ileds.new
+      @leds = Ileds.new(LEDS)
     end
 
     def identifier
