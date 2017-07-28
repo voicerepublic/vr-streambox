@@ -23,16 +23,16 @@ class Ileds
   private
 
   def init(p1n)
-    cmd = "gpio mode #{pin} out"
+    puts cmd = "gpio mode #{pin} out"
     system cmd
   end
 
-  def pin(led)
+  def pin(key)
     @config.invert[key]
   end
 
   def write(p1n, value)
-    cmd = "gpio write #{p1n} #{value}"
+    puts cmd = "gpio write #{p1n} #{value}"
     system cmd
   end
 
