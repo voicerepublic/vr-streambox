@@ -31,6 +31,21 @@ require "streambox/ileds"
 # * after exit try to update if network is available
 module Streambox
 
+  LEDS = {
+    2 => :uploading_green,
+    3 => :uploading_red,
+    4 => :network_green,
+    5 => :network_red,
+    21 => :connected_green,
+    22 => :audio_green,
+    23 => :audio_red,
+    26 => :connected_red,
+    #streaming_green,
+    #streaming_red,
+    #recording_green,
+    #recording_red,
+  }
+
   class MultiIO
     def initialize(*targets)
       @targets = targets
@@ -154,14 +169,17 @@ module Streambox
         logger.warn "Exiting..."
         exit
       end
-      @leds.on(:connected, :green)
+      @leds.off(:connected_red)
+      @leds.on(:connected_green)
       # TODO callback_url needs to be part of payload
       apply_config(JSON.parse(response.body))
 
     rescue Faraday::TimeoutError
+      @leds.on(:connected_red)
       logger.fatal "Error: Register timed out."
       exit
     rescue Faraday::ConnectionFailed
+      @leds.on(:connected_red)
       logger.fatal "Error: The internet connection seems to be down."
       exit
     end
@@ -215,9 +233,10 @@ module Streambox
 
     def heartbeat
       t0 = Time.now
-      @leds.on(:connected, :red)
-      response = put(device_url)
-      @leds.off(:connected, :red)
+      response = nil
+      @leds.on(:connected_red) do
+        response = put(device_url)
+      end
       @dt = Time.now - t0
       #logger.debug 'Heartbeat responded in %.3fs' % @dt
       @network = response.status == 200
@@ -225,14 +244,16 @@ module Streambox
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
         @prev_network = @network
       end
-      @leds.on(:connected, :green)
+      @leds.on(:connected_reen)
       json = JSON.parse(response.body)
       apply_config(json)
     rescue Faraday::TimeoutError
-      @leds.off(:connected, :green)
+      @leds.off(:connected_green)
+      @leds.on(:connected_red)
       logger.error "Error: Heartbeat timed out."
     rescue JSON::ParserError
-      @leds.off(:connected, :green)
+      @leds.off(:connected_green)
+      @leds.on(:connected_red)
       logger.error "Error: Heartbeat could not parse JSON."
     end
 
@@ -394,7 +415,9 @@ module Streambox
       logger.info 'Start syncing %.2fkb...' % (total/1024)
 
       t0 = Time.now
+      @leds.on(:uploading, :red)
       system(sync_cmd)
+      @leds.off(:uploading, :red)
       dt = Time.now - t0
       self.bandwidth = total / dt # in bytes per second
       logger.info 'Syncing completed in %.2fs at %.2fkbps. Next sync in %ss.' %

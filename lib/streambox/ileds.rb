@@ -1,50 +1,36 @@
 class Ileds
 
-  COLORS = {
-    red: 0,
-    green: 1
-  }
-
-  LEDS = {
-    logo:      [ 4,  5],
-    network:   [ 3,  2],
-    connected: [26, 21],
-    audio:     [22, 23],
-    #streaming: [],
-    #recording: [],
-    #uploading: [],
-  }
-
-  def initialize
-    LEDS.each do |led, pins|
+  def initialize(config)
+    @config = config
+    @config.each do |led, pins|
       pins.each do |pin|
-        puts cmd = "gpio mode #{pin} out"
+        cmd = "gpio mode #{pin} out"
         system cmd
       end
     end
   end
 
-  def on(led, color)
-    write(pin(led, color), 1)
+  def on(key)
+    write(pin(key), 1)
+    if block_given?
+      yield
+      off(key)
+    end
   end
 
-  def off(led, color)
-    write(pin(led, color), 0)
+  def off(led)
+    write(pin(led), 0)
   end
 
   private
 
-  def pin(led, color)
-    LEDS[led][COLORS[color]]
+  def pin(led)
+    @config.invert[key]
   end
 
   def write(p1n, value)
-    puts cmd = "gpio write #{p1n} #{value}"
+    cmd = "gpio write #{p1n} #{value}"
     system cmd
   end
 
 end
-
-__END__
-
-require './streambox-repo/lib/streambox/ileds.rb'
