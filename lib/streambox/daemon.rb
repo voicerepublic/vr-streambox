@@ -37,8 +37,8 @@ module Streambox
     4 => :network_green,
     5 => :network_red,
     21 => :connected_green,
-    22 => :audio_green,
-    23 => :audio_red,
+    22 => :logo_green,
+    23 => :logo_red,
     26 => :connected_red,
     #streaming_green,
     #streaming_red,
@@ -717,6 +717,7 @@ module Streambox
 
     def exit_handler
       @leds.all_off
+      @leds.on(:logo_red)
       fire_event :restart
     end
 
