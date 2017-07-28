@@ -247,7 +247,7 @@ module Streambox
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
         @prev_network = @network
       end
-      @leds.on(:connected_reen)
+      @leds.on(:connected_green)
       json = JSON.parse(response.body)
       apply_config(json)
     rescue Faraday::TimeoutError

@@ -38,7 +38,7 @@ class Ileds
   end
 
   def write(p1n, value)
-    puts cmd = "gpio write #{p1n} #{value}"
+    cmd = "gpio write #{p1n} #{value}"
     system cmd
   end
 
