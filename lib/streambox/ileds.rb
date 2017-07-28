@@ -20,10 +20,16 @@ class Ileds
     write(pin(led), 0)
   end
 
+  def all_off
+    @config.each do |p1n, key|
+      off(key)
+    end
+  end
+
   private
 
   def init(p1n)
-    puts cmd = "gpio mode #{p1n} out"
+    cmd = "gpio mode #{p1n} out"
     system cmd
   end
 
@@ -32,7 +38,7 @@ class Ileds
   end
 
   def write(p1n, value)
-    puts cmd = "gpio write #{p1n} #{value}"
+    cmd = "gpio write #{p1n} #{value}"
     system cmd
   end
 

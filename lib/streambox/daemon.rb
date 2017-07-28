@@ -148,7 +148,10 @@ module Streambox
     end
 
     def knock!
-      response = faraday.get(device_url)
+      response = nil
+      @leds.on(:connected_red) do
+        response = faraday.get(device_url)
+      end
       apply_config(JSON.parse(response.body))
 
     rescue Faraday::TimeoutError
@@ -352,7 +355,10 @@ module Streambox
         now: Time.now
       }
       report = more.merge(@reporter.report)
-      response = put(device_url+'/report', report)
+      response = nil
+      @leds.on(:network_red) do
+        response = put(device_url+'/report', report)
+      end
       @network = response.status == 200
       if @prev_network != @network
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
@@ -442,7 +448,7 @@ module Streambox
     end
 
     def run
-      at_exit { fire_event :restart }
+      at_exit { exit_handler }
 
       #@config.loglevel = Logger::DEBUG if dev_box?
 
@@ -707,6 +713,11 @@ module Streambox
       request = Net::HTTP::Post.new(uri.path)
       request.body = JSON.unparse(payload)
       https.request(request)
+    end
+
+    def exit_handler
+      @leds.all_off
+      fire_event :restart
     end
 
   end
