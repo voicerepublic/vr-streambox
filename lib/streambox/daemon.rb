@@ -215,7 +215,9 @@ module Streambox
 
     def heartbeat
       t0 = Time.now
+      @leds.on(:connected, :red)
       response = put(device_url)
+      @leds.off(:connected, :red)
       @dt = Time.now - t0
       #logger.debug 'Heartbeat responded in %.3fs' % @dt
       @network = response.status == 200
@@ -223,11 +225,14 @@ module Streambox
         logger.warn "[NETWORK] #{@network ? 'UP' : 'DOWN'}"
         @prev_network = @network
       end
+      @leds.on(:connected, :green)
       json = JSON.parse(response.body)
       apply_config(json)
     rescue Faraday::TimeoutError
+      @leds.off(:connected, :green)
       logger.error "Error: Heartbeat timed out."
     rescue JSON::ParserError
+      @leds.off(:connected, :green)
       logger.error "Error: Heartbeat could not parse JSON."
     end
 
