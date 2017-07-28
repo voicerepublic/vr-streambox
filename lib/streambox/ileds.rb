@@ -2,9 +2,9 @@ class Ileds
 
   def initialize(config)
     @config = config
-    @config.each do |pin, _key|
-      off(pin)
-      init(pin)
+    @config.each do |p1n, _key|
+      off(p1n)
+      init(p1n)
     end
   end
 
@@ -23,7 +23,7 @@ class Ileds
   private
 
   def init(p1n)
-    puts cmd = "gpio mode #{pin} out"
+    puts cmd = "gpio mode #{p1n} out"
     system cmd
   end
 
