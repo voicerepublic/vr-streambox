@@ -275,29 +275,41 @@ module Streambox
     end
 
     def start_visualizer
-      Thread.new do
-        ledbar = Bicolor24.new(0x70)
-        ledbar.init!
-        amp = 0
-        while $pcm.nil?
-          logger.debug "Waiting for pcm data..."
-          sleep 1
-        end
-        logger.debug "Enter visualizer loop..."
-        loop do
-          # amp = (amp + 1) % 25
-          data = $pcm.unpack("s#{CHUNK_SIZE/2}")
-          value = data.inject{ |sum, el| sum + el.abs }.to_f / data.size
-          factor = value / (0xffff / 2)
-          amp = (factor * 24).to_i
-          pat = '1' * amp + '0' * (24 - amp)
-          logger.debug [amp, value, factor, data] * ' '
-          ledbar.set(:green, pat)
-          ledbar.update!
-          sleep 1.0 / 24
-        end
-      end
+      # Thread.new do
+      #   ledbar = Bicolor24.new(0x70)
+      #   ledbar.init!
+      #   amp = 0
+      #   while $pcm.nil?
+      #     logger.debug "Waiting for pcm data..."
+      #     sleep 1
+      #   end
+      #   logger.debug "Enter visualizer loop..."
+      #   loop do
+      #     # amp = (amp + 1) % 25
+      #     data = $pcm.unpack("s#{CHUNK_SIZE/2}")
+      #     value = data.inject{ |sum, el| sum + el.abs }.to_f / data.size
+      #     factor = value / (0xffff / 2)
+      #     amp = (factor * 24).to_i
+      #     pat = '1' * amp + '0' * (24 - amp)
+      #     logger.debug [amp, value, factor, data] * ' '
+      #     ledbar.set(:green, pat)
+      #     ledbar.update!
+      #     sleep 1.0 / 24
+      #   end
+      # end
 
+      ledbar = Bicolor24.new(0x70)
+      ledbar.init!
+      Bicolor24Demo.new.run do |segs, hiseq|
+        pat_green = '1' * seqs + '0' * (24 - seqs)
+        pat_orange = '0' * 24
+        pat_orange[hiseq] = '1'
+        ledbar.blackout
+        ledbar.set(:green,  pat_green)
+        ledbar.set(:red,    '0' * 24)
+        ledbar.set(:orange, pat_orange)
+        ledbar.update!
+      end
     end
 
     def start_observer(name)
@@ -460,7 +472,7 @@ module Streambox
                    @reporter.version]
 
       #start_pcm_drain
-      #start_visualizer
+      start_visualizer
 
       logger.info "[2] Start observers..."
       start_observer 'sync'
