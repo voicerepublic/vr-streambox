@@ -3,7 +3,7 @@ class Bicolor24Demo
   SEGMENTS = 24
   UNIT = 1.0 / SEGMENTS
 
-  def run
+  def run(&bloc)
     Thread.new do
       @high = 0
       @value = 0.5
@@ -21,18 +21,19 @@ class Bicolor24Demo
           @segs = (@value * SEGMENTS).to_i
           @hiseg = (@high * SEGMENTS).to_i
 
-          if block_given?
-            yield @segs, @hiseg
-          else
+          if bloc.nil?
             str = "|" * @segs + ' ' * (SEGMENTS - @segs)
             str[@hiseg] = 'I'
             puts str
+          else
+            bloc.call @segs, @hiseg
           end
 
           sleep 0.05
-        rescue
-          puts @value
-          puts @high
+        #rescue => e
+        #  puts e
+        #  puts @value
+        #  puts @high
         end
       end
     end
