@@ -30,7 +30,6 @@ module Bicolor24Demo
             str[@hiseg] = 'I'
             puts str
           else
-            puts "call bloc with #{@segs} #{@hiseg}"
             bloc.call @segs, @hiseg
           end
 

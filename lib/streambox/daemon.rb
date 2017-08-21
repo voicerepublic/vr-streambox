@@ -303,15 +303,14 @@ module Streambox
       ledbar.init!
 
       Bicolor24Demo.run do |segs, hiseg|
-        puts "#{segs} #{hiseg}"
-        #pat_green = '1' * segs + '0' * (24 - segs)
-        #pat_orange = '0' * 24
-        #pat_orange[hiseg] = '1'
-        #ledbar.blackout
-        #ledbar.set(:green,  pat_green)
-        #ledbar.set(:red,    '0' * 24)
-        #ledbar.set(:orange, pat_orange)
-        #ledbar.update!
+        pat_green = '1' * segs + '0' * (24 - segs)
+        pat_orange = '0' * 24
+        pat_orange[hiseg] = '1'
+        ledbar.blackout
+        ledbar.set(:green,  pat_green)
+        ledbar.set(:red,    '0' * 24)
+        ledbar.set(:orange, pat_orange)
+        ledbar.update!
       end
     end
 
