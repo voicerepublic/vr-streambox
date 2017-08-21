@@ -18,8 +18,9 @@ require "streambox/resilient_process"
 require "streambox/banner"
 require "streambox/leds"
 require "streambox/ileds"
+require "streambox/bicolor24demo"
 
-# Test if an Icecast Server is Running on the given target
+# test if an Icecast Server is Running on the given target
 # curl -D - http://192.168.178.21:8000/ | grep Icecast
 
 # TODO
