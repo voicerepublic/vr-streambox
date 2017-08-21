@@ -49,9 +49,15 @@ class Bicolor24 < LedDevice
 
   def set(color, pattern)
     case color
-    when :red    then self.banks[0] = pattern
-    when :green  then self.banks[1] = pattern
-    when :orange then self.banks[0] = self.banks[1] = pattern
+    when :red    then
+      #self.banks[0] = pattern
+      self.banks[0] = (banks[0].to_i(2) | pattern.to_i(2)).to_s(2)
+    when :green  then
+      #self.banks[1] = pattern
+      self.banks[1] = (banks[1].to_i(2) | pattern.to_i(2)).to_s(2)
+    when :orange then
+      set(:green, pattern)
+      set(:red, pattern)
     end
   end
 
