@@ -6,9 +6,11 @@ module Bicolor24Demo
   UNIT = 1.0 / SEGMENTS
 
   def run(&bloc)
+    puts "a"
     Thread.new do
       @high = 0
       @value = 0.5
+      puts "b"
       loop do
         begin
           @value += (rand - 0.5) * UNIT * 7
@@ -28,6 +30,7 @@ module Bicolor24Demo
             str[@hiseg] = 'I'
             puts str
           else
+            puts "call bloc with #{@seqs} #{@hiseq}"
             bloc.call @segs, @hiseg
           end
 
@@ -39,6 +42,7 @@ module Bicolor24Demo
         end
       end
     end
+    puts "c"
   end
 
 end
