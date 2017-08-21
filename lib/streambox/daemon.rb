@@ -301,16 +301,17 @@ module Streambox
 
       ledbar = Bicolor24.new(0x70)
       ledbar.init!
-      Bicolor24Demo.new.run do |segs, hiseq|
+
+      Bicolor24Demo.run do |segs, hiseq|
         puts "#{seqs} #{hiseq}"
-        pat_green = '1' * seqs + '0' * (24 - seqs)
-        pat_orange = '0' * 24
-        pat_orange[hiseq] = '1'
-        ledbar.blackout
-        ledbar.set(:green,  pat_green)
-        ledbar.set(:red,    '0' * 24)
-        ledbar.set(:orange, pat_orange)
-        ledbar.update!
+        #pat_green = '1' * seqs + '0' * (24 - seqs)
+        #pat_orange = '0' * 24
+        #pat_orange[hiseq] = '1'
+        #ledbar.blackout
+        #ledbar.set(:green,  pat_green)
+        #ledbar.set(:red,    '0' * 24)
+        #ledbar.set(:orange, pat_orange)
+        #ledbar.update!
       end
     end
 

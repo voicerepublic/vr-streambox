@@ -1,4 +1,6 @@
-class Bicolor24Demo
+module Bicolor24Demo
+
+  extend self
 
   SEGMENTS = 24
   UNIT = 1.0 / SEGMENTS
@@ -30,10 +32,10 @@ class Bicolor24Demo
           end
 
           sleep 0.05
-        #rescue => e
-        #  puts e
-        #  puts @value
-        #  puts @high
+          #rescue => e
+          #  puts e
+          #  puts @value
+          #  puts @high
         end
       end
     end
@@ -41,4 +43,4 @@ class Bicolor24Demo
 
 end
 
-Bicolor24Demo.new.run.join if $0 == __FILE__
+#Bicolor24Demo.run.join if $0 == __FILE__
