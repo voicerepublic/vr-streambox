@@ -6,5 +6,5 @@ After=graphical.target
 Type=simple
 ExecStart=/home/pi/streambox/launcher.sh
 StandardInput=tty
-StandardOutput=tty
+StandardOutput=syslog+consolex
 TTYPath=/dev/tty1
