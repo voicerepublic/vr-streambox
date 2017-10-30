@@ -387,7 +387,7 @@ module Streambox
       logger.info "[3] Knocking..."
       knock!
       logger.info "[4] Knocking complete."
-      logger.debug "Release:  #{@config.release}"
+      logger.debug "Release:  #{@config.relese}"
       logger.debug "Endpoint: #{@config.endpoint}"
 
       logger.warn "[7] Checking for release..."
@@ -528,7 +528,7 @@ module Streambox
     end
 
     def dev_box?
-      !current_branch.empty?
+      !expected_release.match(/^\d+$/)
     end
 
     def current_release
