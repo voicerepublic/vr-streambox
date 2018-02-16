@@ -71,7 +71,7 @@ stream = mic_filter(stream)
 stream = nrj(stream)
 stream = clip(stream)
 
-enhanced = strip_blank(stream, max_blank=5.)
+enhanced = strip_blank(stream, max_blank=60.)
 stream = fallback(track_sensitive=false, [enhanced, interlude])
 
 # ------------------------------ OUTPUT
